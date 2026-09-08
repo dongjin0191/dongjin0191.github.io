@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /withdraw.html
 
-Sitemap: https://example.org/sitemap.xml
+Sitemap: https://dongjin0191.github.io/sitemap.xml

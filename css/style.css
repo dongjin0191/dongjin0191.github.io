@@ -9,8 +9,8 @@
   --paper: #ffffff;
   --paper-alt: #f7f5f0;
   --dark: #15171c;
-  --accent: #006633;      /* deep evergreen — 씨앗/생명 모티프 */
-  --accent-soft: #6f8a7c;
+  --accent: #0077B0;      /* 로고 파랑(#0096DC)을 본문 대비에 맞게 어둡게 — 흰 배경 4.9:1 */
+  --accent-soft: #6f88a0;
   --gold: #b89b5e;
   --maxw: 1140px;
 }

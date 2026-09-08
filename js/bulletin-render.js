@@ -10,7 +10,7 @@
   var COMMITTEE_KEYS = ['헌금위원', '안내위원', '주차·사찰', '이주의 기도'];
   // 표지 로고 — 재정(영수증) 설정의 로고(d.church_logo_url)가 있으면 그것을,
   // 없으면 홈페이지 PWA 아이콘(같은 도안, 항상 존재)을 기본값으로 쓴다.
-  var DEFAULT_LOGO = 'https://example.org/images/icon-512.png';
+  var DEFAULT_LOGO = 'https://dongjin0191.github.io/images/icon-512.png';
   var WEEKDAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   // 실제 인쇄 주보는 각 항목 앞에 01~10 큰 번호가 붙는다 — 그 자체가
@@ -221,7 +221,7 @@
       headlineHtml = '<div class="hl">' + esc(hl).replace(/\n/g, '<br>') + '</div>';
     }
     // ── 섹션 조각 ──
-    var hdBanner = '<div class="hd"><div class="eng">SUNDAY WORSHIP</div><div class="ch">운 평 장 로 교 회</div><div class="sub">' + sub + '</div></div>';
+    var hdBanner = '<div class="hd"><div class="eng">SUNDAY WORSHIP</div><div class="ch">영 광 교 회</div><div class="sub">' + sub + '</div></div>';
     var sermSec = '<section>' + h2Html('01', '주일 낮 예배', 'ORDER OF WORSHIP') +
       '<div class="serm"><div class="lab">오 늘 의 설 교 · SERMON</div><div class="t">' + esc(rec.title || '') + '</div><div class="m">본문 ● ' + esc(rec.scripture || '') + ' ● ' + esc(rec.preacher || '') + '</div></div>' +
       '<table class="ord"><tbody>' + orderHtml + '</tbody></table></section>';
@@ -251,10 +251,10 @@
       '<div class="cv-top"><div class="cv-since">' + esc(sinceTxt) + '<br>No. ' + esc(d.no || '') + '. ' + esc(String(rec.bdate || '').slice(0, 4)) + '</div>' + dateBadge + '</div>' +
       (headlineHtml || '') +
       '<div class="cv-spacer"></div>' +
-      '<div class="cv-brand"><img class="cv-logo" src="' + esc(logoUrl) + '" alt="영광교회"><div class="big">운 평 장 로 교 회</div></div>' +
+      '<div class="cv-brand"><img class="cv-logo" src="' + esc(logoUrl) + '" alt="영광교회"><div class="big">영 광 교 회</div></div>' +
       '<div class="ld">담임목사 김 동 석 · 원로목사 김 충 현 · 협동목사 안 창 선</div>' +
       '<div class="cv-foot-line"></div>' +
-      '<div class="ad">화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호<br>홈페이지 www.example.org</div></div>';
+      '<div class="ad">화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호<br>홈페이지 www.dongjin0191.github.io</div></div>';
 
     if (opts.layout === 'print3') {
       // 가로 3단 양면 — 앞면: 설교/예배순서·주중·안내·헌금/봉사위원 / 뒷면: 칼럼·광고·섬기는사람들·선교지·표지

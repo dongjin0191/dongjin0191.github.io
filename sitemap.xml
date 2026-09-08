@@ -3,16 +3,16 @@
      · noindex 페이지(admin·affairs·dashboard·finance·gyojeok·reset·share·withdraw)는 제외
      · 대표주소(canonical)가 다른 곳을 가리키는 페이지(community·prayer → story)도 제외 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.org/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://example.org/word.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://example.org/welcome.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://example.org/story.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://example.org/library.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://example.org/book.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://example.org/audiobook.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://example.org/mahanaim.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://example.org/world.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://example.org/bylaws.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://example.org/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://example.org/terms.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://dongjin0191.github.io/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://dongjin0191.github.io/word.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://dongjin0191.github.io/welcome.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://dongjin0191.github.io/story.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://dongjin0191.github.io/library.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://dongjin0191.github.io/book.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://dongjin0191.github.io/audiobook.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://dongjin0191.github.io/mahanaim.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://dongjin0191.github.io/world.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://dongjin0191.github.io/bylaws.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://dongjin0191.github.io/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://dongjin0191.github.io/terms.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

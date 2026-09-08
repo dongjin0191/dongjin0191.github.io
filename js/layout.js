@@ -83,7 +83,7 @@
       <div class="container footer-inner">
         <div class="footer-brand">
           <span class="logo-kr">영광교회</span>
-          <span class="logo-en">YEONGGWANG CHURCH PRESBYTERIAN CHURCH · SINCE 1964</span>
+          <span class="logo-en">YEONGGWANG CHURCH</span>
         </div>
         <nav class="footer-nav">${NAV.filter((n) => !n.adminOnly && !n.memberOnly).map((n) => `<a href="${n.href}">${n.label}</a>`).join("")}<a href="bylaws.html">정관</a><a href="terms.html">이용약관</a><a href="privacy.html">개인정보처리방침</a><a href="withdraw.html">회원탈퇴</a></nav>
         <div class="footer-actions">

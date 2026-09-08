@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1536" role="img" aria-labelledby="t">
+  <title id="t">영광교회 로고</title>
+  <g stroke-linejoin="round" stroke-width="26">
+    <!-- 왼쪽 면 (파랑) -->
+    <polygon points="105,248 455,307 455,1136 105,1190" fill="#0096DC" stroke="#0096DC"/>
+    <!-- 오른쪽 면 (초록) -->
+    <polygon points="530,375 920,286 920,1326 530,1250" fill="#65B32E" stroke="#65B32E"/>
+  </g>
+  <!-- 십자가 가로대 (세로대는 두 면 사이의 흰 간격) -->
+  <rect x="275" y="597" width="475" height="84" fill="#fff"/>
+</svg>

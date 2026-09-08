@@ -55,8 +55,8 @@
 
 // 업로드를 허용할 출처(우리 홈페이지)
 const ALLOW_ORIGINS = [
-  "https://example.org",
-  "https://www.example.org",
+  "https://dongjin0191.github.io",
+  "https://www.dongjin0191.github.io",
   "https://kds08200820-del.github.io",
   "http://localhost:5500",
   "http://127.0.0.1:5500",
