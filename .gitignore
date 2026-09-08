@@ -1,0 +1,42 @@
+# Claude Code 작업 파일은 제외하되, 예배 준비 스킬은 저장소에서 관리한다.
+# (worktrees·launch.json 등은 계속 제외됨)
+.claude/*
+!.claude/skills/
+
+# 환경변수(비밀값 포함) — 절대 커밋 금지. (.env.example 은 값이 비어 있어 커밋됨)
+.env
+.env.local
+.env.production
+.env*.local
+
+# 민감 데이터(개인정보·헌금) — 공개 배포 저장소이므로 절대 커밋 금지
+재정데이터/
+교적데이터/
+설교데이터/
+*.xlsx
+offerings_full_*.sql
+
+# 개인 실험본(배포 제외)
+*-동석이네집.html
+
+# 교회PC 운영 파일(계정·PC 이름 등 운영 정보 — 공개 저장소에 올리지 않음)
+_church-pc-update/
+
+# Python 컴파일 캐시
+__pycache__/
+*.pyc
+
+# 노션 내보내기(수동 다운로드 — 레포에 올리지 않음)
+*ExportBlock*.zip
+찬양곡 라이브러리*.csv
+
+# DB 백업 파일(개인정보 포함 — 절대 커밋 금지)
+backups/*.sql
+
+# 오디오북 낭독 대본 — 책 «레위기에서 만난 예수 그리스도» 전문이라 공개 저장소에 올리지 않는다.
+# (홈페이지 미리보기는 1장까지만이고, 책은 부크크에서 판매 중)
+tools/_audiobook_scripts/
+tools/_audiobook_out/
+
+# Node.js
+node_modules/

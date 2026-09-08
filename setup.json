@@ -1,0 +1,38 @@
+{
+  "church_name": "영광교회",
+  "church_short": "영광",
+  "church_en": "YEONGGWANG CHURCH",
+  "pastor": "이동진",
+  "domain": "",
+  "address": "화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호",
+  "phone": "010-2540-0533",
+  "founded": "",
+  "accent": "#006633",
+  "supabase_url": "",
+  "supabase_anon": "",
+  "r2_url": "",
+  "finance_api": "",
+  "onesignal": "",
+  "ai_mode": "none",
+  "modules": {
+    "core": true,
+    "auth": false,
+    "board": false,
+    "dashboard": false,
+    "admin_office": false,
+    "gyojeok": false,
+    "finance": false,
+    "sunday_school": false,
+    "library": false,
+    "pwa": false,
+    "ai_counsel": false,
+    "ai_tts": false
+  },
+  "caps": {
+    "supabase": false,
+    "r2": false,
+    "apps_script": false,
+    "onesignal": false,
+    "ai": false
+  }
+}
