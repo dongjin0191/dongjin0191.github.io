@@ -238,8 +238,8 @@
     var staffSec = servantsHTML(d.servants);
     var missionsSec = missionsHTML(d.missions);
     var noteHtml = !opts.amounts ? '<p class="note">* 감사한 마음으로 드린 예물의 명단만 안내하며, 헌금 금액 내역은 게시하지 않습니다.</p>' : '';
-    var fm = String(d.founded || '1964-03-01').match(/(\d{4})-(\d{2})-(\d{2})/);
-    var sinceTxt = fm ? ('Since. ' + fm[1] + '.' + Number(fm[2]) + '.' + Number(fm[3])) : 'Since. 1964.3.1';
+    var fm = String(d.founded || '2019-05-08').match(/(\d{4})-(\d{2})-(\d{2})/);
+    var sinceTxt = fm ? ('Since. ' + fm[1] + '.' + Number(fm[2]) + '.' + Number(fm[3])) : 'Since. 2019.5.8';
     // 표지 상단 우측의 날짜 배지(일자를 크게, 월·요일을 그 옆에) — 실제 인쇄 주보와 동일한 자리.
     var bd = rec.bdate ? new Date(ymd(rec.bdate) + 'T00:00:00') : null;
     var dateBadge = bd ? (
@@ -254,7 +254,7 @@
       '<div class="cv-brand"><img class="cv-logo" src="' + esc(logoUrl) + '" alt="영광교회"><div class="big">영 광 교 회</div></div>' +
       '<div class="ld">담임목사 김 동 석 · 원로목사 김 충 현 · 협동목사 안 창 선</div>' +
       '<div class="cv-foot-line"></div>' +
-      '<div class="ad">화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호<br>홈페이지 www.dongjin0191.github.io</div></div>';
+      '<div class="ad">화성시 비봉면 양노로 113-3 2층<br>홈페이지 www.dongjin0191.github.io</div></div>';
 
     if (opts.layout === 'print3') {
       // 가로 3단 양면 — 앞면: 설교/예배순서·주중·안내·헌금/봉사위원 / 뒷면: 칼럼·광고·섬기는사람들·선교지·표지
@@ -264,7 +264,7 @@
     }
     // 홈페이지 읽기(세로 1단)
     return '<div class="page">' + hdBanner + (headlineHtml || '') + sermSec + midSec + svcSec + offerSec + comSec + colSec + newsSec + staffSec + missionsSec + noteHtml +
-      '<div class="foot">영광교회 · 담임목사 이동진 · 화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호</div></div>';
+      '<div class="foot">영광교회 · 담임목사 이동진 · 화성시 비봉면 양노로 113-3 2층</div></div>';
   }
 
   function fullHTML(rec, opts) {

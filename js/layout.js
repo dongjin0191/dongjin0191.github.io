@@ -92,7 +92,7 @@
         </div>
         <div class="footer-meta">
           <p>담임목사 이동진 · 원로목사 (원로목사 성함) · 협동목사 (협동목사 성함)</p>
-          <p>화성시 동탄지성로 469번길 60번지 반정아이파크캐슬 5단지 520동 703호<a href="tel:010-2540-0533">010-2540-0533</a></p>
+          <p>화성시 비봉면 양노로 113-3 2층<a href="tel:010-2540-0533">010-2540-0533</a></p>
           <p class="copy">© 2026 Unpyeong Presbyterian Church. All rights reserved.</p>
         </div>
       </div>
