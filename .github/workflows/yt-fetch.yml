@@ -12,9 +12,10 @@ jobs:
       - run: pip install -U yt-dlp
       - name: fetch
         run: |
+          CH="https://www.youtube.com/@%ED%99%94%EA%B8%B0%EC%B4%9D"
           mkdir -p ytout
           for t in videos shorts streams playlists; do
-            yt-dlp --flat-playlist -J "https://www.youtube.com/@dtcu0191/$t" > ytout/$t.json 2> ytout/$t.err || true
+            yt-dlp --flat-playlist -J "$CH/$t" > ytout/$t.json 2> ytout/$t.err || true
           done
           python3 - <<'PY'
           import json,subprocess
@@ -27,6 +28,7 @@ jobs:
           except Exception as ex:
               open('ytout/pl.err','a').write(str(ex))
           PY
+          timeout 1500 yt-dlp --skip-download --ignore-errors --print "%(id)s	%(upload_date)s	%(view_count)s" "$CH/videos" "$CH/streams" > ytout/dates.tsv 2> ytout/dates.err || true
           ls -la ytout
       - run: |
           git config user.name "github-actions"
