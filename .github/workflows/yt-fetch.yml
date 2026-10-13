@@ -1,0 +1,34 @@
+name: yt-fetch
+on:
+  push:
+    branches: [yt-fetch]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -U yt-dlp
+      - name: fetch
+        run: |
+          mkdir -p ytout
+          for t in videos shorts streams playlists; do
+            yt-dlp --flat-playlist -J "https://www.youtube.com/@dtcu0191/$t" > ytout/$t.json 2> ytout/$t.err || true
+          done
+          python3 - <<'PY'
+          import json,subprocess
+          try:
+              d=json.load(open('ytout/playlists.json'))
+              for e in d.get('entries') or []:
+                  pid=e.get('id')
+                  if not pid: continue
+                  subprocess.run(f'yt-dlp --flat-playlist -J "https://www.youtube.com/playlist?list={pid}" > ytout/pl_{pid}.json 2>>ytout/pl.err',shell=True)
+          except Exception as ex:
+              open('ytout/pl.err','a').write(str(ex))
+          PY
+          ls -la ytout
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add ytout && git commit -m "yt data" && git push
