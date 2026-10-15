@@ -49,6 +49,8 @@ main{max-width:1100px;margin:auto;padding:6px 12px 50px}
 .yt{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--yt);color:#fff;text-decoration:none;font-weight:700;font-size:13.5px;padding:9px;border-radius:9px}
 .yt svg{width:16px;height:16px}
 .yt:active{transform:scale(.98)}
+.ph{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--navy);color:#fff;text-decoration:none;font-weight:700;font-size:13.5px;padding:9px;border-radius:9px}
+.yt+.ph{margin-top:0}
 .empty{text-align:center;color:var(--muted);padding:50px 10px}
 .pls{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
 .pl{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;text-decoration:none;color:var(--navy);font-weight:700;font-size:13.5px}
@@ -56,7 +58,7 @@ main{max-width:1100px;margin:auto;padding:6px 12px 50px}
 .pl:hover,.card:hover{box-shadow:0 4px 16px #102a4326}
 footer{text-align:center;font-size:12px;color:#62778a;padding:10px 16px 30px;line-height:1.7}
 #top{position:fixed;right:14px;bottom:16px;border:0;border-radius:50%;width:44px;height:44px;background:var(--navy);color:#fff;font-size:18px;box-shadow:0 3px 10px #0004;cursor:pointer;display:none}
-@media(max-width:560px){.grid{grid-template-columns:1fr 1fr;gap:9px}.ct{font-size:13.5px}.cb{padding:8px 9px 10px}.yt{font-size:12.5px;padding:8px 4px}.dur{font-size:10.5px}.tag{font-size:10px}}
+@media(max-width:560px){.ph{font-size:12.5px;padding:8px 4px}.grid{grid-template-columns:1fr 1fr;gap:9px}.ct{font-size:13.5px}.cb{padding:8px 9px 10px}.yt{font-size:12.5px;padding:8px 4px}.dur{font-size:10.5px}.tag{font-size:10px}}
 @media(max-width:340px){.grid{grid-template-columns:1fr}}
 </style></head><body>
 <header>
@@ -90,7 +92,7 @@ document.getElementById('stats').innerHTML=`<span>영상 <b>${vids.length}</b>�
 const yr=document.getElementById('yr');yr.innerHTML='<option value="all">전체 연도</option>'+years.map(y=>`<option value="${y}">${y}년</option>`).join('');
 function match(v){if(st.y!=='all'&&(!v.d||v.d.slice(0,4)!==st.y))return false;if(st.q){const q=st.q.replace(/\s+/g,'').toLowerCase();if(!v.full.replace(/\s+/g,'').toLowerCase().includes(q))return false}return true}
 function card(v){const live=/^생중계/.test(v.t),ed=/^편집본/.test(v.t);const t=v.t.replace(/^(생중계|편집본) · /,'');const u='https://www.youtube.com/watch?v='+v.id;
-return `<article class="card"><a class="th" href="${u}" target="_blank" rel="noopener" aria-label="${esc(t)} 유튜브에서 보기"><img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="">${live?'<span class="tag live">생중계</span>':ed?'<span class="tag">편집본</span>':''}<span class="dur">${fmtDur(v.dur)}</span></a><div class="cb"><p class="ct" title="${esc(v.full)}">${esc(t)}</p><div class="meta">${fmtDate(v.d)}${v.v?' · 조회 '+v.v.toLocaleString():''}</div><a class="yt" href="${u}" target="_blank" rel="noopener">${YT}유튜브에서 보기</a></div></article>`}
+return `<article class="card"><a class="th" href="${u}" target="_blank" rel="noopener" aria-label="${esc(t)} 유튜브에서 보기"><img loading="lazy" src="${v.img||'https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg'}" alt="">${live?'<span class="tag live">생중계</span>':ed?'<span class="tag">편집본</span>':''}<span class="dur">${fmtDur(v.dur)}</span></a><div class="cb"><p class="ct" title="${esc(v.full)}">${esc(t)}</p><div class="meta">${fmtDate(v.d)}${v.v?' · 조회 '+v.v.toLocaleString():''}</div><a class="yt" href="${u}" target="_blank" rel="noopener">${YT}유튜브에서 보기</a>${v.album?`<a class="ph" href="${esc(v.album)}" target="_blank" rel="noopener">📷 사진 보기</a>`:''}</div></article>`}
 const LIMIT=8;const opened=new Set();
 function render(){
 const chips=document.getElementById('chips');const base=vids.filter(match);
