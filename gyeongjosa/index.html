@@ -31,6 +31,7 @@
   --out:#8fb0e6; --out-soft:#24324a; --in:#6cc7aa; --in-soft:#1c3a32;
   --wed:#e09ab0; --fun:#b3bcc7; --cel:#dcbb6b; --etc:#b8a5e0; --warn:#ec8b78; color-scheme:dark}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
   padding:calc(16px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
@@ -112,6 +113,19 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
 .backup{display:flex;flex-direction:column;gap:10px}
 .install{background:var(--out-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px}
 .install b{color:var(--out)}
+.ret{display:grid;grid-template-columns:28px minmax(0,1fr) 108px;gap:10px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line)}
+.ret:last-child{border-bottom:0}
+.ret input[type=checkbox]{width:24px;height:24px;margin:0;accent-color:var(--in)}
+.ret .nm{font-weight:600}
+.ret .sub{font-size:12px;color:var(--muted)}
+.ret.done .nm{color:var(--in)}
+.ret .amtIn{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap}
+.ret .amtIn input{text-align:right;padding:6px 8px}
+.ret.extra .nm::after{content:" (보낸 기록 없음)";font-weight:400;font-size:12px;color:var(--muted)}
+.evform{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px;margin-top:10px}
+.evform .btns{grid-column:1/-1}
+.progress{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:8px}
+.progress span{display:block;height:100%;background:var(--in)}
 @media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
@@ -144,6 +158,31 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   <section class="panel">
     <div class="phead"><h2>종류별 보낸 금액</h2><span class="note" id="kindNote"></span></div>
     <div class="kinds" id="kinds"></div>
+  </section>
+
+  <section class="panel" id="retPanel">
+    <div class="phead"><h2>돌려받기 체크표</h2><span class="note">우리 집 경조사 때 누가 돌려줬는지 체크하고 받은 액수를 적습니다.</span></div>
+    <div class="filters">
+      <select id="evSel" aria-label="우리 집 경조사" style="flex:1;min-width:0"></select>
+      <button type="button" id="evNew">+ 우리 집 경조사</button>
+      <button type="button" id="evEdit">고치기</button>
+    </div>
+    <div class="evform" id="evForm" hidden>
+      <label>경조사 이름<input id="evName" placeholder="예: 아버님 칠순, 딸 결혼"></label>
+      <label>날짜<input type="date" id="evDate"></label>
+      <div class="btns"><button type="button" class="primary" id="evSave">저장</button><button type="button" id="evCancel">취소</button><button type="button" class="danger" id="evDel" hidden>삭제</button></div>
+    </div>
+    <div id="evSum" style="margin-top:12px"></div>
+    <div class="filters" style="margin-top:12px">
+      <div class="tabs" role="group" aria-label="체크 상태" id="retTabs">
+        <button type="button" data-rf="all" aria-pressed="true">전체</button>
+        <button type="button" data-rf="todo" aria-pressed="false">아직</button>
+        <button type="button" data-rf="done" aria-pressed="false">받음</button>
+      </div>
+      <input id="retQ" type="search" placeholder="이름 찾기" aria-label="이름 찾기">
+    </div>
+    <div id="retList" style="margin-top:6px"></div>
+    <div id="retMsg" class="note" role="status"></div>
   </section>
 
   <section class="panel" id="listPanel">
@@ -203,6 +242,7 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
       <label>종류<select id="fKind"><option>결혼</option><option>장례</option><option>축하</option><option>위로</option><option>기타</option></select></label>
       <label>내용<input id="fDetail" placeholder="예: 딸결혼, 부친상"></label>
     </div>
+    <label id="fEventWrap" hidden>어느 우리 집 경조사로 받았나요<select id="fEvent"></select></label>
     <label>메모<input id="fMemo" placeholder="예: 참석·식사"></label>
     <div id="formMsg" role="status"></div>
     <div class="btns">
@@ -219,14 +259,27 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   var KEY = "gyeongjosa.rows.v1";
   var KINDS = ["결혼","장례","축하","위로","기타"];
   var KCOL = {"결혼":"var(--wed)","장례":"var(--fun)","축하":"var(--cel)","위로":"var(--etc)","기타":"var(--muted)"};
+  var EKEY = "gyeongjosa.events.v1";
   var rows = load();
-  var ui = {more:false, morePeople:false, dir:"all", year:"all", q:"", person:null, editId:null, delArmed:false, pending:null};
+  var events = loadEvents();
+  var ui = {ev:null, rf:"all", rq:"", more:false, morePeople:false, dir:"all", year:"all", q:"", person:null, editId:null, delArmed:false, pending:null};
   var $ = function(id){return document.getElementById(id)};
   var esc = function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
   var THIS_YEAR = String(new Date().getFullYear());
 
   function load(){ try{ var v = JSON.parse(localStorage.getItem(KEY)||"[]"); return Array.isArray(v)?v:[]; }catch(_){ return []; } }
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(rows)); return true; }catch(_){ return false; } }
+  function loadEvents(){ try{ var v = JSON.parse(localStorage.getItem(EKEY)||"[]"); return Array.isArray(v)?v:[]; }catch(_){ return []; } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(rows)); localStorage.setItem(EKEY, JSON.stringify(events)); return true; }catch(_){ return false; } }
+  // 받은 기록 중 아직 우리 집 경조사에 연결되지 않은 것(예전 자료)은 내용·날짜가 같은 경조사로 묶는다
+  function linkEvents(){
+    rows.forEach(function(r){
+      if(r.dir!=="in" || r.event!==undefined) return;
+      var name=r.detail||"받은 경조사";
+      var ev=events.find(function(e){return e.name===name&&e.date===r.date});
+      if(!ev){ ev={id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:name, date:r.date}; events.push(ev); }
+      r.event=ev.id;
+    });
+  }
   function uid(){ return "e"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function man(won){ var m = (+won||0)/10000; return (Math.round(m*10)/10).toLocaleString("ko-KR")+"만원"; }
   function today(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
@@ -332,7 +385,85 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
     var sel=$("yearSel"); sel.innerHTML='<option value="all">전체 연도</option>'+Object.keys(ys).sort().reverse().map(function(y){return '<option value="'+y+'">'+y+'년</option>'}).join("");
     if(ui.year!=="all"&&!ys[ui.year])ui.year="all"; sel.value=ui.year;
   }
-  function render(){ renderKpis(); renderYearChart(); renderKinds(); renderPeople(); renderYears(); renderPersonBox(); renderList(); }
+  function evRows(id){ return rows.filter(function(r){return r.dir==="in"&&r.event===id}); }
+  function renderEvents(){
+    events.sort(function(a,b){return a.date<b.date?1:-1});
+    if(!ui.ev||!events.some(function(e){return e.id===ui.ev})) ui.ev=events[0]?events[0].id:null;
+    $("evSel").innerHTML=events.length?events.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.name)+' ('+esc(e.date)+')</option>'}).join(""):'<option value="">우리 집 경조사를 먼저 추가하세요</option>';
+    $("evSel").value=ui.ev||""; $("evEdit").hidden=!ui.ev;
+    $("fEvent").innerHTML='<option value="">연결 안 함</option>'+events.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.name)+' ('+esc(e.date)+')</option>'}).join("");
+    renderReturns();
+  }
+  function renderReturns(){
+    var ev=events.find(function(e){return e.id===ui.ev});
+    if(!ev){ $("evSum").innerHTML=""; $("retList").innerHTML='<div class="empty">[+ 우리 집 경조사]로 결혼·장례 같은 우리 집 행사를 만들면, 그동안 경조사비를 보낸 분들이 체크표로 나옵니다.</div>'; return; }
+    var got={}; evRows(ev.id).forEach(function(r){ got[r.person]=r; });
+    var gave={}; rows.forEach(function(r){ if(r.dir!=="out")return; var g=gave[r.person]=gave[r.person]||{name:r.person,rel:r.rel||"",sum:0,n:0,last:null}; g.sum+=+r.amount||0; g.n++; if(!g.last||r.date>g.last.date)g.last=r; if(r.rel&&!g.rel)g.rel=r.rel; });
+    var list=Object.keys(gave).map(function(k){return gave[k]});
+    Object.keys(got).forEach(function(k){ if(!gave[k]) list.push({name:k,rel:got[k].rel||"",sum:0,n:0,last:null,extra:true}); });
+    var doneN=list.filter(function(g){return got[g.name]}).length, owedN=list.filter(function(g){return !g.extra}).length, owedDone=list.filter(function(g){return !g.extra&&got[g.name]}).length;
+    var recv=sum(evRows(ev.id));
+    $("evSum").innerHTML='<div class="sumline num" style="margin:0"><span>받은 분 <b>'+doneN+'명</b></span><span>받은 합계 <b>'+man(recv)+'</b></span><span>보낸 분 중 돌려받음 <b>'+owedDone+' / '+owedN+'명</b></span></div>'+
+      '<div class="progress" aria-hidden="true"><span style="width:'+(owedN?owedDone/owedN*100:0)+'%"></span></div>';
+    var q=ui.rq.trim();
+    var shown=list.filter(function(g){ var d=!!got[g.name]; if(ui.rf==="todo"&&d)return false; if(ui.rf==="done"&&!d)return false; if(q&&g.name.indexOf(q)<0&&(g.rel||"").indexOf(q)<0)return false; return true; })
+      .sort(function(a,b){ var A=got[a.name]?1:0,B=got[b.name]?1:0; if(A!==B) return A-B; var la=a.last?a.last.date:"",lb=b.last?b.last.date:""; return la<lb?1:la>lb?-1:0; });
+    $("retList").innerHTML=shown.map(function(g){
+      var r=got[g.name], cid="ck_"+encodeURIComponent(g.name).replace(/%/g,"");
+      return '<div class="ret'+(r?' done':'')+(g.extra?' extra':'')+'" data-who="'+esc(g.name)+'"><input type="checkbox" id="'+cid+'" '+(r?'checked':'')+' aria-label="'+esc(g.name)+' 돌려받음">'+
+        '<label for="'+cid+'" style="color:inherit;font-size:inherit;gap:0"><span class="nm">'+esc(g.name)+'</span>'+
+        '<span class="sub num">'+(g.rel?esc(g.rel)+' · ':'')+(g.n?'보낸 '+man(g.sum)+(g.n>1?' ('+g.n+'번)':'')+' · '+esc(g.last.date)+' '+esc(g.last.detail||g.last.kind):'')+'</span></label>'+
+        '<span class="amtIn"><input type="number" inputmode="decimal" min="0" step="0.5" class="retAmt" value="'+(r?(+r.amount||0)/10000:'')+'" placeholder="'+(g.last?(+g.last.amount||0)/10000:'')+'" aria-label="'+esc(g.name)+' 받은 액수(만원)">만원</span></div>';
+    }).join("")||'<div class="empty">조건에 맞는 분이 없습니다.</div>';
+  }
+  function setReturn(name, amtMan){
+    var ev=events.find(function(e){return e.id===ui.ev}); if(!ev) return;
+    var r=rows.find(function(x){return x.dir==="in"&&x.event===ev.id&&x.person===name});
+    if(amtMan===null){ if(r) rows=rows.filter(function(x){return x!==r}); }
+    else{
+      var amt=Math.round(amtMan*10000); if(!(amt>0)) return false;
+      if(r){ r.amount=amt; }
+      else{
+        var g=rows.filter(function(x){return x.person===name&&x.rel}).pop();
+        rows.push({id:uid(),dir:"in",date:ev.date,person:name,rel:g?g.rel:"",kind:/결혼|혼례/.test(ev.name)?"결혼":/상$|장례|소천|별세/.test(ev.name)?"장례":/사고|입원|수술|병/.test(ev.name)?"위로":/돌|칠순|팔순|회갑|생일|위임|취임|개업/.test(ev.name)?"축하":"기타",
+          detail:ev.name,amount:amt,memo:"",event:ev.id,createdAt:Date.now()});
+      }
+    }
+    save(); return true;
+  }
+  $("retList").addEventListener("change",function(e){
+    var row=e.target.closest(".ret"); if(!row) return; var name=row.dataset.who, amtIn=row.querySelector(".retAmt");
+    if(e.target.type==="checkbox"){
+      if(e.target.checked){ var v=parseFloat(amtIn.value||amtIn.placeholder); if(!(v>0)){ e.target.checked=false; $("retMsg").textContent=name+" 받은 액수를 먼저 적어 주세요."; amtIn.focus(); return; } setReturn(name,v); $("retMsg").textContent=name+" "+v+"만원 받음으로 체크했습니다."; }
+      else { setReturn(name,null); $("retMsg").textContent=name+" 체크를 풀었습니다."; }
+    } else if(e.target===amtIn){
+      var v2=parseFloat(amtIn.value);
+      if(v2>0){ setReturn(name,v2); $("retMsg").textContent=name+" "+v2+"만원 받음으로 적었습니다."; }
+      else if(amtIn.value===""&&row.querySelector("input[type=checkbox]").checked){ setReturn(name,null); $("retMsg").textContent=name+" 체크를 풀었습니다."; }
+    }
+    render();
+  });
+  $("evSel").addEventListener("change",function(e){ ui.ev=e.target.value; $("evForm").hidden=true; renderReturns(); });
+  document.querySelectorAll("#retTabs button").forEach(function(b){ b.addEventListener("click",function(){ ui.rf=b.dataset.rf; document.querySelectorAll("#retTabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")}); renderReturns(); }); });
+  $("retQ").addEventListener("input",function(e){ ui.rq=e.target.value; renderReturns(); });
+  var evEditing=null, evDelArmed=false;
+  function openEv(ev){ evEditing=ev?ev.id:null; evDelArmed=false; $("evName").value=ev?ev.name:""; $("evDate").value=ev?ev.date:today(); $("evDel").hidden=!ev; $("evDel").textContent="삭제"; $("evForm").hidden=false; $("evName").focus(); }
+  $("evNew").addEventListener("click",function(){ openEv(null); });
+  $("evEdit").addEventListener("click",function(){ openEv(events.find(function(e){return e.id===ui.ev})); });
+  $("evCancel").addEventListener("click",function(){ $("evForm").hidden=true; });
+  $("evSave").addEventListener("click",function(){
+    var name=$("evName").value.trim(), date=$("evDate").value; if(!name||!date){ $("retMsg").textContent="경조사 이름과 날짜를 적어 주세요."; return; }
+    if(evEditing){ var ev=events.find(function(e){return e.id===evEditing}); ev.name=name; ev.date=date; rows.forEach(function(r){ if(r.event===ev.id){ r.detail=name; } }); }
+    else { var ne={id:"v"+Date.now().toString(36),name:name,date:date}; events.push(ne); ui.ev=ne.id; }
+    save(); $("evForm").hidden=true; render();
+  });
+  $("evDel").addEventListener("click",function(){
+    var n=evRows(evEditing).length;
+    if(!evDelArmed){ evDelArmed=true; $("evDel").textContent=n?"받은 기록 "+n+"건도 함께 삭제됩니다. 한 번 더 누르세요":"한 번 더 누르면 삭제"; return; }
+    var id=evEditing; rows=rows.filter(function(r){return r.event!==id}); events=events.filter(function(e){return e.id!==id}); ui.ev=null; save(); $("evForm").hidden=true; render();
+  });
+
+  function render(){ renderEvents(); renderKpis(); renderYearChart(); renderKinds(); renderPeople(); renderYears(); renderPersonBox(); renderList(); }
 
   // 필터
   document.querySelectorAll(".tabs button").forEach(function(b){ b.addEventListener("click",function(){ ui.dir=b.dataset.dir; document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")}); renderList(); }); });
@@ -354,11 +485,13 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
     $(r&&r.dir==="in"?"dirIn":"dirOut").checked=true;
     $("fDate").value=r?r.date:today(); $("fAmt").value=r?(+r.amount||0)/10000:"";
     $("fName").value=r?r.person:""; $("fRel").value=r?r.rel||"":""; $("fKind").value=r&&KINDS.indexOf(r.kind)>=0?r.kind:"결혼";
-    $("fDetail").value=r?r.detail||"":""; $("fMemo").value=r?r.memo||"":"";
+    $("fDetail").value=r?r.detail||"":""; $("fMemo").value=r?r.memo||"":""; $("fEvent").value=r&&r.event?r.event:""; syncEv();
     $("formTitle").textContent=r?"기록 고치기":"새 경조사 기록"; $("fDel").hidden=!r; $("fDel").textContent="삭제";
     if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
   }
   function closeForm(){ if(dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+  function syncEv(){ $("fEventWrap").hidden=!$("dirIn").checked; }
+  $("dirIn").addEventListener("change",syncEv); $("dirOut").addEventListener("change",syncEv);
   $("addBtn").addEventListener("click",function(){ openForm(null); });
   $("fCancel").addEventListener("click",closeForm);
   $("fDel").addEventListener("click",function(){
@@ -372,6 +505,7 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
     var old=ui.editId&&rows.find(function(x){return x.id===ui.editId});
     var r={id:old?old.id:uid(), dir:document.querySelector("input[name=dir]:checked").value, date:$("fDate").value, person:name, rel:$("fRel").value.trim(),
       kind:$("fKind").value, detail:$("fDetail").value.trim(), amount:amt, memo:$("fMemo").value.trim(), createdAt:old?old.createdAt:Date.now()};
+    if(r.dir==="in") r.event=$("fEvent").value;
     if(old) rows=rows.map(function(x){return x.id===old.id?r:x}); else rows.push(r);
     if(!save()){ $("formMsg").textContent="이 기기에 저장하지 못했습니다. 저장 공간을 확인해 주세요."; return; }
     closeForm(); render();
@@ -380,7 +514,7 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   // 백업
   function bk(t){ $("bkMsg").textContent=t; }
   $("exportBtn").addEventListener("click",function(){
-    var data=JSON.stringify({app:"gyeongjosa",version:1,exportedAt:today(),rows:rows},null,1);
+    var data=JSON.stringify({app:"gyeongjosa",version:2,exportedAt:today(),events:events,rows:rows},null,1);
     var blob=new Blob([data],{type:"application/json"}), name="경조사-백업-"+today()+".json";
     try{
       var file=new File([blob],name,{type:"application/json"});
@@ -392,21 +526,27 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   $("importBtn").addEventListener("click",function(){ $("importFile").click(); });
   $("importFile").addEventListener("change",function(e){
     var f=e.target.files[0]; if(!f)return;
-    f.text().then(function(t){ var d=JSON.parse(t); var list=Array.isArray(d)?d:d.rows; if(!Array.isArray(list))throw 0; merge(list); })
+    f.text().then(function(t){ var d=JSON.parse(t); var list=Array.isArray(d)?d:d.rows; if(!Array.isArray(list))throw 0; mergeEvents(d.events); merge(list); })
      .catch(function(){ bk("백업 파일을 읽지 못했습니다. 이 앱에서 저장한 .json 파일인지 확인해 주세요."); });
     e.target.value="";
   });
   function clean(r){
     var amt=Math.round(+r.amount||0);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!r.person||!(amt>0)) return null;
-    return {id:r.id||uid(), dir:r.dir==="in"?"in":"out", date:r.date, person:String(r.person).trim(), rel:r.rel||"", kind:KINDS.indexOf(r.kind)>=0?r.kind:"기타",
+    var o={id:r.id||uid(), dir:r.dir==="in"?"in":"out", date:r.date, person:String(r.person).trim(), rel:r.rel||"", kind:KINDS.indexOf(r.kind)>=0?r.kind:"기타",
       detail:r.detail||"", amount:amt, memo:r.memo||"", createdAt:r.createdAt||Date.now()};
+    if(o.dir==="in"&&r.event!==undefined) o.event=String(r.event);
+    return o;
+  }
+  function mergeEvents(list){
+    if(!Array.isArray(list)) return;
+    list.forEach(function(e){ if(e&&e.id&&e.name&&!events.some(function(x){return x.id===e.id})) events.push({id:String(e.id),name:String(e.name),date:String(e.date||"")}); });
   }
   function merge(list){
     var have={}, ids={}; rows.forEach(function(r){have[key(r)]=1; ids[r.id]=1});
     var added=0, skipped=0;
     list.forEach(function(x){ var r=clean(x); if(!r){skipped++;return} if(have[key(r)]){skipped++;return} if(ids[r.id])r.id=uid(); rows.push(r); have[key(r)]=1; ids[r.id]=1; added++; });
-    save(); render(); bk(added+"건을 넣었습니다."+(skipped?" 이미 있거나 읽을 수 없는 "+skipped+"건은 건너뛰었습니다.":""));
+    linkEvents(); save(); render(); bk(added+"건을 넣었습니다."+(skipped?" 이미 있거나 읽을 수 없는 "+skipped+"건은 건너뛰었습니다.":""));
     return added;
   }
 
@@ -455,7 +595,7 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   }
   $("pasteBtn").addEventListener("click",function(){
     var t=$("pasteBox").value;
-    if(/^\s*[\[{]/.test(t)){ try{ var d=JSON.parse(t); merge(Array.isArray(d)?d:d.rows||[]); $("pasteBox").value=""; return; }catch(_){ bk("붙여넣은 내용을 읽지 못했습니다."); return; } }
+    if(/^\s*[\[{]/.test(t)){ try{ var d=JSON.parse(t); mergeEvents(d.events); merge(Array.isArray(d)?d:d.rows||[]); $("pasteBox").value=""; return; }catch(_){ bk("붙여넣은 내용을 읽지 못했습니다."); return; } }
     var res=parseList(t), have={}; rows.forEach(function(r){have[key(r)]=1});
     var fresh=res.ok.filter(function(r){return !have[key(r)]});
     ui.pending=fresh;
@@ -482,6 +622,7 @@ textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);borde
   $("installClose").addEventListener("click",function(){ $("install").hidden=true; try{localStorage.setItem("gyeongjosa.installHidden","1")}catch(_){} });
   if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(function(){});
 
+  linkEvents(); save();
   render();
 })();
 </script>
