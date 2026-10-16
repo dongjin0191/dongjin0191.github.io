@@ -2,6 +2,7 @@
 <script>(function(){try{var u=navigator.userAgent;if(!/KAKAOTALK/i.test(u)||!/^https:$/.test(location.protocol)||window.top!==window)return;var h=location.href;if(/Android/i.test(u)){location.href='intent://'+h.replace(/^https:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(h)+';end'}else{location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(h)}}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233a2f52'/%3E%3Cpath d='M28 12h8v14h12v8H36v18h-8V34H16v-8h12z' fill='%23dec393'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&display=swap">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="남부시찰">
 <title>남부시찰 영상 모음</title>
 <style>
 :root{color-scheme:light;--navy:#3a2f52;--navy2:#55467a;--accent:#b68a45;--gold:#dec393;--bg:#f1eff5;--card:#fff;--ink:#182a3a;--muted:#5d7184;--line:#dbe3ea;--yt:#d93025}
@@ -113,4 +114,5 @@ document.getElementById('pls').innerHTML=D.playlists.filter(p=>p.n).sort((a,b)=>
 const toTop=document.getElementById('top');addEventListener('scroll',()=>{toTop.style.display=scrollY>600?'block':'none'},{passive:true});toTop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
 render();
 </script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
 </body></html>
