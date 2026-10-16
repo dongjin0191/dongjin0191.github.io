@@ -54,6 +54,9 @@ footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 16px 0;lin
 #how .note{display:none;background:#fff6e5;color:#8a5a00;border-radius:9px;padding:9px 11px;font-size:13px;text-align:left}#how .note.show{display:block}
 #how .other button{border:0;background:none;color:var(--blue);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
 #how .close{margin-top:10px;width:100%;border:0;border-radius:11px;padding:13px;background:var(--navy);color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.info{margin:8px 15px 0;padding:10px 12px;background:#f4f7fa;border-radius:10px;font-size:13.5px;line-height:1.65}.info b.hi{color:var(--bad)}.info b.ok{color:#2f8f5b}
+.rng{margin:10px 15px 0;border-collapse:collapse;font-size:12.5px;width:calc(100% - 30px)}.rng th,.rng td{border-bottom:1px solid #e3e9ef;padding:5px 6px;text-align:left}.rng th{color:var(--mut);font-weight:600}
+#bp-card>.note,#wt-card>.note{padding:6px 15px 14px;margin:0}
 .kpi.wide{grid-column:1/-1}.kpi .v.hi{color:var(--bad)}
 .bpbox{position:relative;padding:4px 6px 12px}.bpbox svg{display:block;width:100%;height:auto}.bpbox text{font-size:11px;fill:var(--mut);font-variant-numeric:tabular-nums}.bpempty{padding:6px 15px 14px;font-size:13px;color:var(--mut)}
 @media(min-width:700px){.kpis{grid-template-columns:repeat(4,1fr)}}
@@ -66,24 +69,33 @@ footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 16px 0;lin
 <div class="kpi"><div class="l">최근 7회 평균</div><div class="v"><span id="k-a7"></span><small>mg/dL</small></div><div class="s" id="k-p7"></div></div>
 <div class="kpi"><div class="l">현재 인슐린</div><div class="v"><span id="k-ins"></span><small>단위</small></div><div class="s">아침 식전 투여</div></div>
 <div class="kpi"><div class="l">전체 평균</div><div class="v"><span id="k-all"></span><small>mg/dL</small></div><div class="s" id="k-cnt"></div></div>
-<div class="kpi wide" id="k-bpcard"><div class="l">마지막 혈압</div><div class="v"><span id="k-bp"></span><small>mmHg</small></div><div class="s" id="k-bps"></div></div>
+<div class="kpi" id="k-bpcard"><div class="l">마지막 혈압</div><div class="v"><span id="k-bp"></span><small>mmHg</small></div><div class="s" id="k-bps"></div></div>
+<div class="kpi" id="k-wtcard"><div class="l">몸무게</div><div class="v"><span id="k-wt"></span><small>kg</small></div><div class="s" id="k-wts"></div></div>
 </section>
 <section class="card" id="chart-card"><div class="hd"><h2>날짜별 공복혈당과 인슐린</h2><p class="note">두 손가락으로 벌리면 확대되고, 옆으로 밀면 날짜가 이동합니다. 점을 누르면 그날 수치가 보입니다. 속이 빈 점은 기록이 없어 앞뒤 값으로 채운 추정값입니다.</p></div>
 <div class="range" role="group" aria-label="기간"><button type="button" data-d="7">최근 7일</button><button type="button" data-d="30">30일</button><button type="button" data-d="60">60일</button><button type="button" data-d="0" aria-pressed="true">전체</button></div>
 <div class="zoom"><button type="button" id="zout" aria-label="축소">－</button><span id="zlab"></span><button type="button" id="zin" aria-label="확대">＋</button><button type="button" id="zfull">⤢ 크게</button></div>
 <div class="legend"><span><i style="background:var(--blue)"></i>공복혈당</span><span><i style="background:var(--avg)"></i>7회 평균</span><span><i class="band"></i>목표 80–130</span><span><i class="ring"></i>추정값</span><span><i style="width:8px;height:8px;background:#8b5cf6;transform:rotate(45deg)"></i>식후</span><span><i style="background:var(--ins)"></i>인슐린</span></div>
 <div class="chart" id="chart"><div class="tip" id="tip"></div></div></section>
-<section class="card" id="bp-card"><div class="hd"><h2>혈압과 맥박</h2><p class="note">위 그래프와 같은 기간을 보여 줍니다. 점선은 고혈압 기준(수축기 140, 이완기 90)입니다.</p></div>
+<section class="card" id="bp-card"><div class="hd"><h2>혈압과 맥박</h2><p class="note">위 그래프와 같은 기간을 보여 줍니다. 빨강·보라 띠는 정상 혈압(수축기 90~120, 이완기 60~80), 초록 점선은 정상 맥박(60~100), 짧은 점선은 고혈압 기준(140/90)입니다.</p></div>
 <div class="legend"><span><i style="background:#c93c3c"></i>수축기</span><span><i style="background:#7c3aed"></i>이완기</span><span><i style="background:#2f8f5b"></i>맥박</span></div>
-<div class="bpbox" id="bpchart"></div><p class="bpempty" id="bpempty" hidden></p></section>
+<div class="bpbox" id="bpchart"></div><p class="bpempty" id="bpempty" hidden></p>
+<div class="info" id="bpinfo"></div>
+<table class="rng"><tr><th>구분</th><th>수축기</th><th>이완기</th></tr><tr><td>정상</td><td>120 미만</td><td>80 미만</td></tr><tr><td>주의</td><td>120~129</td><td>80 미만</td></tr><tr><td>고혈압 전단계</td><td>130~139</td><td>80~89</td></tr><tr><td>1기 고혈압</td><td>140~159</td><td>90~99</td></tr><tr><td>2기 고혈압</td><td>160 이상</td><td>100 이상</td></tr></table>
+<p class="note">대한고혈압학회 기준입니다. 맥박은 안정 시 1분에 60~100회가 정상입니다.</p></section>
+<section class="card" id="wt-card"><div class="hd"><h2>몸무게</h2><p class="note">키 168cm 기준입니다. 점선은 단계 목표입니다. 정상 체중(52.2~64.6kg)은 아직 그래프 아래쪽 범위 밖입니다.</p></div>
+<div class="bpbox" id="wtchart"></div><p class="bpempty" id="wtempty" hidden></p>
+<div class="info" id="wtinfo"></div>
+<table class="rng"><tr><th>BMI</th><th>판정</th><th>168cm 체중</th></tr><tr><td>18.5 미만</td><td>저체중</td><td>52.2kg 미만</td></tr><tr><td>18.5~22.9</td><td>정상</td><td>52.2~64.6kg</td></tr><tr><td>23~24.9</td><td>비만 전단계</td><td>64.7~70.5kg</td></tr><tr><td>25~29.9</td><td>1단계 비만</td><td>70.6~84.6kg</td></tr><tr><td>30~34.9</td><td>2단계 비만</td><td>84.7~98.7kg</td></tr><tr><td>35 이상</td><td>3단계 비만</td><td>98.8kg 이상</td></tr></table>
+<p class="note">대한비만학회 기준입니다. 체중을 5~10%만 줄여도 혈당과 혈압이 눈에 띄게 좋아집니다. 한 주에 0.5~1kg 정도가 무리 없는 속도입니다. 인슐린을 쓰고 있으니 식사량을 크게 줄일 때는 저혈당에 주의하고 담당 의사와 상의하세요.</p></section>
 <section class="card" id="table"><div class="hd"><h2>일별 기록</h2><p class="note">최근 날짜가 위에 있습니다. 빨강은 180 초과, 초록은 130 이하입니다. 회색 기울임은 추정값입니다.</p></div>
-<div class="tbl"><table><thead><tr><th>날짜</th><th>공복</th><th>인슐린</th><th>식후</th><th>혈압</th><th>맥박</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+<div class="tbl"><table><thead><tr><th>날짜</th><th>공복</th><th>인슐린</th><th>식후</th><th>혈압</th><th>맥박</th><th>체중</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div></section>
 <footer>수첩 기록을 옮겨 적은 자료입니다. 마지막 갱신 2026-10-17<br>평균과 요약 수치에는 추정값을 넣지 않았습니다.</footer>
 </main>
 <a class="top" href="#top">맨 위로 ↑</a>
 <script>
 var DATA=[["2026-07-10",210,16,null,0,""],["2026-07-11",199,16,null,0,""],["2026-07-12",236,16,null,0,""],["2026-07-13",195,18,219,0,"아침 식후 219"],["2026-07-14",170,20,null,0,""],["2026-07-15",180,20,null,0,""],["2026-07-16",165,20,null,0,""],["2026-07-17",163,22,null,0,""],["2026-07-18",191,22,null,0,""],["2026-07-19",148,24,null,0,""],["2026-07-20",161,24,null,0,""],["2026-07-21",171,24,null,0,""],["2026-07-22",166,24,null,0,""],["2026-07-23",185,24,null,0,""],["2026-07-24",123,24,null,0,""],["2026-07-25",155,24,null,1,""],["2026-07-26",186,24,null,0,""],["2026-07-27",156,24,null,0,""],["2026-07-28",143,24,null,0,""],["2026-07-29",153,24,null,0,""],["2026-07-30",124,24,null,0,""],["2026-07-31",177,24,null,0,""],["2026-08-01",190,24,null,0,""],["2026-08-02",129,24,null,0,""],["2026-08-03",121,24,null,0,""],["2026-08-04",123,24,null,0,""],["2026-08-05",138,24,null,0,""],["2026-08-06",158,24,null,0,""],["2026-08-07",136,24,null,0,""],["2026-08-08",148,24,null,0,""],["2026-08-09",139,24,null,0,""],["2026-08-10",158,24,null,0,""],["2026-08-11",138,24,null,0,""],["2026-08-12",138,24,null,0,""],["2026-08-13",165,24,null,0,""],["2026-08-14",190,24,null,0,""],["2026-08-15",145,24,null,0,""],["2026-08-16",190,24,null,0,""],["2026-08-17",184,24,null,0,""],["2026-08-18",181,24,null,0,""],["2026-08-19",192,24,null,0,""],["2026-08-20",138,24,null,0,""],["2026-08-21",191,24,null,0,""],["2026-08-22",166,24,null,0,""],["2026-08-23",147,24,null,0,""],["2026-08-24",193,24,null,0,""],["2026-08-25",210,24,null,0,""],["2026-08-26",165,24,null,0,""],["2026-08-27",139,24,null,0,""],["2026-08-28",138,24,null,0,""],["2026-08-29",192,24,null,0,""],["2026-08-30",175,24,null,0,""],["2026-08-31",184,24,null,0,""],["2026-09-01",188,24,null,0,""],["2026-09-02",145,24,null,0,""],["2026-09-03",137,24,null,0,""],["2026-09-04",152,26,null,0,""],["2026-09-05",150,26,null,0,""],["2026-09-06",153,26,null,0,""],["2026-09-07",180,26,null,0,""],["2026-09-08",150,26,null,0,""],["2026-09-09",161,26,null,0,""],["2026-09-10",163,26,null,0,""],["2026-09-11",165,26,null,0,""],["2026-09-12",151,26,null,0,""],["2026-09-13",159,26,null,0,""],["2026-09-14",185,26,null,0,""],["2026-09-15",116,26,null,0,""],["2026-09-16",145,26,null,0,""],["2026-09-17",165,26,null,0,""],["2026-09-18",167,26,null,0,""],["2026-09-19",166,26,null,0,""],["2026-09-20",186,26,null,0,""],["2026-09-21",170,26,null,0,""],["2026-09-22",151,26,null,0,""],["2026-09-23",160,26,null,1,""],["2026-09-24",168,26,null,1,""],["2026-09-25",177,26,null,1,""],["2026-09-26",185,26,null,0,""],["2026-09-27",158,26,null,0,""],["2026-09-28",170,26,null,1,""],["2026-09-29",183,26,null,1,""],["2026-09-30",195,26,null,0,""],["2026-10-01",190,28,null,0,""],["2026-10-02",205,28,null,0,""],["2026-10-03",203,28,null,0,""],["2026-10-04",182,28,null,0,""],["2026-10-05",204,28,null,0,""],["2026-10-06",205,28,null,0,""],["2026-10-07",191,28,null,0,""],["2026-10-08",237,28,null,0,""],["2026-10-09",209,28,null,0,""],["2026-10-10",237,28,null,0,""],["2026-10-11",244,28,null,0,""],["2026-10-12",212,28,null,0,""],["2026-10-13",182,30,null,0,""],["2026-10-14",171,30,null,0,""],["2026-10-15",120,30,null,0,""],["2026-10-16",140,30,null,0,""],["2026-10-17",139,26,null,0,""]];
-var BP=[["2026-10-17",165,115,68]];
+var BP=[["2026-10-17",165,115,68,111.0]];
 (function(){
 var wk=['일','월','화','수','목','금','토'];
 function P(s){var a=s.split('-');return new Date(Date.UTC(+a[0],a[1]-1,+a[2]))}
@@ -108,10 +120,12 @@ var roll=[];real.forEach(function(r,i){if(i<6)return;roll.push({d:r.d,v:avg(real
 // blood pressure
 function key(d){return d.toISOString().slice(0,10)}
 var bpm={};BP.forEach(function(b){bpm[b[0]]=b});
-if(BP.length){var lb=BP[BP.length-1],bd=P(lb[0]);$("k-bp").textContent=lb[1]+"/"+lb[2];if(lb[1]>=140||lb[2]>=90)$("k-bp").parentNode.classList.add("hi");$("k-bps").textContent=mdw(bd)+(lb[3]!=null?" · 맥박 "+lb[3]:"")+" · 기준 140/90"}else $("k-bpcard").hidden=true;
+var BPS=BP.filter(function(b){return b[1]!=null}),WTS=BP.filter(function(b){return b[4]!=null});
+if(WTS.length){var lw=WTS[WTS.length-1];$("k-wt").textContent=lw[4];var pw0=WTS.length>1?WTS[WTS.length-2][4]:null;$("k-wts").textContent="BMI "+bmi(lw[4])+" · "+mdw(P(lw[0]))+(pw0!=null?" · 이전보다 "+(lw[4]-pw0>0?"+":"")+(Math.round((lw[4]-pw0)*10)/10):"")}else $("k-wtcard").hidden=true;
+if(BPS.length){var lb=BPS[BPS.length-1],bd=P(lb[0]);$("k-bp").textContent=lb[1]+"/"+lb[2];if(lb[1]>=140||lb[2]>=90)$("k-bp").parentNode.classList.add("hi");$("k-bps").textContent=mdw(bd)+(lb[3]!=null?" · 맥박 "+lb[3]:"")+" · 기준 140/90"}else $("k-bpcard").hidden=true;fillInfo();
 // table
 rows.slice().reverse().forEach(function(r){var tr=document.createElement('tr');if(r.e)tr.className='est';
- [[mdw(r.d),''],[r.f==null?'':r.f,r.e||r.f==null?'':r.f>180?'hi':r.f<=130?'ok':''],[r.u==null?'':r.u,''],[r.p==null?'':r.p,''],[bpm[key(r.d)]?bpm[key(r.d)][1]+'/'+bpm[key(r.d)][2]:'',bpm[key(r.d)]&&(bpm[key(r.d)][1]>=140||bpm[key(r.d)][2]>=90)?'hi':''],[bpm[key(r.d)]&&bpm[key(r.d)][3]!=null?bpm[key(r.d)][3]:'',''],[r.e?'추정값':r.n,'memo']].forEach(function(c){var td=document.createElement('td');td.textContent=c[0];if(c[1])td.className=c[1];tr.appendChild(td)});
+ [[mdw(r.d),''],[r.f==null?'':r.f,r.e||r.f==null?'':r.f>180?'hi':r.f<=130?'ok':''],[r.u==null?'':r.u,''],[r.p==null?'':r.p,''],[bpm[key(r.d)]?bpm[key(r.d)][1]+'/'+bpm[key(r.d)][2]:'',bpm[key(r.d)]&&(bpm[key(r.d)][1]>=140||bpm[key(r.d)][2]>=90)?'hi':''],[bpm[key(r.d)]&&bpm[key(r.d)][3]!=null?bpm[key(r.d)][3]:'',''],[bpm[key(r.d)]&&bpm[key(r.d)][4]!=null?bpm[key(r.d)][4]:'',''],[r.e?'추정값':r.n,'memo']].forEach(function(c){var td=document.createElement('td');td.textContent=c[0];if(c[1])td.className=c[1];tr.appendChild(td)});
  $('tb').appendChild(tr)});
 // chart
 var NS='http://www.w3.org/2000/svg',box=$('chart'),tip=$('tip'),card=$('chart-card'),DAY=864e5,MINS=6*DAY;
@@ -155,11 +169,11 @@ function draw(){
  for(var dd=d0;T0+dd*DAY<=vb;dd+=step){var D=new Date(T0+dd*DAY),xt=el('text',{x:X(D),y:y2t+H2+17,'text-anchor':'middle'},s);xt.textContent=md(D)}
  rule=el('line',{y1:m.t,y2:y2t+H2,stroke:'#9aa9b8',display:'none'},s);dot=el('circle',{r:5,fill:'#2563c9',display:'none'},s);
  geo={W:W,l:m.l+10,pw:pw-20,X:X,Y:Y,t:m.t,svg:s};
- box.appendChild(s);drawBP()}
+ box.appendChild(s);drawBP();drawWT()}
 
 function drawBP(){
  var bx=$('bpchart'),old=bx.querySelector('svg');if(old)old.remove();var em=$('bpempty');
- var R=BP.map(function(b){return{d:P(b[0]),s:b[1],di:b[2],pu:b[3]}}).filter(function(r){var t=r.d.getTime();return t>=va-DAY&&t<=vb+DAY});
+ var R=BP.filter(function(b){return b[1]!=null}).map(function(b){return{d:P(b[0]),s:b[1],di:b[2],pu:b[3]}}).filter(function(r){var t=r.d.getTime();return t>=va-DAY&&t<=vb+DAY});
  var V=R.filter(function(r){var t=r.d.getTime();return t>=va&&t<=vb});
  if(!V.length){em.hidden=false;em.textContent=BP.length?'이 기간에는 혈압 기록이 없습니다.':'아직 혈압 기록이 없습니다.';bx.hidden=true;return}
  em.hidden=true;bx.hidden=false;
@@ -170,11 +184,50 @@ function drawBP(){
  var s=el('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H});
  var cp=el('clipPath',{id:'clpbp'},el('defs',{},s));el('rect',{x:m.l-6,y:0,width:pw+12,height:H},cp);
  for(var v=lo+20;v<=top;v+=40){el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:'#e3e9ef'},s);var tx=el('text',{x:m.l-5,y:Y(v)+4,'text-anchor':'end'},s);tx.textContent=v}
+ [[90,120,'#c93c3c'],[60,80,'#7c3aed']].forEach(function(q){el('rect',{x:m.l,width:pw,y:Y(q[1]),height:Y(q[0])-Y(q[1]),fill:q[2],opacity:.09},s)});
+ [60,100].forEach(function(v){el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:'#2f8f5b','stroke-dasharray':'1 4','stroke-width':1.5,opacity:.8},s)});
  [[140,'#c93c3c'],[90,'#7c3aed']].forEach(function(q){el('line',{x1:m.l,x2:W-m.r,y1:Y(q[0]),y2:Y(q[0]),stroke:q[1],'stroke-dasharray':'4 4',opacity:.6},s)});
  var g=el('g',{'clip-path':'url(#clpbp)'},s),few=V.length<=14;
  [['s','#c93c3c'],['di','#7c3aed'],['pu','#2f8f5b']].forEach(function(k){
   var pts=R.filter(function(r){return r[k[0]]!=null});if(pts.length>1)el('path',{d:'M'+pts.map(function(r){return X(r.d)+','+Y(r[k[0]])}).join('L'),fill:'none',stroke:k[1],'stroke-width':2,'stroke-linejoin':'round'},g);
   pts.forEach(function(r){el('circle',{cx:X(r.d),cy:Y(r[k[0]]),r:3.5,fill:k[1]},g);if(few){var rx=X(r.d),ed=rx>W-m.r-40,lt=el('text',{x:ed?rx-7:rx+7,y:Y(r[k[0]])+4,'text-anchor':ed?'end':'start',style:'fill:'+k[1]+';font-weight:700'},g);lt.textContent=r[k[0]]}})});
+ var span=(vb-va)/DAY,n=Math.max(3,Math.floor(pw/64)),step=Math.max(1,Math.ceil(span/n)),d0=Math.ceil((va-T0)/DAY);
+ for(var dd=d0;T0+dd*DAY<=vb;dd+=step){var D=new Date(T0+dd*DAY),xt=el('text',{x:X(D),y:m.t+H1+17,'text-anchor':'middle'},s);xt.textContent=md(D)}
+ bx.appendChild(s)}
+function bmi(w){return Math.round(w/(1.68*1.68)*10)/10}
+function bmiCls(b){return b<18.5?'저체중':b<23?'정상':b<25?'비만 전단계':b<30?'1단계 비만':b<35?'2단계 비만':'3단계 비만'}
+function fl(x){return Math.floor(x*10)/10}
+function wtGoals(){var W0=BP.filter(function(b){return b[4]!=null});if(!W0.length)return[];var b0=W0[0][4];
+ return [[Math.round(b0*.95),'1단계 5% 감량'],[Math.round(b0*.9),'2단계 10% 감량'],[fl(35*(1.68*1.68)),'3단계 BMI 35 미만'],[fl(30*(1.68*1.68)),'4단계 BMI 30 미만'],[fl(25*(1.68*1.68)),'5단계 BMI 25 미만'],[fl(22.9*(1.68*1.68)),'6단계 정상 체중']].sort(function(a,b){return b[0]-a[0]})}
+function bpCls(s,d){return s>=160||d>=100?'2기 고혈압':s>=140||d>=90?'1기 고혈압':s>=130||d>=80?'고혈압 전단계':s>=120?'주의 혈압':'정상'}
+function fillInfo(){
+ var B=BP.filter(function(b){return b[1]!=null});
+ if(B.length){var l=B[B.length-1],c=bpCls(l[1],l[2]),pu=l[3];
+  $('bpinfo').innerHTML='마지막 혈압 <b class="'+(c==='정상'?'ok':'hi')+'">'+l[1]+'/'+l[2]+' · '+c+'</b>'+(pu!=null?'<br>맥박 <b class="'+(pu>=60&&pu<=100?'ok':'hi')+'">'+pu+'회 · '+(pu<60?'느림':pu>100?'빠름':'정상')+'</b>':'')+(c==='정상'?'':'<br>목표는 130/80 미만입니다. 이 수치가 계속되면 담당 의사에게 알려 주세요.');}
+ else $('bpinfo').hidden=true;
+ var Wr=BP.filter(function(b){return b[4]!=null});
+ if(Wr.length){var w=Wr[Wr.length-1][4],b=bmi(w),G=wtGoals(),nx=G.filter(function(q){return q[0]<w})[0];
+  $('wtinfo').innerHTML='지금 <b class="hi">'+w+'kg · BMI '+b+' · '+bmiCls(b)+'</b><br>정상 체중까지 '+Math.round((w-fl(22.9*(1.68*1.68)))*10)/10+'kg'+(nx?'<br>다음 목표 <b>'+nx[1]+' '+nx[0]+'kg</b> (앞으로 '+Math.round((w-nx[0])*10)/10+'kg)':'')+'<br>단계 목표 '+G.map(function(q){return (q[0]>=w?'✓ ':'')+q[0]}).join(' → ');}
+ else $('wtinfo').hidden=true}
+function drawWT(){
+ var bx=$('wtchart'),old=bx.querySelector('svg');if(old)old.remove();var em=$('wtempty');
+ var R=BP.filter(function(b){return b[4]!=null}).map(function(b){return{d:P(b[0]),w:b[4]}}).filter(function(r){var t=r.d.getTime();return t>=va-DAY&&t<=vb+DAY});
+ var V=R.filter(function(r){var t=r.d.getTime();return t>=va&&t<=vb});
+ if(!V.length){em.hidden=false;em.textContent=BP.some(function(b){return b[4]!=null})?'이 기간에는 몸무게 기록이 없습니다.':'아직 몸무게 기록이 없습니다.';bx.hidden=true;return}
+ em.hidden=true;bx.hidden=false;
+ var W=Math.max(300,bx.clientWidth-12),H1=140,m={t:12,r:12,b:24,l:34},H=m.t+H1+m.b,pw=W-m.l-m.r;
+ function X(d){return m.l+10+(d.getTime()-va)/(vb-va)*(pw-20)}
+ var mn=Math.min.apply(null,V.map(function(r){return r.w})),mx=Math.max.apply(null,V.map(function(r){return r.w}));
+ var GL=wtGoals().filter(function(q){return q[0]<mn});var g1=GL.length?GL[0][0]:mn;
+ var lo=Math.floor((Math.min(mn-3,g1-2))/2)*2,hi=Math.ceil((mx+3)/2)*2;
+ function Y(v){return m.t+H1-(v-lo)/(hi-lo)*H1}
+ var s=el('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H});
+ var cp=el('clipPath',{id:'clpwt'},el('defs',{},s));el('rect',{x:m.l-6,y:0,width:pw+12,height:H},cp);
+ var st=Math.max(1,Math.ceil((hi-lo)/4));for(var v=lo;v<=hi;v+=st){el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:'#e3e9ef'},s);var tx=el('text',{x:m.l-5,y:Y(v)+4,'text-anchor':'end'},s);tx.textContent=v}
+ GL.forEach(function(q){if(q[0]<lo)return;el('line',{x1:m.l,x2:W-m.r,y1:Y(q[0]),y2:Y(q[0]),stroke:'#b45309','stroke-dasharray':'4 4',opacity:.7},s);var gt=el('text',{x:m.l+4,y:Y(q[0])-4,style:'fill:#b45309'},s);gt.textContent=q[1]+' '+q[0]+'kg'});
+ var g=el('g',{'clip-path':'url(#clpwt)'},s),few=V.length<=14;
+ if(R.length>1)el('path',{d:'M'+R.map(function(r){return X(r.d)+','+Y(r.w)}).join('L'),fill:'none',stroke:'#0f766e','stroke-width':2,'stroke-linejoin':'round'},g);
+ R.forEach(function(r){el('circle',{cx:X(r.d),cy:Y(r.w),r:3.5,fill:'#0f766e'},g);if(few){var rx=X(r.d),ed=rx>W-m.r-40,lt=el('text',{x:ed?rx-7:rx+7,y:Y(r.w)+4,'text-anchor':ed?'end':'start',style:'fill:#0f766e;font-weight:700'},g);lt.textContent=r.w}});
  var span=(vb-va)/DAY,n=Math.max(3,Math.floor(pw/64)),step=Math.max(1,Math.ceil(span/n)),d0=Math.ceil((va-T0)/DAY);
  for(var dd=d0;T0+dd*DAY<=vb;dd+=step){var D=new Date(T0+dd*DAY),xt=el('text',{x:X(D),y:m.t+H1+17,'text-anchor':'middle'},s);xt.textContent=md(D)}
  bx.appendChild(s)}
