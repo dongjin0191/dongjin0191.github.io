@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2c4a78">
+<meta name="description" content="보낸 경조사비와 받은 경조사비를 사람별로 기록하는 개인 장부">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="경조사">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>경조사 장부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@800&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 한 열짜리 장부: 요약 → 연도 그래프 → 종류 → 내역 → 사람별 → 백업. 기록은 이 기기에만 저장됩니다. */
+:root{
+  color-scheme:light;
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#1b222c; --muted:#5f6b7a; --line:#dde2e8;
+  --out:#2c4a78; --out-soft:#e3e9f3; --in:#23735f; --in-soft:#dff0ea;
+  --wed:#9c4a64; --fun:#4c5560; --cel:#8a6a1f; --etc:#6b5a8e; --warn:#a3402f;
+  --display:"Nanum Myeongjo","AppleMyungjo","Batang",serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12161c; --paper:#1a2029; --ink:#e7ebf0; --muted:#98a3b2; --line:#2c3440;
+  --out:#8fb0e6; --out-soft:#24324a; --in:#6cc7aa; --in-soft:#1c3a32;
+  --wed:#e09ab0; --fun:#b3bcc7; --cel:#dcbb6b; --etc:#b8a5e0; --warn:#ec8b78; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding:calc(16px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--display);font-weight:800;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:26px} h2{font-size:17px}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;flex-wrap:wrap}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.note{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column}
+.kpi .lab{font-size:12px;color:var(--muted)}
+.kpi .val{font-family:var(--display);font-size:24px;font-weight:800;line-height:1.3}
+.kpi .sub{font-size:12px;color:var(--muted)}
+.kpi.out .val{color:var(--out)} .kpi.in .val{color:var(--in)}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+svg{display:block;width:100%;height:auto}
+svg text{fill:var(--muted);font-family:var(--body);font-size:11px}
+svg .vl{fill:var(--ink);font-weight:600}
+.kinds{display:flex;flex-direction:column;gap:10px}
+.krow{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center}
+.kbar{height:12px;background:var(--line);border-radius:3px;overflow:hidden}
+.kbar span{display:block;height:100%}
+.krow .amt{font-size:13px;text-align:right;white-space:nowrap}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;line-height:18px}
+.k-결혼{color:var(--wed)} .k-장례{color:var(--fun)} .k-축하{color:var(--cel)} .k-위로{color:var(--etc)} .k-기타{color:var(--muted)}
+.dir{font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.dir.out{background:var(--out-soft);color:var(--out)} .dir.in{background:var(--in-soft);color:var(--in)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
+.tabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tabs button{border:0;border-radius:0;padding:7px 12px;font-size:13px;color:var(--muted);background:var(--paper)}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.filters select{width:auto}
+.filters input{flex:1;min-width:140px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--out);outline-offset:1px}
+button.primary{background:var(--out);border-color:var(--out);color:var(--paper);font-weight:600}
+button.danger{color:var(--warn)}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:11px 2px;border-bottom:1px solid var(--line);text-align:left;background:none;border-radius:0;border-left:0;border-right:0;border-top:0;width:100%}
+.item:last-child{border-bottom:0}
+.item .top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.item .nm{font-weight:600}
+.item .amt{font-weight:600;text-align:right;align-self:center;grid-row:span 2}
+.item .amt.in{color:var(--in)}
+.item .sub{font-size:12px;color:var(--muted);min-width:0}
+.sumline{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.sumline b{color:var(--ink)}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.person{text-align:left;display:flex;flex-direction:column;padding:9px 12px}
+.person .nm{font-weight:600}
+.person .meta{font-size:12px;color:var(--muted)}
+.person.both{border-color:var(--in)}
+#personBox{border:1.5px solid var(--out);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+#personBox ol{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+#personBox li{display:grid;grid-template-columns:84px 40px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}
+.empty{color:var(--muted);padding:20px 0;text-align:center}
+.fab{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:5;
+  background:var(--out);color:var(--paper);border:0;border-radius:999px;padding:14px 20px;font-weight:600;font-size:16px;box-shadow:0 6px 20px rgba(20,30,50,.25)}
+dialog{border:0;border-radius:16px;padding:0;width:min(520px,calc(100vw - 24px));background:var(--paper);color:var(--ink);max-height:calc(100vh - 40px)}
+dialog::backdrop{background:rgba(10,15,25,.45)}
+dialog form{display:flex;flex-direction:column;gap:10px;padding:18px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg label{flex-direction:row;justify-content:center;padding:9px;cursor:pointer;font-size:14px;font-weight:600}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label:has(input[value=out]:checked){background:var(--out-soft);color:var(--out)}
+.seg label:has(input[value=in]:checked){background:var(--in-soft);color:var(--in)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns .primary{flex:1}
+#formMsg,#bkMsg{font-size:13px;color:var(--muted);min-height:18px}
+textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-height:120px}
+.backup{display:flex;flex-direction:column;gap:10px}
+.install{background:var(--out-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.install b{color:var(--out)}
+@media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>경조사 장부</h1><p>보낸 돈과 받은 돈을 사람별로 모아 봅니다.</p></div>
+    <span class="note" id="state"></span>
+  </header>
+
+  <div class="install" id="install" hidden>
+    <div><b>홈 화면에 앱으로 추가하기</b></div>
+    <div id="installText"></div>
+    <div class="btns"><button type="button" class="primary" id="installBtn" hidden>앱 설치</button><button type="button" id="installClose">닫기</button></div>
+  </div>
+
+  <section class="kpis" aria-label="요약">
+    <div class="kpi out"><span class="lab">보낸 경조사비</span><span class="val num" id="kOut">0원</span><span class="sub num" id="kOutN"></span></div>
+    <div class="kpi in"><span class="lab">받은 경조사비</span><span class="val num" id="kIn">0원</span><span class="sub num" id="kInN"></span></div>
+    <div class="kpi"><span class="lab" id="kYearLab">올해 보낸 금액</span><span class="val num" id="kYear">0원</span><span class="sub num" id="kYearN"></span></div>
+    <div class="kpi"><span class="lab">한 건 평균</span><span class="val num" id="kAvg">–</span><span class="sub" id="kAvgSub"></span></div>
+  </section>
+
+  <section class="panel">
+    <div class="phead"><h2>해마다 주고받은 경조사비</h2>
+      <div class="legend"><span><i style="background:var(--out)"></i>보낸</span><span><i style="background:var(--in)"></i>받은</span></div></div>
+    <div id="yearChart"></div>
+  </section>
+
+  <section class="panel">
+    <div class="phead"><h2>종류별 보낸 금액</h2><span class="note" id="kindNote"></span></div>
+    <div class="kinds" id="kinds"></div>
+  </section>
+
+  <section class="panel" id="listPanel">
+    <div class="phead"><h2>경조사 내역</h2>
+      <div class="filters">
+        <div class="tabs" role="group" aria-label="구분">
+          <button type="button" data-dir="all" aria-pressed="true">전체</button>
+          <button type="button" data-dir="out" aria-pressed="false">보낸</button>
+          <button type="button" data-dir="in" aria-pressed="false">받은</button>
+        </div>
+        <select id="yearSel" aria-label="연도"><option value="all">전체 연도</option></select>
+        <input id="q" type="search" placeholder="이름·내용 검색" aria-label="검색">
+      </div>
+    </div>
+    <div id="personBox" hidden></div>
+    <div class="list" id="list"></div>
+    <div class="sumline num" id="sumline"></div>
+  </section>
+
+  <section class="panel">
+    <div class="phead"><h2>사람별</h2><span class="note">초록 테두리는 서로 주고받은 분입니다.</span></div>
+    <div class="people" id="people"></div>
+  </section>
+
+  <section class="panel backup">
+    <div class="phead" style="margin:0"><h2>백업과 불러오기</h2></div>
+    <p class="note" style="margin:0">기록은 이 휴대폰에만 저장됩니다. 폰을 바꾸거나 앱을 지우기 전에 백업 파일을 저장해 두세요.</p>
+    <div class="btns">
+      <button type="button" id="exportBtn">백업 파일 저장</button>
+      <input type="file" id="importFile" accept=".json,application/json" aria-label="백업 파일 선택" hidden>
+      <button type="button" id="importBtn">백업 파일 불러오기</button>
+    </div>
+    <label for="pasteBox">메모장 목록 붙여넣기 (예: 57.261017,정준택목사,모친상-5만원)</label>
+    <textarea id="pasteBox" placeholder="경조사 누적 리스트를 그대로 붙여넣으세요. '받은 경조사비' 줄 아래는 받은 돈으로 들어갑니다."></textarea>
+    <div class="btns"><button type="button" id="pasteBtn">붙여넣은 목록 확인</button><button type="button" class="primary" id="pasteSave" hidden>추가하기</button></div>
+    <div id="bkMsg" role="status"></div>
+    <div class="list" id="pastePreview"></div>
+  </section>
+</div>
+
+<button type="button" class="fab" id="addBtn">+ 기록</button>
+
+<dialog id="dlg">
+  <form id="f" method="dialog" autocomplete="off">
+    <h2 id="formTitle">새 경조사 기록</h2>
+    <div class="seg" role="radiogroup" aria-label="구분">
+      <label><input type="radio" name="dir" id="dirOut" value="out" checked>보낸 돈</label>
+      <label><input type="radio" name="dir" id="dirIn" value="in">받은 돈</label>
+    </div>
+    <div class="row2">
+      <label>날짜<input type="date" id="fDate" required></label>
+      <label>금액 (만원)<input type="number" id="fAmt" min="0" step="0.5" inputmode="decimal" placeholder="5" required></label>
+    </div>
+    <label>이름<input id="fName" list="names" placeholder="예: 김원정 목사" required></label>
+    <label>관계·소속<input id="fRel" list="rels" placeholder="예: 동기연, 총신동기, 친척"></label>
+    <div class="row2">
+      <label>종류<select id="fKind"><option>결혼</option><option>장례</option><option>축하</option><option>위로</option><option>기타</option></select></label>
+      <label>내용<input id="fDetail" placeholder="예: 딸결혼, 부친상"></label>
+    </div>
+    <label>메모<input id="fMemo" placeholder="예: 참석·식사"></label>
+    <div id="formMsg" role="status"></div>
+    <div class="btns">
+      <button type="submit" class="primary" id="fSave" value="save">저장</button>
+      <button type="button" id="fCancel">닫기</button>
+      <button type="button" class="danger" id="fDel" hidden>삭제</button>
+    </div>
+  </form>
+</dialog>
+<datalist id="names"></datalist><datalist id="rels"></datalist>
+
+<script>
+(function(){
+  var KEY = "gyeongjosa.rows.v1";
+  var KINDS = ["결혼","장례","축하","위로","기타"];
+  var KCOL = {"결혼":"var(--wed)","장례":"var(--fun)","축하":"var(--cel)","위로":"var(--etc)","기타":"var(--muted)"};
+  var rows = load();
+  var ui = {more:false, morePeople:false, dir:"all", year:"all", q:"", person:null, editId:null, delArmed:false, pending:null};
+  var $ = function(id){return document.getElementById(id)};
+  var esc = function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+  var THIS_YEAR = String(new Date().getFullYear());
+
+  function load(){ try{ var v = JSON.parse(localStorage.getItem(KEY)||"[]"); return Array.isArray(v)?v:[]; }catch(_){ return []; } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(rows)); return true; }catch(_){ return false; } }
+  function uid(){ return "e"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function man(won){ var m = (+won||0)/10000; return (Math.round(m*10)/10).toLocaleString("ko-KR")+"만원"; }
+  function today(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function sum(l){ return l.reduce(function(a,r){return a+(+r.amount||0)},0); }
+  function byDir(d){ return rows.filter(function(r){return r.dir===d}); }
+  function key(r){ return r.dir+"|"+r.date+"|"+String(r.person).replace(/\s|님/g,"")+"|"+r.amount; }
+
+  function filtered(){
+    var q = ui.q.trim().toLowerCase();
+    return rows.filter(function(r){
+      if(ui.dir!=="all" && r.dir!==ui.dir) return false;
+      if(ui.year!=="all" && String(r.date).slice(0,4)!==ui.year) return false;
+      if(ui.person && r.person!==ui.person) return false;
+      if(q){ var h=(r.person+" "+(r.rel||"")+" "+(r.detail||"")+" "+(r.memo||"")+" "+r.kind).toLowerCase(); if(h.indexOf(q)<0) return false; }
+      return true;
+    }).sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0); });
+  }
+
+  function renderKpis(){
+    var out=byDir("out"), inn=byDir("in"), yr=out.filter(function(r){return String(r.date).slice(0,4)===THIS_YEAR});
+    $("kOut").textContent=man(sum(out)); $("kOutN").textContent=out.length+"건";
+    $("kIn").textContent=man(sum(inn)); $("kInN").textContent=inn.length+"건";
+    $("kYearLab").textContent=THIS_YEAR+"년 보낸 금액"; $("kYear").textContent=man(sum(yr)); $("kYearN").textContent=yr.length+"건";
+    $("kAvg").textContent=out.length?man(sum(out)/out.length):"–";
+    var first=out.map(function(r){return r.date}).sort()[0];
+    $("kAvgSub").textContent=first?"보낸 돈 기준, "+first.slice(0,4)+"년부터":"";
+    $("state").textContent=rows.length?"기록 "+rows.length+"건":"";
+  }
+
+  function renderYearChart(){
+    var ys={}; rows.forEach(function(r){ var y=String(r.date).slice(0,4); if(!/^\d{4}$/.test(y))return; ys[y]=ys[y]||{out:0,in:0,n:0}; ys[y][r.dir]+=+r.amount||0; if(r.dir==="out")ys[y].n++; });
+    var keys=Object.keys(ys).sort();
+    if(!keys.length){ $("yearChart").innerHTML='<div class="empty">기록을 넣으면 연도별 막대가 그려집니다.</div>'; return; }
+    var W=560,H=230,pl=40,pr=6,pt=20,pb=36,cw=W-pl-pr,ch=H-pt-pb;
+    var max=Math.max.apply(null,keys.map(function(k){return Math.max(ys[k].out,ys[k].in)}));
+    var step=max<=1000000?200000:max<=2000000?500000:1000000, top=Math.ceil(max/step)*step||step;
+    var y=function(v){return pt+ch-(v/top)*ch}, band=cw/keys.length, bw=Math.min(30,band*.34);
+    var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="연도별 경조사비">';
+    for(var t=0;t<=top;t+=step){ s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(t)+'" y2="'+y(t)+'" stroke="var(--line)"/><text x="'+(pl-6)+'" y="'+(y(t)+4)+'" text-anchor="end">'+(t/10000)+'만</text>'; }
+    keys.forEach(function(k,i){
+      var cx=pl+band*i+band/2,o=ys[k].out,n=ys[k].in;
+      s+='<rect x="'+(cx-bw-1)+'" y="'+y(o)+'" width="'+bw+'" height="'+(y(0)-y(o))+'" fill="var(--out)" rx="2"/>';
+      if(o)s+='<text class="vl" x="'+(cx-bw/2-1)+'" y="'+(y(o)-5)+'" text-anchor="middle">'+Math.round(o/10000)+'</text>';
+      if(n){ s+='<rect x="'+(cx+1)+'" y="'+y(n)+'" width="'+bw+'" height="'+(y(0)-y(n))+'" fill="var(--in)" rx="2"/><text class="vl" x="'+(cx+bw/2+1)+'" y="'+(y(n)-5)+'" text-anchor="middle">'+Math.round(n/10000)+'</text>'; }
+      s+='<text x="'+cx+'" y="'+(H-pb+16)+'" text-anchor="middle">'+k+'</text><text x="'+cx+'" y="'+(H-pb+30)+'" text-anchor="middle">'+ys[k].n+'건</text>';
+    });
+    $("yearChart").innerHTML=s+'</svg>';
+  }
+
+  function renderKinds(){
+    var out=byDir("out"), by={}; KINDS.forEach(function(k){by[k]={a:0,n:0}});
+    out.forEach(function(r){ var k=KINDS.indexOf(r.kind)>=0?r.kind:"기타"; by[k].a+=+r.amount||0; by[k].n++; });
+    var max=Math.max.apply(null,KINDS.map(function(k){return by[k].a}))||1;
+    $("kinds").innerHTML=KINDS.filter(function(k){return by[k].n}).map(function(k){
+      return '<div class="krow"><span class="chip k-'+k+'">'+k+'</span><div class="kbar"><span style="width:'+(by[k].a/max*100)+'%;background:'+KCOL[k]+'"></span></div><span class="amt num">'+man(by[k].a)+' · '+by[k].n+'건</span></div>';
+    }).join("")||'<div class="empty">보낸 기록이 아직 없습니다.</div>';
+    $("kindNote").textContent=out.length?"합계 "+man(sum(out)):"";
+  }
+
+  function people(){
+    var m={}; rows.forEach(function(r){ var p=m[r.person]=m[r.person]||{name:r.person,rel:"",out:0,in:0,n:0}; p[r.dir]+=+r.amount||0; p.n++; if(r.rel&&!p.rel)p.rel=r.rel; });
+    return Object.keys(m).map(function(k){return m[k]});
+  }
+  function renderPeople(){
+    var ps=people().sort(function(a,b){ var A=a.in&&a.out?1:0,B=b.in&&b.out?1:0; return B-A||b.n-a.n||(b.out+b.in)-(a.out+a.in)||(a.name<b.name?-1:1); });
+    var pc=ui.morePeople?ps.length:12;
+    $("people").innerHTML=ps.slice(0,pc).map(function(p){
+      return '<button type="button" class="person'+(p.in&&p.out?' both':'')+'" data-person="'+esc(p.name)+'"><span class="nm">'+esc(p.name)+'</span><span class="meta num">'+(p.rel?esc(p.rel)+' · ':'')+p.n+'건 · 보냄 '+man(p.out)+(p.in?' · 받음 '+man(p.in):'')+'</span></button>';
+    }).join("")+(ps.length>pc?'<button type="button" id="morePeople">'+(ps.length-pc)+'명 더 보기</button>':'')||'<div class="empty">아직 기록된 분이 없습니다.</div>';
+    $("names").innerHTML=ps.map(function(p){return '<option value="'+esc(p.name)+'">'}).join("");
+    var rels={}; rows.forEach(function(r){if(r.rel)rels[r.rel]=1});
+    $("rels").innerHTML=Object.keys(rels).sort().map(function(r){return '<option value="'+esc(r)+'">'}).join("");
+  }
+
+  function renderPersonBox(){
+    var box=$("personBox");
+    if(!ui.person){ box.hidden=true; return; }
+    var l=rows.filter(function(r){return r.person===ui.person}).sort(function(a,b){return a.date<b.date?-1:1});
+    var o=sum(l.filter(function(r){return r.dir==="out"})), n=sum(l.filter(function(r){return r.dir==="in"}));
+    var rel=(l.find(function(r){return r.rel})||{}).rel;
+    box.hidden=false;
+    box.innerHTML='<div class="phead" style="margin:0"><h2>'+esc(ui.person)+(rel?' <span class="note">'+esc(rel)+'</span>':'')+'</h2><button type="button" id="clearPerson">전체 보기</button></div>'+
+      '<div class="sumline num"><span>보냄 <b>'+man(o)+'</b></span><span>받음 <b>'+man(n)+'</b></span></div>'+
+      '<ol>'+l.map(function(r){return '<li class="num"><span>'+esc(r.date)+'</span><span class="dir '+r.dir+'">'+(r.dir==="out"?"보냄":"받음")+'</span><span>'+esc(r.detail||r.kind)+(r.memo?' <span class="note">'+esc(r.memo)+'</span>':'')+'</span><b>'+man(r.amount)+'</b></li>'}).join("")+'</ol>';
+  }
+
+  function itemHtml(r, attr){
+    var k=KINDS.indexOf(r.kind)>=0?r.kind:"기타";
+    return '<button type="button" class="item" '+attr+'><span class="top"><span class="dir '+r.dir+'">'+(r.dir==="out"?"보냄":"받음")+'</span><span class="nm">'+esc(r.person)+'</span><span class="chip k-'+k+'">'+k+'</span></span>'+
+      '<span class="amt num'+(r.dir==="in"?' in':'')+'">'+man(r.amount)+'</span>'+
+      '<span class="sub num">'+esc(r.date)+(r.detail?' · '+esc(r.detail):'')+(r.rel?' · '+esc(r.rel):'')+(r.memo?' · '+esc(r.memo):'')+'</span></button>';
+  }
+  function renderList(){
+    var l=filtered();
+    var cut=ui.more||ui.person||ui.q?l.length:30;
+    $("list").innerHTML=l.length?l.slice(0,cut).map(function(r){return itemHtml(r,'data-edit="'+esc(r.id)+'"')}).join("")+(l.length>cut?'<button type="button" id="moreBtn" style="margin-top:10px">'+(l.length-cut)+'건 더 보기</button>':''):
+      '<div class="empty">'+(rows.length?'조건에 맞는 기록이 없습니다.':'아직 기록이 없습니다. 아래 [백업 파일 불러오기]로 기존 자료를 넣거나, [+ 기록]으로 새로 추가하세요.')+'</div>';
+    var o=l.filter(function(r){return r.dir==="out"}), n=l.filter(function(r){return r.dir==="in"});
+    $("sumline").innerHTML=rows.length?'<span>표시 <b>'+l.length+'건</b></span><span>보냄 <b>'+man(sum(o))+'</b></span><span>받음 <b>'+man(sum(n))+'</b></span>':"";
+  }
+  function renderYears(){
+    var ys={}; rows.forEach(function(r){var y=String(r.date).slice(0,4); if(/^\d{4}$/.test(y))ys[y]=1});
+    var sel=$("yearSel"); sel.innerHTML='<option value="all">전체 연도</option>'+Object.keys(ys).sort().reverse().map(function(y){return '<option value="'+y+'">'+y+'년</option>'}).join("");
+    if(ui.year!=="all"&&!ys[ui.year])ui.year="all"; sel.value=ui.year;
+  }
+  function render(){ renderKpis(); renderYearChart(); renderKinds(); renderPeople(); renderYears(); renderPersonBox(); renderList(); }
+
+  // 필터
+  document.querySelectorAll(".tabs button").forEach(function(b){ b.addEventListener("click",function(){ ui.dir=b.dataset.dir; document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")}); renderList(); }); });
+  $("yearSel").addEventListener("change",function(e){ ui.year=e.target.value; renderList(); });
+  $("q").addEventListener("input",function(e){ ui.q=e.target.value; renderList(); });
+  document.addEventListener("click",function(e){
+    var p=e.target.closest("[data-person]"); if(p){ ui.person=p.dataset.person; renderPersonBox(); renderList(); $("listPanel").scrollIntoView({behavior:"smooth"}); return; }
+    if(e.target.id==="moreBtn"){ ui.more=true; renderList(); return; }
+    if(e.target.id==="morePeople"){ ui.morePeople=true; renderPeople(); return; }
+    if(e.target.id==="clearPerson"){ ui.person=null; renderPersonBox(); renderList(); return; }
+    var ed=e.target.closest("[data-edit]"); if(ed){ openForm(ed.dataset.edit); }
+  });
+
+  // 입력 폼
+  var dlg=$("dlg");
+  function openForm(id){
+    var r=id&&rows.find(function(x){return x.id===id});
+    ui.editId=r?r.id:null; ui.delArmed=false; $("formMsg").textContent="";
+    $(r&&r.dir==="in"?"dirIn":"dirOut").checked=true;
+    $("fDate").value=r?r.date:today(); $("fAmt").value=r?(+r.amount||0)/10000:"";
+    $("fName").value=r?r.person:""; $("fRel").value=r?r.rel||"":""; $("fKind").value=r&&KINDS.indexOf(r.kind)>=0?r.kind:"결혼";
+    $("fDetail").value=r?r.detail||"":""; $("fMemo").value=r?r.memo||"":"";
+    $("formTitle").textContent=r?"기록 고치기":"새 경조사 기록"; $("fDel").hidden=!r; $("fDel").textContent="삭제";
+    if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
+  }
+  function closeForm(){ if(dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+  $("addBtn").addEventListener("click",function(){ openForm(null); });
+  $("fCancel").addEventListener("click",closeForm);
+  $("fDel").addEventListener("click",function(){
+    if(!ui.delArmed){ ui.delArmed=true; $("fDel").textContent="한 번 더 누르면 삭제"; return; }
+    rows=rows.filter(function(x){return x.id!==ui.editId}); save(); closeForm(); render();
+  });
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault();
+    var amt=Math.round(parseFloat($("fAmt").value)*10000), name=$("fName").value.trim();
+    if(!name||!(amt>0)||!$("fDate").value){ $("formMsg").textContent="날짜, 이름, 금액을 넣어 주세요."; return; }
+    var old=ui.editId&&rows.find(function(x){return x.id===ui.editId});
+    var r={id:old?old.id:uid(), dir:document.querySelector("input[name=dir]:checked").value, date:$("fDate").value, person:name, rel:$("fRel").value.trim(),
+      kind:$("fKind").value, detail:$("fDetail").value.trim(), amount:amt, memo:$("fMemo").value.trim(), createdAt:old?old.createdAt:Date.now()};
+    if(old) rows=rows.map(function(x){return x.id===old.id?r:x}); else rows.push(r);
+    if(!save()){ $("formMsg").textContent="이 기기에 저장하지 못했습니다. 저장 공간을 확인해 주세요."; return; }
+    closeForm(); render();
+  });
+
+  // 백업
+  function bk(t){ $("bkMsg").textContent=t; }
+  $("exportBtn").addEventListener("click",function(){
+    var data=JSON.stringify({app:"gyeongjosa",version:1,exportedAt:today(),rows:rows},null,1);
+    var blob=new Blob([data],{type:"application/json"}), name="경조사-백업-"+today()+".json";
+    try{
+      var file=new File([blob],name,{type:"application/json"});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){ navigator.share({files:[file],title:name}).then(function(){bk("백업 파일을 보냈습니다.")}).catch(function(){}); return; }
+    }catch(_){}
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href); a.remove()},1000); bk(rows.length+"건을 "+name+" 파일로 저장했습니다.");
+  });
+  $("importBtn").addEventListener("click",function(){ $("importFile").click(); });
+  $("importFile").addEventListener("change",function(e){
+    var f=e.target.files[0]; if(!f)return;
+    f.text().then(function(t){ var d=JSON.parse(t); var list=Array.isArray(d)?d:d.rows; if(!Array.isArray(list))throw 0; merge(list); })
+     .catch(function(){ bk("백업 파일을 읽지 못했습니다. 이 앱에서 저장한 .json 파일인지 확인해 주세요."); });
+    e.target.value="";
+  });
+  function clean(r){
+    var amt=Math.round(+r.amount||0);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!r.person||!(amt>0)) return null;
+    return {id:r.id||uid(), dir:r.dir==="in"?"in":"out", date:r.date, person:String(r.person).trim(), rel:r.rel||"", kind:KINDS.indexOf(r.kind)>=0?r.kind:"기타",
+      detail:r.detail||"", amount:amt, memo:r.memo||"", createdAt:r.createdAt||Date.now()};
+  }
+  function merge(list){
+    var have={}, ids={}; rows.forEach(function(r){have[key(r)]=1; ids[r.id]=1});
+    var added=0, skipped=0;
+    list.forEach(function(x){ var r=clean(x); if(!r){skipped++;return} if(have[key(r)]){skipped++;return} if(ids[r.id])r.id=uid(); rows.push(r); have[key(r)]=1; ids[r.id]=1; added++; });
+    save(); render(); bk(added+"건을 넣었습니다."+(skipped?" 이미 있거나 읽을 수 없는 "+skipped+"건은 건너뛰었습니다.":""));
+    return added;
+  }
+
+  // 메모장 목록 붙여넣기
+  var TITLE=/(목사|집사|장로|권사|강도사|전도사|대표|마술사|선생|교수|사모|원장|회장)(님)?/;
+  var EVENT=/(큰딸|작은딸|아들|딸|부친|모친|빙부|빙모|장인|장모|아내|결혼|장례|위임|합병|아버지|어머니|돌|칠순|팔순|회갑|사고)/;
+  function splitPre(pre){
+    pre=pre.trim(); if(!pre) return {rel:"",name:""};
+    var sp=pre.lastIndexOf(" ");
+    if(sp>0) return {rel:pre.slice(0,sp).trim(),name:pre.slice(sp+1)};
+    if(pre.length>3) return {rel:pre.slice(0,-3),name:pre.slice(-3)};
+    return {rel:"",name:pre};
+  }
+  function splitOne(s){
+    var m=s.match(TITLE);
+    if(m){ var pr=splitPre(s.slice(0,m.index)); return {person:(pr.name?pr.name+" ":"")+m[1], rel:pr.rel, detail:s.slice(m.index+m[0].length).trim()}; }
+    var e=s.match(EVENT);
+    if(e&&e.index>0){ var p2=splitPre(s.slice(0,e.index)); return {person:p2.name, rel:p2.rel, detail:s.slice(e.index).trim()}; }
+    return {person:s.trim(), rel:"", detail:""};
+  }
+  function kindOf(t){
+    if(/결혼|혼례/.test(t))return "결혼";
+    if(/상$|상\s|장례|별세|소천|부친|모친/.test(t))return "장례";
+    if(/위임|축하|합병|개업|취임|돌$|칠순|팔순|회갑|생일/.test(t))return "축하";
+    if(/사고|입원|수술|위로|병문안|화재/.test(t))return "위로";
+    return "기타";
+  }
+  function parseList(text){
+    var dir="out", ok=[], bad=[];
+    text.split(/\r?\n/).forEach(function(line){
+      var t=line.trim(); if(!t||/^[=\-~_]+$/.test(t))return;
+      if(!/\d{6}/.test(t)){ if(/받은/.test(t))dir="in"; else if(/보낸|누적/.test(t))dir="out"; return; }
+      var m=t.match(/^\d+\s*[.,)]\s*(\d{6})\s*[,.\-\s]?\s*(.+?)\s*-\s*(\d+(?:\.\d+)?)\s*만\s*원?\s*(?:\((.*)\))?\s*$/);
+      if(!m){ bad.push(t); return; }
+      var body=m[2].replace(/^[,\-\s]+|[,\-\s]+$/g,""), parts=body.split(/\s*[,\-]\s*/).filter(Boolean), r;
+      if(parts.length>1){
+        var pi=parts.findIndex(function(x){return TITLE.test(x)}); if(pi<0)pi=0;
+        r=splitOne(parts[pi]); var rest=parts.filter(function(_,i){return i!==pi}).join(" ");
+        r.detail=(r.detail?r.detail+" ":"")+rest;
+      } else r=splitOne(body);
+      if(!r.person){ bad.push(t); return; }
+      ok.push({dir:dir, date:"20"+m[1].slice(0,2)+"-"+m[1].slice(2,4)+"-"+m[1].slice(4), person:r.person, rel:r.rel, kind:kindOf(r.detail||body),
+        detail:r.detail, amount:Math.round(parseFloat(m[3])*10000), memo:m[4]||""});
+    });
+    return {ok:ok,bad:bad};
+  }
+  $("pasteBtn").addEventListener("click",function(){
+    var t=$("pasteBox").value;
+    if(/^\s*[\[{]/.test(t)){ try{ var d=JSON.parse(t); merge(Array.isArray(d)?d:d.rows||[]); $("pasteBox").value=""; return; }catch(_){ bk("붙여넣은 내용을 읽지 못했습니다."); return; } }
+    var res=parseList(t), have={}; rows.forEach(function(r){have[key(r)]=1});
+    var fresh=res.ok.filter(function(r){return !have[key(r)]});
+    ui.pending=fresh;
+    $("pastePreview").innerHTML=fresh.map(function(r){return itemHtml(r,'disabled')}).join("");
+    $("pasteSave").hidden=!fresh.length;
+    bk("새로 넣을 기록 "+fresh.length+"건"+(res.ok.length-fresh.length?", 이미 있는 "+(res.ok.length-fresh.length)+"건":"")+(res.bad.length?", 읽지 못한 줄 "+res.bad.length+"개: "+res.bad.slice(0,3).join(" / "):"")+". 이름과 내용이 맞는지 확인한 뒤 [추가하기]를 누르세요.");
+  });
+  $("pasteSave").addEventListener("click",function(){
+    if(!ui.pending)return; merge(ui.pending); ui.pending=null; $("pastePreview").innerHTML=""; $("pasteSave").hidden=true; $("pasteBox").value="";
+  });
+  window.__parseList=parseList;
+
+  // 홈 화면 설치 안내
+  var standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  var dismissed=false; try{dismissed=localStorage.getItem("gyeongjosa.installHidden")==="1"}catch(_){}
+  var deferred=null;
+  if(!standalone&&!dismissed){
+    var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    $("installText").textContent=ios?"Safari 아래쪽 공유 버튼(네모에 위 화살표)을 누르고 [홈 화면에 추가]를 고르세요.":"Chrome 오른쪽 위 ⋮ 메뉴에서 [홈 화면에 추가] 또는 [앱 설치]를 누르세요.";
+    $("install").hidden=false;
+  }
+  window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); deferred=e; $("installBtn").hidden=false; });
+  $("installBtn").addEventListener("click",function(){ if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){deferred=null; $("install").hidden=true;}); } });
+  $("installClose").addEventListener("click",function(){ $("install").hidden=true; try{localStorage.setItem("gyeongjosa.installHidden","1")}catch(_){} });
+  if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(function(){});
+
+  render();
+})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
+</body>
+</html>
