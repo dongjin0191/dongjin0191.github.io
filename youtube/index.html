@@ -149,9 +149,7 @@ render();
 <p class="note" id="n-inapp">카카오톡·밴드 안에서는 이 메뉴가 없습니다. 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
 <button type="button" class="close" id="howclose">확인</button></div></div>
 <script>(function(){var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),inapp=/KAKAOTALK|NAVER|Line\/|FBAN|FBAV|Instagram|BAND/i.test(ua),dp=null,b=document.getElementById('install'),h=document.getElementById('how');
-if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){b.style.display='none'}
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
-window.addEventListener('appinstalled',function(){b.style.display='none'});
 function os(o){h.querySelectorAll('.tab button').forEach(function(x){x.classList.toggle('on',x.dataset.os===o)});document.getElementById('st-ios').hidden=o!=='ios';document.getElementById('st-and').hidden=o!=='and'}
 h.querySelectorAll('.tab button').forEach(function(x){x.onclick=function(){os(x.dataset.os)}});
 b.onclick=function(){if(dp){dp.prompt();dp.userChoice.finally(function(){dp=null});return}os(ios?'ios':'and');document.getElementById('n-inapp').classList.toggle('show',inapp);h.classList.add('open')};
