@@ -26,8 +26,13 @@ h1{margin:0;font-size:26px;font-weight:900;letter-spacing:-.02em}
 .sub{color:var(--ink2);font-size:13px}
 h2{font-size:14px;color:var(--ink2);font-weight:700;margin:22px 4px 10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-a.app{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;color:inherit;text-decoration:none;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;min-width:0;display:flex;flex-direction:column}
+a.app{display:flex;align-items:center;gap:10px;padding:12px 12px 8px;color:inherit;text-decoration:none;min-width:0;flex:1}
 a.app:active{transform:scale(.98)}
+.acts{display:flex;gap:6px;padding:0 10px 10px}
+.acts button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:7px 4px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.acts button.kt{background:#fee500;border-color:#e6cf00;color:#191919}
+.acts button:active{transform:scale(.96)}
 a.app img{width:44px;height:44px;border-radius:11px;flex:none}
 a.app b{display:block;font-size:14px;font-weight:700;line-height:1.3}
 a.app small{display:block;font-size:11px;color:var(--ink2);margin-top:2px}
@@ -54,7 +59,7 @@ var GROUPS=[
  ['사역 · 설교',[
   ['sermons','라파목사이동진의 설교','2003~ 설교 모음',1],
   ['haengsaji','행사지 목록표','연도별 행사지',1],
-  ['youtube','동기연티비 영상 모음','동탄기독교연합회 영상'],
+  ['youtube','한눈에 살펴보는 동기연','동탄기독교연합회 영상'],
   ['namboo','남부시찰 영상 모음','라파티비'],
   ['hwagichong','한해동안 돌아보는 화기총','화성시기독교총연합회']]],
  ['정관 · 교회',[
@@ -67,11 +72,18 @@ GROUPS.forEach(function(g){
   h+='<h2>'+g[0]+'</h2><div class="grid">';
   g[1].forEach(function(a){
     var base='../'+(a[0]?a[0]+'/':''), icon=base+(a[3]==='images/'?'images/':'')+'icon-192.png';
-    h+='<a class="app" href="'+base+'"><img src="'+icon+'" alt=""><div><b>'+a[1]+(a[3]===1?' <span class="lock">🔒</span>':'')+'</b><small>'+a[2]+'</small></div></a>';
+    var url='https://dongjin0191.github.io/'+(a[0]?a[0]+'/':'');
+    h+='<div class="card"><a class="app" href="'+base+'"><img src="'+icon+'" alt=""><div><b>'+a[1]+(a[3]===1?' <span class="lock">🔒</span>':'')+'</b><small>'+a[2]+'</small></div></a><div class="acts"><button type="button" data-copy="'+url+'">주소 복사</button><button type="button" class="kt" data-share="'+url+'" data-title="'+a[1]+'">카톡 공유</button></div></div>';
   });
   h+='</div>';
 });
 document.getElementById('list').innerHTML=h;
+function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2200)}
+function copy(u){function old(){var x=document.createElement('textarea');x.value=u;x.setAttribute('readonly','');x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}x.remove();toast(ok?'주소를 복사했어요. 카톡에 붙여넣기 하세요':u)}
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(u).then(function(){toast('주소를 복사했어요. 카톡에 붙여넣기 하세요')},old)}else old()}
+document.getElementById('list').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ if(b.dataset.copy){copy(b.dataset.copy);return}
+ var u=b.dataset.share;if(navigator.share){navigator.share({title:b.dataset.title,url:u}).catch(function(){})}else copy(u)});
 // 연결 링크(#links=...)로 들어오면 이 폰에 Claude 원본 주소를 저장한다. 주소는 저장소에 없다.
 (function(){
   var m=location.hash.match(/^#links=(.+)$/); if(!m) return;
