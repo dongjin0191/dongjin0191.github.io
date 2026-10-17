@@ -92,6 +92,7 @@ var GROUPS=[
  ['라파 교회 관련',[
   ['church-finance','함께걷는교회 재정','월별 재정 보고'],
   ['sermons','라파목사이동진의 설교','2003~ 설교 모음'],
+  ['https://preacherlibrary.com/app/#/upload','라파서재','설교 자료 올리기','seojae.svg'],
   ['','영광교회','교회 홈페이지','images/']]],
  ['시찰과 노회',[
   ['namboo','남부시찰 영상 모음','라파티비']]],
@@ -105,9 +106,10 @@ var h='';
 GROUPS.forEach(function(g){
   h+='<h2>'+g[0]+'</h2><div class="grid">';
   g[1].forEach(function(a){
-    var base='../'+(a[0]?a[0]+'/':''), icon=base+(a[3]==='images/'?'images/':'')+'icon-192.png';
-    var url='https://dongjin0191.github.io/'+(a[0]?a[0]+'/':'');
-    h+='<div class="card"><a class="app" href="'+base+'"><img src="'+icon+'" alt=""><div><b>'+a[1]+'</b><small>'+a[2]+'</small></div></a><div class="acts"><button type="button" data-copy="'+url+'">주소 복사</button><button type="button" class="kt" data-share="'+url+'" data-title="'+a[1]+'">카톡 공유</button></div></div>';
+    var ext=/^https?:/.test(a[0]);
+    var base=ext?a[0]:'../'+(a[0]?a[0]+'/':''), icon=ext?a[3]:base+(a[3]==='images/'?'images/':'')+'icon-192.png';
+    var url=ext?a[0]:'https://dongjin0191.github.io/'+(a[0]?a[0]+'/':'');
+    h+='<div class="card"><a class="app" href="'+base+'"'+(ext?' target="_blank" rel="noopener"':'')+'><img src="'+icon+'" alt=""><div><b>'+a[1]+'</b><small>'+a[2]+'</small></div></a><div class="acts"><button type="button" data-copy="'+url+'">주소 복사</button><button type="button" class="kt" data-share="'+url+'" data-title="'+a[1]+'">카톡 공유</button></div></div>';
   });
   h+='</div>';
 });
