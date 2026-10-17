@@ -42,6 +42,10 @@ h1{margin:0;font-size:26px;letter-spacing:-.02em}
 .grid .h{color:var(--muted);text-align:right;padding-right:8px;font-variant-numeric:tabular-nums}
 .grid .h.now{color:var(--ink);font-weight:800}
 .chip{display:block;border-radius:7px;padding:3px 6px;margin-bottom:3px;word-break:keep-all}
+.gahun{margin:14px 0 0;background:#2a1f25;color:#fff;border-radius:16px;padding:14px 16px}
+.gahun small{display:block;font-size:12px;opacity:.7;letter-spacing:.08em}
+.gahun b{display:block;font-size:19px;margin-top:2px}
+.gahun span{font-size:16px;opacity:.92}
 .motto{margin:0 0 12px;color:#fff;border-radius:14px;padding:13px 16px}
 .motto b{display:block;font-size:17px}
 .motto span{font-size:15px;opacity:.92}
@@ -76,6 +80,7 @@ footer{margin-top:22px;text-align:center;font-size:12.5px;color:var(--muted);lin
 <header>
   <h1>라파네 가족 계획표</h1>
   <div class="date" id="date"></div>
+  <div class="gahun"><small>우리 집 가훈</small><b>Let it be in Jesus Christ</b><span>예수님 안에서 행동하자</span></div>
 </header>
 <div class="photos" id="photos" hidden></div>
 <div class="tabs" id="tabs"></div>
@@ -101,7 +106,7 @@ var P={
    [1200,1260,'20:00~21:00','집'],
    [1260,1320,'21:00~22:00','씻고 자기'],
    [1320,1350,'22:00~22:30','하루 정리 + 일기']]]]},
- jun:{name:'준형',short:'준형',motto:['Let it be in Jesus Christ','예수님 안에서 하자'],groups:[
+ jun:{name:'준형',short:'준형',groups:[
   ['아침',[
    [450,480,'07:30','기상',1],
    [480,510,'07:30~08:30','아침 루틴'],
