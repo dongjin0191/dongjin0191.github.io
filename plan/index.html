@@ -7,11 +7,11 @@
 <meta name="theme-color" content="#2a1f25">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="가족 계획표">
+<meta name="apple-mobile-web-app-title" content="가족 일정">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>라파네 가족 계획표</title>
+<title>라파네 가족 통합 일정</title>
 <style>
 /* 가족 한 사람씩 하루 일과표. 체크와 직접 추가한 일정은 이 기기에만 저장된다. */
 :root{color-scheme:light;--bg:#f7f4f2;--paper:#fff;--ink:#2a1f25;--muted:#7b6f74;--line:#ece4e1;--done:#b8adb1;
@@ -25,6 +25,16 @@ h1{margin:0;font-size:26px;letter-spacing:-.02em}
 .date{margin-top:4px;font-size:14px;color:var(--muted)}
 .photos{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px;scroll-snap-type:x mandatory}
 .photos img{height:150px;border-radius:14px;flex:none;scroll-snap-align:start;object-fit:cover}
+.cats{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:2px 16px 4px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats button{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.cats button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cats button small{font-weight:500;opacity:.6;margin-left:3px}
+.ctitle{font-size:19px;font-weight:800;margin:6px 4px 2px}
+.chint{font-size:13px;color:var(--muted);margin:0 4px 10px}
+li .who{flex:0 0 auto;font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px}
+li a{color:inherit}
+form select{font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 8px;background:var(--paper);color:var(--ink);flex:1 1 110px;min-width:0}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
 .tabs button{border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:9px 2px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;min-width:0}
 .tabs button i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
@@ -78,11 +88,12 @@ footer{margin-top:22px;text-align:center;font-size:12.5px;color:var(--muted);lin
 <body>
 <div class="wrap">
 <header>
-  <h1>라파네 가족 계획표</h1>
+  <h1>라파네 가족 통합 일정</h1>
   <div class="date" id="date"></div>
   <div class="gahun"><small>우리 집 가훈</small><b>Let it be in Jesus Christ</b><span>예수님 안에서 행동하자</span></div>
 </header>
 <div class="photos" id="photos" hidden></div>
+<div class="cats" id="cats"></div>
 <div class="tabs" id="tabs"></div>
 <div id="view"></div>
 <footer>항목을 누르면 체크됩니다. 체크는 날마다 새로 시작해요.<br>체크와 직접 추가한 일정은 이 휴대폰에만 저장돼요.</footer>
@@ -198,7 +209,54 @@ function person(p){
     var a=get('plan.add.'+p,[]);a.push({id:Date.now(),s:sm,e:em,w:w});put('plan.add.'+p,a);render()};
   paint();
 }
-function render(){tabs();if(P[tab])person(tab);else{tab='all';all()}}
+// 분류별 일정: [id, 이름, 안내, 하위 구분(선택지)]
+var CATS=[
+ ['day','일일','가족 한 사람씩 하루 일과'],
+ ['week','주간','요일마다 정해진 일정',['월요일','화요일','수요일','목요일','금요일','토요일','일요일']],
+ ['month','월간','이달의 날짜별 일정'],
+ ['term','학기간','시험·학교 일정',['1학기 중간고사','1학기 기말고사','2학기 중간고사','2학기 기말고사','기타 학교 일정']],
+ ['vac','방학기간','여름·겨울 방학 계획',['여름방학','겨울방학']],
+ ['yt','가족유튜브','가족 영상 계획과 링크'],
+ ['life','라파네가족일상','기억하고 싶은 가족의 하루'],
+ ['trip','가족여행','여행 계획과 기록'],
+ ['etc','기타','그 밖의 가족 일정']
+];
+var cat=get('plan.cat','day');
+var WHO={all:['가족','#2a1f25','#ece4e1'],mom:['유미','var(--mom)','var(--mom-soft)'],jina:['진아','var(--jina)','var(--jina-soft)'],jun:['준형','var(--jun)','var(--jun-soft)']};
+function cats(){
+  var el=document.getElementById('cats');
+  el.innerHTML=CATS.map(function(c){var n=c[0]==='day'?'':get('plan.c.'+c[0],[]).length;return '<button type="button" data-c="'+c[0]+'"'+(c[0]===cat?' class="on"':'')+'>'+c[1]+(n?'<small>'+n+'</small>':'')+'</button>'}).join('');
+  el.querySelectorAll('button').forEach(function(b){b.onclick=function(){cat=b.dataset.c;put('plan.cat',cat);render()}});
+}
+function catView(c){
+  var key='plan.c.'+c[0],list=get(key,[]),sub=c[3],h='<div class="ctitle">'+c[1]+'</div><p class="chint">'+c[2]+'</p>';
+  var groups=sub?sub.slice():[''];
+  if(!sub)list.sort(function(a,b){return (a.when||'').localeCompare(b.when||'')});
+  if(!list.length)h+='<div class="card empty">아직 일정이 없어요.<br>아래에서 추가해 보세요.</div>';
+  groups.forEach(function(g){
+    var gi=list.filter(function(x){return !sub||x.sub===g});if(!gi.length)return;
+    if(g)h+='<h2>'+g+'</h2>';else h+='<div style="height:4px"></div>';
+    h+='<ul class="card">';
+    gi.forEach(function(x){var w=WHO[x.who]||WHO.all,t=esc(x.text);if(/^https?:\/\//.test(x.text))t='<a href="'+esc(x.text)+'" target="_blank" rel="noopener">'+t+'</a>';
+      h+='<li style="cursor:default"><span class="who" style="color:'+w[1]+';background:'+w[2]+'">'+w[0]+'</span>'+(x.when?'<span class="t" style="flex:0 0 auto">'+esc(x.when)+'</span>':'')+'<span class="w">'+t+'</span><button type="button" class="x" data-del="'+x.id+'" aria-label="삭제">×</button></li>'});
+    h+='</ul>';
+  });
+  h+='<form id="cadd">'+(sub?'<select id="cs">'+sub.map(function(o){return '<option>'+o+'</option>'}).join('')+'</select>':'')+
+    '<select id="cw">'+Object.keys(WHO).map(function(k){return '<option value="'+k+'">'+WHO[k][0]+'</option>'}).join('')+'</select>'+
+    '<input type="text" id="cn" placeholder="'+(c[0]==='month'?'날짜 (예: 11/3)':'언제 (선택)')+'" style="flex:1 1 110px">'+
+    '<input type="text" id="ct" required placeholder="'+(c[0]==='yt'?'영상 제목이나 링크':'내용')+'">'+
+    '<button type="submit" style="background:var(--ink)">+ '+c[1]+' 일정 추가</button></form>';
+  var v=document.getElementById('view');v.innerHTML=h;
+  v.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){put(key,get(key,[]).filter(function(x){return String(x.id)!==b.dataset.del}));render()}});
+  document.getElementById('cadd').onsubmit=function(e){e.preventDefault();var t=document.getElementById('ct').value.trim();if(!t)return;
+    var a=get(key,[]);a.push({id:Date.now(),sub:sub?document.getElementById('cs').value:'',who:document.getElementById('cw').value,when:document.getElementById('cn').value.trim(),text:t});put(key,a);render()};
+}
+function render(){
+  cats();var c=CATS.filter(function(x){return x[0]===cat})[0]||CATS[0];
+  var tb=document.getElementById('tabs');
+  if(c[0]!=='day'){tb.style.display='none';catView(c);return}
+  tb.style.display='';tabs();if(P[tab])person(tab);else{tab='all';all()}
+}
 if(PHOTOS.length){var ph=document.getElementById('photos');ph.innerHTML=PHOTOS.map(function(s){return '<img src="'+s+'" alt="라파네 가족사진" loading="lazy">'}).join('');ph.hidden=false}
 render();setInterval(function(){var a=document.activeElement;if(!(a&&a.tagName==='INPUT'))render()},60000);
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
