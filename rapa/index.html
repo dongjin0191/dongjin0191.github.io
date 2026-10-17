@@ -40,14 +40,42 @@ a.app div{min-width:0}
 .lock{font-size:11px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700}
 .note{font-size:12px;color:var(--ink2);margin:22px 4px 0;line-height:1.6}
+.install{margin:4px 4px 6px;width:calc(100% - 8px);display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--acc);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.install img{width:24px;height:24px;border-radius:6px}
+#how{position:fixed;inset:0;background:#000a;display:none;z-index:60;align-items:flex-end;justify-content:center}
+#how.open{display:flex}
+#how .sheet{background:#fff;color:#182a3a;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -6px 30px #0004;text-align:left}
+#how h2{margin:0 0 4px;font-size:19px;color:#1d2433;text-align:center}
+#how .sub{margin:0 0 14px;font-size:13px;color:#62778a;text-align:center}
+#how ol{margin:0;padding-left:24px;font-size:17px;line-height:1.9}
+#how .k{display:inline-block;border:1px solid #cbd5df;border-radius:6px;padding:0 6px;font-weight:700;color:#1d2433;background:#f3f6f9}
+#how .tab{display:flex;gap:6px;margin-bottom:12px}
+#how .tab button{flex:1;border:1px solid #cbd5df;background:#fff;border-radius:9px;padding:12px;font:inherit;font-size:16px;font-weight:700;color:#1d2433;cursor:pointer}
+#how .tab button.on{background:#1d2433;color:#fff;border-color:#1d2433}
+#how .note{margin:14px 0 0;font-size:12.5px;color:#7a5a20;background:#fbf4e6;border-radius:9px;padding:10px 12px;line-height:1.6;display:none}
+#how .note.show{display:block}
+#how .close{margin-top:16px;width:100%;border:0;border-radius:11px;padding:13px;background:#1d2433;color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.hdicon{width:64px;height:64px;border-radius:15px;display:block;margin:0 auto 10px;box-shadow:0 4px 14px #0006}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header><img src="icon-192.png" alt="라파 이동진 목사"><div><h1>라파의 모든것</h1><div class="sub">내가 만든 대시보드를 한곳에</div></div></header>
+<button type="button" class="install" id="install"><img src="icon-192.png" alt="">홈 화면에 앱 설치</button>
 <div id="list"></div>
 <p class="note">🔒 표시는 자료를 공개 저장소에 두지 않고 Claude에 보관된 원본을 여는 앱입니다. 앱마다 각각 홈 화면에 추가할 수도 있어요.</p>
 </div>
+<div id="how" role="dialog" aria-label="앱 설치"><div class="sheet"><img class="hdicon" src="icon-192.png" alt=""><h2>홈 화면에 앱 설치</h2><p class="sub">사용하시는 휴대폰을 고르세요.</p><div class="tab"><button type="button" data-os="and">안드로이드</button><button type="button" data-os="ios">아이폰</button></div>
+<ol id="st-ios" hidden><li><b>Safari</b>에서 화면 아래 <b>공유 버튼</b> <span class="k">□↑</span> 누르기</li><li><b>홈 화면에 추가</b> → <b>추가</b> 누르기</li></ol>
+<ol id="st-and"><li><b>Chrome</b>에서 오른쪽 위 <b>메뉴</b> <span class="k">⋮</span> 누르기</li><li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b> → <b>설치</b> 누르기</li></ol>
+<p class="note" id="n-inapp">카카오톡·밴드 안에서는 이 메뉴가 없습니다. 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
+<button type="button" class="close" id="howclose">확인</button></div></div>
+<script>(function(){var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),inapp=/KAKAOTALK|NAVER|Line\/|FBAN|FBAV|Instagram|BAND/i.test(ua),dp=null,b=document.getElementById('install'),h=document.getElementById('how');
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
+function os(o){h.querySelectorAll('.tab button').forEach(function(x){x.classList.toggle('on',x.dataset.os===o)});document.getElementById('st-ios').hidden=o!=='ios';document.getElementById('st-and').hidden=o!=='and'}
+h.querySelectorAll('.tab button').forEach(function(x){x.onclick=function(){os(x.dataset.os)}});
+b.onclick=function(){if(dp){dp.prompt();dp.userChoice.finally(function(){dp=null});return}os(ios?'ios':'and');document.getElementById('n-inapp').classList.toggle('show',inapp);h.classList.add('open')};
+document.getElementById('howclose').onclick=function(){h.classList.remove('open')};h.addEventListener('click',function(e){if(e.target===h)h.classList.remove('open')});})();</script>
 <script>
 var GROUPS=[
  ['생활 · 재정',[
