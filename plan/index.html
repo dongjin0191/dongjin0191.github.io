@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#2a1f25">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="가족 계획표">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>라파네 가족 계획표</title>
+<style>
+/* 가족 한 사람씩 하루 일과표. 체크와 직접 추가한 일정은 이 기기에만 저장된다. */
+:root{color-scheme:light;--bg:#f7f4f2;--paper:#fff;--ink:#2a1f25;--muted:#7b6f74;--line:#ece4e1;--done:#b8adb1;
+  --mom:#d63c3c;--mom-soft:#fde8e6;--jina:#e0559a;--jina-soft:#fde7f1;--jun:#2f74d0;--jun-soft:#e5effc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.5;
+  padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
+.wrap{max-width:600px;margin:0 auto}
+header{text-align:center;padding:10px 0 14px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.date{margin-top:4px;font-size:14px;color:var(--muted)}
+.photos{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px;scroll-snap-type:x mandatory}
+.photos img{height:150px;border-radius:14px;flex:none;scroll-snap-align:start;object-fit:cover}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.tabs button{border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:9px 2px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;min-width:0}
+.tabs button i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.tabs button.on{color:#fff;border-color:var(--c);background:var(--c)}
+.tabs button.on i{background:#fff!important}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sum div{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;cursor:pointer}
+.sum b{display:block;font-size:14px}
+.sum span{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.sum small{display:block;font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:44px repeat(3,minmax(0,1fr))}
+.grid>div{border-top:1px solid var(--line);padding:6px 4px;min-height:38px;font-size:12.5px;line-height:1.35}
+.grid .hd{border-top:0;font-weight:700;text-align:center;font-size:13px;padding:10px 2px}
+.grid .h{color:var(--muted);text-align:right;padding-right:8px;font-variant-numeric:tabular-nums}
+.grid .h.now{color:var(--ink);font-weight:800}
+.chip{display:block;border-radius:7px;padding:3px 6px;margin-bottom:3px;word-break:keep-all}
+.motto{margin:0 0 12px;color:#fff;border-radius:14px;padding:13px 16px}
+.motto b{display:block;font-size:17px}
+.motto span{font-size:15px;opacity:.92}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 8px;font-size:14px;color:var(--muted)}
+.bar button{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.prog{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:0 2px 4px}
+.prog i{display:block;height:100%;width:0;transition:width .25s}
+h2{font-size:15px;margin:20px 4px 8px;display:flex;align-items:center;gap:6px}
+h2::before{content:"";width:10px;height:10px;background:currentColor;border-radius:2px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:12px;padding:13px 14px;border-top:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+li:first-child{border-top:0}
+li .t{flex:0 0 98px;font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted)}
+li .w{flex:1;min-width:0}
+li .w em{font-style:normal;font-size:12px;margin-left:4px}
+li .c{flex:0 0 22px;height:22px;border:2px solid var(--line);border-radius:6px;display:grid;place-items:center;color:#fff;font-size:14px}
+li.on .c::after{content:"✓"}
+li.on .w{color:var(--done);text-decoration:line-through}
+li.now .t{font-weight:700}
+li .x{border:0;background:none;color:var(--done);font-size:18px;padding:0 2px;cursor:pointer}
+.empty{padding:22px 16px;text-align:center;color:var(--muted)}
+form{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;align-items:center}
+form input{font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--paper);color:var(--ink);min-width:0}
+form input[type=time]{flex:1 1 110px}
+form input[type=text]{flex:1 1 100%}
+form button{flex:1 1 100%;border:0;border-radius:11px;padding:12px;color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+footer{margin-top:22px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>라파네 가족 계획표</h1>
+  <div class="date" id="date"></div>
+</header>
+<div class="photos" id="photos" hidden></div>
+<div class="tabs" id="tabs"></div>
+<div id="view"></div>
+<footer>항목을 누르면 체크됩니다. 체크는 날마다 새로 시작해요.<br>체크와 직접 추가한 일정은 이 휴대폰에만 저장돼요.</footer>
+</div>
+<script>
+// 가족사진: 'photos/파일이름.jpg'를 넣으면 맨 위에 나온다.
+var PHOTOS=[];
+// [시작(분), 끝(분), 시간 표시, 할 일, 강조]
+var P={
+ mom:{name:'엄마 유미',short:'유미',groups:[]},
+ jina:{name:'진아',short:'진아',groups:[
+  ['낮',[
+   [600,660,'10:00~11:00','연습'],
+   [720,780,'12:00~13:00','연습',1],
+   [780,840,'13:00~14:00','연습'],
+   [840,900,'14:00~15:00','연습하다가 놀러 가기'],
+   [960,1020,'16:00~17:00','친구들 만나서 메가커피'],
+   [1020,1080,'17:00~18:00','인생네컷 찍기']]],
+  ['저녁',[
+   [1140,1200,'19:00~20:00','저녁'],
+   [1200,1260,'20:00~21:00','집'],
+   [1260,1320,'21:00~22:00','씻고 자기'],
+   [1320,1350,'22:00~22:30','하루 정리 + 일기']]]]},
+ jun:{name:'준형',short:'준형',motto:['Let it be in Jesus Christ','예수님 안에서 하자'],groups:[
+  ['아침',[
+   [450,480,'07:30','기상',1],
+   [480,510,'07:30~08:30','아침 루틴'],
+   [510,540,'08:30~09:00','묵상, 계획'],
+   [540,600,'09:00~10:00','공부'],
+   [600,660,'10:00~11:00','숙제']]],
+  ['낮',[
+   [720,780,'12:00~13:00','점심 + 운동',1],
+   [780,840,'13:00~14:00','학원 갈 준비 + 출발'],
+   [840,900,'14:00~15:00','레슨'],
+   [960,1020,'16:00~17:00','집 도착'],
+   [1020,1080,'17:00~18:00','쉬기 + 밥'],
+   [1140,1200,'19:00~20:00','공부']]],
+  ['저녁',[
+   [1200,1260,'20:00~21:00','게임'],
+   [1260,1320,'21:00~22:00','잘 준비 (50분 전 눕기)'],
+   [1320,1350,'22:00~22:30','하루 정리 + 일기']]]]}
+};
+var ORDER=['mom','jina','jun'];
+function get(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var d=new Date(),DAY=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+document.getElementById('date').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 '+'일월화수목금토'[d.getDay()]+'요일';
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function mins(){var t=new Date();return t.getHours()*60+t.getMinutes()}
+function fmt(m){return ('0'+Math.floor(m/60)).slice(-2)+':'+('0'+m%60).slice(-2)}
+// 기본 일정 + 이 기기에서 추가한 일정
+function items(p){
+  var out=[];
+  P[p].groups.forEach(function(g){g[1].forEach(function(a,i){out.push({id:g[0]+i,s:a[0],e:a[1],t:a[2],w:a[3],mark:a[4],g:g[0]})})});
+  get('plan.add.'+p,[]).forEach(function(a){out.push({id:'u'+a.id,s:a.s,e:a.e,t:fmt(a.s)+'~'+fmt(a.e),w:a.w,g:a.s<720?'아침':a.s<1140?'낮':'저녁',user:a.id})});
+  return out.sort(function(a,b){return a.s-b.s});
+}
+function done(p){return get('plan.done.'+p+'.'+DAY,{})}
+function rate(p){var it=items(p),dn=done(p),n=it.filter(function(x){return dn[x.id]}).length;return [n,it.length]}
+
+var tab=get('plan.tab','all');
+function tabs(){
+  var h='<button type="button" data-t="all" style="--c:#2a1f25">함께</button>';
+  ORDER.forEach(function(p){h+='<button type="button" data-t="'+p+'" style="--c:var(--'+p+')"><i style="background:var(--'+p+')"></i>'+P[p].short+'</button>'});
+  var el=document.getElementById('tabs');el.innerHTML=h;
+  el.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.t===tab);b.onclick=function(){tab=b.dataset.t;put('plan.tab',tab);render()}});
+}
+function all(){
+  var h='<div class="sum">';
+  ORDER.forEach(function(p){var r=rate(p);h+='<div data-t="'+p+'" style="border-top:4px solid var(--'+p+')"><b style="color:var(--'+p+')">'+P[p].name+'</b><span>'+(r[1]?Math.round(r[0]/r[1]*100)+'%':'–')+'</span><small>'+(r[1]?r[0]+' / '+r[1]+' 완료':'일정 없음')+'</small></div>'});
+  h+='</div><div class="card grid"><div class="hd"></div>';
+  ORDER.forEach(function(p){h+='<div class="hd" style="color:var(--'+p+')">'+P[p].short+'</div>'});
+  var lists={};ORDER.forEach(function(p){lists[p]=items(p)});
+  var cur=Math.floor(mins()/60);
+  for(var hr=7;hr<=22;hr++){
+    h+='<div class="h'+(hr===cur?' now':'')+'">'+hr+'시</div>';
+    ORDER.forEach(function(p){
+      h+='<div>';
+      lists[p].forEach(function(x){if(Math.floor(x.s/60)===hr)h+='<span class="chip" style="background:var(--'+p+'-soft);color:var(--'+p+')">'+esc(x.w)+'</span>'});
+      h+='</div>';
+    });
+  }
+  h+='</div>';
+  var v=document.getElementById('view');v.innerHTML=h;
+  v.querySelectorAll('.sum div').forEach(function(x){x.onclick=function(){tab=x.dataset.t;put('plan.tab',tab);render()}});
+}
+function person(p){
+  var c='var(--'+p+')',it=items(p),dn=done(p),h='';
+  if(P[p].motto)h+='<div class="motto" style="background:'+c+'"><b>'+P[p].motto[0]+'</b><span>'+P[p].motto[1]+'</span></div>';
+  h+='<div class="bar"><span><b style="color:'+c+'">'+P[p].name+'</b>의 일일 계획표</span><button type="button" id="reset">오늘 체크 지우기</button></div>';
+  h+='<div class="prog"><i id="pg" style="background:'+c+'"></i></div>';
+  if(!it.length)h+='<div class="card empty" style="margin-top:12px">아직 계획이 없어요.<br>아래에서 일정을 추가해 보세요.</div>';
+  ['아침','낮','저녁'].forEach(function(g){
+    var gi=it.filter(function(x){return x.g===g});if(!gi.length)return;
+    h+='<h2 style="color:'+c+'">'+g+'</h2><ul class="card">';
+    gi.forEach(function(x){h+='<li data-id="'+x.id+'" data-s="'+x.s+'" data-e="'+x.e+'"'+(dn[x.id]?' class="on"':'')+'><span class="t">'+x.t+'</span><span class="w">'+esc(x.w)+(x.mark?'<em style="color:'+c+'">★</em>':'')+'</span>'+(x.user?'<button type="button" class="x" data-del="'+x.user+'" aria-label="삭제">×</button>':'')+'<span class="c"></span></li>'});
+    h+='</ul>';
+  });
+  h+='<form id="add"><input type="time" id="fs" required value="09:00"><input type="time" id="fe" required value="10:00"><input type="text" id="fw" required placeholder="할 일 (예: 장보기)"><button type="submit" style="background:'+c+'">+ '+P[p].short+' 일정 추가</button></form>';
+  var v=document.getElementById('view');v.innerHTML=h;
+  function paint(){
+    var on=0;v.querySelectorAll('li').forEach(function(li){var o=!!dn[li.dataset.id];li.classList.toggle('on',o);if(o)on++;var b=li.querySelector('.c');b.style.background=o?c:'';b.style.borderColor=o?c:''});
+    var m=mins();v.querySelectorAll('li').forEach(function(li){var n=m>=+li.dataset.s&&m<+li.dataset.e;li.classList.toggle('now',n);li.style.background=n?'var(--'+p+'-soft)':'';li.querySelector('.t').style.color=n?c:''});
+    document.getElementById('pg').style.width=(it.length?on/it.length*100:0)+'%';
+  }
+  v.querySelectorAll('li').forEach(function(li){li.onclick=function(e){
+    if(e.target.dataset.del){var a=get('plan.add.'+p,[]).filter(function(x){return String(x.id)!==e.target.dataset.del});put('plan.add.'+p,a);render();return}
+    var id=li.dataset.id;if(dn[id])delete dn[id];else dn[id]=1;put('plan.done.'+p+'.'+DAY,dn);paint()}});
+  document.getElementById('reset').onclick=function(){dn={};put('plan.done.'+p+'.'+DAY,dn);paint()};
+  document.getElementById('add').onsubmit=function(e){e.preventDefault();
+    var s=document.getElementById('fs').value.split(':'),en=document.getElementById('fe').value.split(':'),w=document.getElementById('fw').value.trim();if(!w)return;
+    var sm=+s[0]*60+ +s[1],em=+en[0]*60+ +en[1];if(em<=sm)em=sm+30;
+    var a=get('plan.add.'+p,[]);a.push({id:Date.now(),s:sm,e:em,w:w});put('plan.add.'+p,a);render()};
+  paint();
+}
+function render(){tabs();if(P[tab])person(tab);else{tab='all';all()}}
+if(PHOTOS.length){var ph=document.getElementById('photos');ph.innerHTML=PHOTOS.map(function(s){return '<img src="'+s+'" alt="라파네 가족사진" loading="lazy">'}).join('');ph.hidden=false}
+render();setInterval(function(){var a=document.activeElement;if(!(a&&a.tagName==='INPUT'))render()},60000);
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
+</script>
+</body>
+</html>
