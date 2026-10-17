@@ -78,22 +78,24 @@ b.onclick=function(){if(dp){dp.prompt();dp.userChoice.finally(function(){dp=null
 document.getElementById('howclose').onclick=function(){h.classList.remove('open')};h.addEventListener('click',function(e){if(e.target===h)h.classList.remove('open')});})();</script>
 <script>
 var GROUPS=[
- ['생활 · 재정',[
+ ['라파 개인 & 가정',[
   ['ledger','라파네 가계부','통장·카드·지출 분석',1],
   ['gyeongjosa','경조사 장부','보낸·받은 경조사'],
-  ['glucose','혈당·인슐린 기록','건강 기록'],
-  ['church-finance','함께걷는교회 재정','월별 재정 보고',1],
+  ['glucose','혈당·인슐린 기록','건강 기록']]],
+ ['라파 사업 & 라파엘',[
   ['rapamulti','라파멀티엔터 재무표','사업 매출·장부',1]]],
- ['사역 · 설교',[
+ ['라파 교회 관련',[
+  ['church-finance','함께걷는교회 재정','월별 재정 보고',1],
   ['sermons','라파목사이동진의 설교','2003~ 설교 모음',1],
   ['haengsaji','행사지 목록표','연도별 행사지',1],
+  ['','영광교회','교회 홈페이지','images/']]],
+ ['시찰과 노회',[
+  ['namboo','남부시찰 영상 모음','라파티비']]],
+ ['연합회 동기연, 화기총',[
   ['youtube','한눈에 살펴보는 동기연','동탄기독교연합회 영상'],
-  ['namboo','남부시찰 영상 모음','라파티비'],
-  ['hwagichong','한해동안 돌아보는 화기총','화성시기독교총연합회']]],
- ['정관 · 교회',[
   ['jeonggwan','동탄기독교연합회 정관','모바일 열람'],
-  ['hwagichong/jeonggwan','화성시기독교총연합회 정관','모바일 열람'],
-  ['','영광교회','교회 홈페이지','images/']]]
+  ['hwagichong','한해동안 돌아보는 화기총','화성시기독교총연합회'],
+  ['hwagichong/jeonggwan','화성시기독교총연합회 정관','모바일 열람']]]
 ];
 var h='';
 GROUPS.forEach(function(g){
