@@ -1,5 +1,835 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#3b2f6b"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="라파멀티"><title>라파멀티엔터 재무표</title><style>body{margin:0;font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;background:#3b2f6b;color:#222;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}.c{background:#fff;border-radius:20px;padding:28px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.15)}img{width:84px;height:84px;border-radius:20px}h1{font-size:20px;margin:14px 0 6px}p{font-size:13px;color:#666;margin:0 0 18px;line-height:1.6}a{display:block;background:#222;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:14px}</style></head><body>
-<div class="c"><img src="icon-192.png" alt=""><h1>라파멀티엔터 재무표</h1><p id="m">자료는 공개 저장소에 두지 않고 Claude에 보관된 원본을 엽니다.</p><a id="go" href="../rapa/">라파의 모든것 열기</a></div>
-<script>(function(){var L={};try{L=JSON.parse(localStorage.getItem('rapa.links')||'{}')}catch(e){}var id=L['rapamulti'];if(id){var u='https://claude.ai/artifact/'+id;document.getElementById('go').href=u;document.getElementById('go').textContent='열기';document.getElementById('m').innerHTML='자료는 공개 저장소에 두지 않고 Claude에 보관된 원본을 엽니다.<br>잠시 후 자동으로 열려요.';setTimeout(function(){location.href=u},400)}else{document.getElementById('m').innerHTML='이 폰에서 아직 연결되지 않았어요.<br>Claude가 보내 준 <b>연결 링크</b>를 한 번 열면 그다음부터 바로 열립니다.'}})()</script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
-</body></html>
+<!doctype html><html><head><meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#3b2f6b"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="라파멀티"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>라파멀티엔터 재무표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 제목 -> 요약 타일 -> 연도별 수입/순액 막대 -> 연도별 재무표(2016~2026) -> 경비표 원본 합계 줄 -> 장비·광고 지출 메모 -> 부가세(참고). */
+:root {
+  --bg: #eef1f4; --surface: #ffffff; --fg: #16212b; --muted: #667583; --line: #d9e0e6;
+  --c-in: #1f6fd1; --c-out: #d63031; --c-sale: #8e44ad; --c-labor: #2e8b4a; --c-sub: #e0338a;
+  --accent: #1f4f7a; --s1: #2a78d6; --s2: #eb6834; --blank: #9aa6b1; --warn-bg: #fff4cc; --warn-fg: #6b4e00;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f161d; --surface: #18222c; --fg: #e6ecf1; --muted: #93a2af; --line: #2a3744;
+    --c-in: #6fb0ff; --c-out: #ff7a73; --c-sale: #c79bf0; --c-labor: #6fd68c; --c-sub: #ff8ac0;
+    --accent: #6fa8dc; --s1: #3987e5; --s2: #d95926; --blank: #6b7886; --warn-bg: #3a3316; --warn-fg: #e8cf7a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f161d; --surface: #18222c; --fg: #e6ecf1; --muted: #93a2af; --line: #2a3744;
+  --c-in: #6fb0ff; --c-out: #ff7a73; --c-sale: #c79bf0; --c-labor: #6fd68c; --c-sub: #ff8ac0;
+  --accent: #6fa8dc; --s1: #3987e5; --s2: #d95926; --blank: #6b7886; --warn-bg: #3a3316; --warn-fg: #e8cf7a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 56px; }
+.wrap { max-width: 1040px; margin-inline: auto; display: grid; gap: 14px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.panel h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; }
+.panel h2 span { font-weight: 400; letter-spacing: 0; margin-left: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.tiles > div { padding: 14px 16px; min-width: 0; }
+.tiles > div + div { border-left: 1px solid var(--line); }
+.tiles .k { font-size: 12px; color: var(--muted); }
+.tiles .v { font-size: 19px; font-weight: 600; overflow-wrap: anywhere; }
+.tiles .s { font-size: 12px; color: var(--muted); }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tiles > div:nth-child(3) { border-left: 0; } .tiles > div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 8px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.chart .tick { font-family: var(--font-num); }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .nodata { fill: var(--blank); font-size: 10px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 7px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 500; }
+tr.tot td { font-weight: 600; }
+tr.sec td { color: var(--muted); font-size: 12px; background: var(--bg); }
+td.blank { color: var(--blank); text-align: center; }
+td.chk { color: var(--warn-fg); background: var(--warn-bg); }
+td.l, th.l { text-align: left; }
+.allhead { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--line); font-size: 17px; }
+.allhead span { font-size: 13px; color: var(--muted); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 13px; cursor: pointer; font-size: 13px; font-family: var(--font-num); }
+.pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+.pill:disabled { opacity: 0.4; cursor: default; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; }
+.kpis > div { padding: 12px 14px; min-width: 0; }
+.kpis > div + div { border-left: 1px solid var(--line); }
+.kpis .k { font-size: 12px; color: var(--muted); } .kpis .v { font-size: 20px; font-weight: 600; overflow-wrap: anywhere; } .kpis .s { font-size: 12px; color: var(--muted); }
+.kpis .in .v { color: var(--c-in); } .kpis .out .v { color: var(--c-out); } .kpis .v { font-weight: 800; }
+.dgrid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 820px) { .dgrid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
+.flow { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto; gap: 10px; align-items: center; padding-block: 6px; font-size: 14px; border-bottom: 1px solid var(--line); }
+.flow:last-child { border-bottom: 0; }
+.flow .bar { height: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+.flow .bar i { display: block; height: 100%; border-radius: 5px; }
+.flow .amt { font-size: 13px; text-align: right; white-space: nowrap; }
+.flow.total { font-weight: 600; }
+.mchart svg { display: block; width: 100%; height: auto; }
+.mchart text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.mchart .val { fill: var(--fg); font-family: var(--font-num); }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpis > div:nth-child(3) { border-left: 0; } .kpis > div:nth-child(n+3) { border-top: 1px solid var(--line); } .kpis .v { font-size: 16px; } .flow { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) auto; } }
+.half { border: 1px solid var(--line); border-radius: 10px; margin-top: 14px; overflow: hidden; }
+.half > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 14px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.half > header .warn { color: var(--c-out); font-size: 12px; }
+.half > header b { font-size: 16px; } .half > header span { font-size: 12px; color: var(--muted); }
+.half > header .fin { margin-left: auto; font-size: 13px; } .half > header .fin b { font-size: 18px; color: var(--accent); }
+.hcols { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .hcols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .hcols > div + div { border-left: 1px solid var(--line); } }
+.hcols > div { padding: 12px 14px; min-width: 0; }
+.hcols h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.04em; }
+.hcols h3.in { color: var(--c-in); } .hcols h3.out { color: var(--c-out); }
+.hl.in .num, .hl.in span:first-child { color: var(--c-in); } .hl.out .num, .hl.out span:first-child { color: var(--c-out); }
+.hl.sale .num, .hl.sale span:first-child { color: var(--c-sale); } .hl.lab .num, .hl.lab span:first-child { color: var(--c-labor); } .hl.sub .num, .hl.sub span:first-child { color: var(--c-sub); }
+.hl small { color: var(--muted) !important; } .hl.b span { font-weight: 800; }
+.hl.t.in span, .hl.t.out span { font-weight: 800; }
+.lg { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; } .lg span { display: inline-flex; align-items: center; gap: 5px; } .lg i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.hl { display: flex; justify-content: space-between; gap: 10px; padding-block: 5px; font-size: 14px; border-bottom: 1px dashed var(--line); }
+.hl:last-child { border-bottom: 0; } .hl.t { font-weight: 600; border-top: 1px solid var(--line); border-bottom: 0; margin-top: 4px; padding-top: 7px; }
+.hl small { color: var(--muted); }
+details.led { border-top: 1px solid var(--line); }
+details.led > summary { cursor: pointer; padding: 9px 14px; font-size: 13px; color: var(--muted); }
+.ledwrap { overflow-x: auto; max-height: 70vh; }
+table.led { font-size: 12px; min-width: 760px; }
+table.led th, table.led td { padding: 4px 6px; border: 1px solid var(--line); }
+table.led th { position: sticky; top: 0; z-index: 2; background: var(--surface); font-weight: 600; }
+table.led td.nm { text-align: left; min-width: 190px; position: static; background: transparent; }
+table.led th:first-child, table.led td:first-child { position: static; background: transparent; }
+table.led td.dt { color: var(--muted); font-family: var(--font-num); }
+table.led td.dt.cf { opacity: 0.55; }
+.c-sa, .c-tot { background: color-mix(in srgb, var(--c-in) 11%, transparent); color: var(--c-in); }
+.c-tot { font-weight: 800; }
+.c-exp, .c-cargo, .c-tax, .c-rent, .c-ad { background: color-mix(in srgb, var(--c-out) 10%, transparent); color: var(--c-out); }
+.c-sale, .c-cost, .c-mar { background: color-mix(in srgb, var(--c-sale) 11%, transparent); color: var(--c-sale); }
+.c-man { background: color-mix(in srgb, var(--c-labor) 11%, transparent); color: var(--c-labor); }
+.c-out { background: color-mix(in srgb, var(--c-sub) 11%, transparent); color: var(--c-sub); }
+.c-net { background: color-mix(in srgb, var(--fg) 7%, transparent); color: var(--fg); font-weight: 800; }
+.c-pay { background: color-mix(in srgb, var(--c-in) 14%, transparent); color: var(--c-in); } .c-vend { background: color-mix(in srgb, var(--c-labor) 12%, transparent); color: var(--c-labor); }
+tr.k-in td { color: var(--c-in); } tr.k-out td { color: var(--c-out); } tr.k-sale td { color: var(--c-sale); } tr.kb td { font-weight: 800; }
+tr.k-in td.chk, tr.k-out td.chk, tr.k-sale td.chk { color: var(--warn-fg); }
+tr.lsum td { font-weight: 700; border-top: 2px solid var(--fg); } tr.lfoot td { background: var(--bg); }
+tr.lbuy td.nm { color: var(--muted); }
+.mk { color: #d63031; font-weight: 700; }
+.sch h3 { margin: 14px 0 6px; font-size: 13px; letter-spacing: 0.04em; color: var(--muted); }
+.sch table td.l, .sch table th.l { text-align: left; }
+.dd { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11px; font-family: var(--font-num); font-weight: 700; background: color-mix(in srgb, var(--c-in) 14%, transparent); color: var(--c-in); }
+.dd.late { background: color-mix(in srgb, var(--c-out) 14%, transparent); color: var(--c-out); }
+.sch .k-하청 { color: var(--c-sub); } .sch .k-기타 { color: var(--c-labor); } .sch .k-확정 { color: var(--c-in); }
+.gh { margin: 18px 0 8px; font-size: 13px; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+.note { font-size: 13px; color: var(--muted); }
+.note li + li { margin-top: 4px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>라파멀티엔터 재무표</h1>
+    <div class="sub">라파멀티 엔터테인먼트 · 2016년~2026년 · 일정표 폴더의 연도별 경비표(수입표) 합계 줄 기준 · 홈택스 부가세 납부 포함</div>
+  </header>
+
+  <section class="panel" id="yearBox">
+    <h2>연간 대시보드 <span>연도를 고르면 그 해 수입과 지출을 한 화면에서 봅니다, 단위 만원</span></h2>
+    <div class="pills" id="yearPills" role="group" aria-label="연도 선택"></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="dgrid">
+      <div>
+        <h2>수입에서 최종 손익까지</h2>
+        <div id="flow"></div>
+      </div>
+      <div>
+        <h2>월별 행사 총액과 지출 <span>한 막대 안에 순액·공제·부가세, 단위 만원</span></h2>
+        <div class="mchart" id="mchart"></div>
+      </div>
+    </div>
+    <div id="schedBox" class="sch"></div>
+    <div id="halves"></div>
+    <div id="mdetail" style="margin-top:14px" hidden>
+      <h2>반기별 확정 금액 <span>경비표 합계 칸의 최종 금액, 단위 만원</span></h2>
+      <div class="tablewrap" style="margin-bottom:14px"><table id="htable"></table></div>
+      <h2>월별 상세 <span id="mdetailSub"></span></h2>
+      <div class="tablewrap"><table id="mtable"></table></div>
+    </div>
+    <ul class="note" id="yearNote" style="margin:12px 0 0;padding-left:18px"></ul>
+  </section>
+
+  <div class="allhead"><b>전체 연도</b><span id="allRange"></span></div>
+  <section class="tiles" id="tiles" aria-label="전체 연도 요약"></section>
+
+  <section class="panel">
+    <h2>연도별 수입과 순액 <span>행사 총액과 공제 후 순액, 단위 만원</span></h2>
+    <div class="legend"><span><i style="background:var(--s1)"></i>행사 총액 (수입)</span><span><i style="background:var(--s2)"></i>공제 후 순액</span></div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="panel">
+    <h2>연도별 재무표 <span>단위 만원, '-'는 자료 없음, 노란 칸은 원본 확인이 필요한 값입니다</span></h2>
+    <div class="tablewrap"><table id="fin"></table></div>
+    <h3 class="gh">그래프 · 연도별 수입, 공제 후 순액, 세금</h3><div class="chart" id="chFin"></div><div class="lg" id="lgFin"></div>
+  </section>
+
+  <section class="panel">
+    <h2>경비표 원본 합계 줄 <span>각 파일에서 읽은 구간별 합계, 단위 만원</span></h2>
+    <div class="tablewrap"><table id="blocks"></table></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px">
+      <li>경비표는 기간별로 구간을 나눠 합계 줄을 두고 있어서, 연도 값은 그 합계 줄을 더했습니다. 구간 합계가 낱개 행사 행의 합과 일치하는지 2018~2020년에 대조했습니다(차이 3% 이내).</li>
+      <li>공제 후 순액은 합계 줄에 적힌 순 금액입니다. 총액에서 화물, 인력, 외주, 세금을 뺀 값입니다. 2018~2022년은 합계 줄 열 위치가 달라 순액을 확정하지 못했습니다.</li>
+      <li>2021년 파일(백업 폴더가 비어 있음)과 2016년(일정표만 있음)은 금액 자료가 없습니다.</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>장비·광고·알바·화물 직접 지출 <span>합계 줄 아래에 적힌 구매와 지출 항목, 단위 만원</span></h2>
+    <div class="tablewrap"><table id="spend"></table></div>
+  </section>
+
+  <section class="panel" id="bizBox">
+    <h2>통장 기준 라파멀티 가계부 <span>2025.1~2026.10 초 월별, 단위 만원 · 입금·출금 실제 결제일 기준</span></h2>
+    <h3 class="gh">연도 요약</h3>
+    <div class="tablewrap"><table id="bizYear"></table></div>
+    <h3 class="gh">그래프 · 월별 수입과 지출</h3><div class="chart" id="chBiz"></div><div class="lg" id="lgBiz"></div>
+    <h3 class="gh">알바 지급 (이름은 명단 대조, 금액은 통장 기준)</h3>
+    <div class="tablewrap"><table id="bizAlba"></table></div>
+    <h3 class="gh">월별 표</h3>
+    <div class="tablewrap"><table id="bizTable"></table></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px">
+      <li>경비표는 행사일 기준 총액과 행사별 공제이고, 이 표는 농협 통장 입금과 출금(실제 결제일)입니다. 외주는 경비표 ◀ 명단과 개인 이름 이체를 모두 합친 통장 지급액이라 경비표 공제보다 큽니다.</li>
+      <li>수입은 교회·기관 이름 입금과 10만원 이상 개인 입금, 서부지역회 보조금, 이순복 차량렌트, 스마트스토어 판매 정산, 레일기차 판매, 박대덕 이자입니다. 환급·대출·정산성 입금과 한윤수·이상훈 입금은 뺐습니다.</li>
+      <li>박재만 2025년 지출은 차용(대여금)이라 빼고, 2026년 지출은 중국 제작비에 넣었습니다. CUI YONGZHU(헬로헬로) 2025년 지급도 중국 제작비입니다.</li>
+      <li>쇼핑몰·결제대행(카페24, 이니시스, KCP, NICE, 갤럭시아)과 이름 없는 은행 이체는 분류 전이라 넣지 않았습니다.</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>화물비 분류 <span>전국24시콜화물 운송료, 단위 만원</span></h2>
+    <div class="tablewrap"><table id="cargo"></table></div>
+    <h3 class="gh">그래프 · 연도별 화물비 분류</h3><div class="chart" id="chCargo"></div><div class="lg" id="lgCargo"></div>
+    <h2 style="margin-top:16px">2025년 월별 운송 내역 <span>배차 엑셀 기준</span></h2>
+    <div class="tablewrap"><table id="cargo25"></table></div>
+    <h3 class="gh">그래프 · 2025년 월별 화물 운임</h3><div class="chart" id="chCargo25"></div><div class="lg" id="lgCargo25"></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px">
+      <li>2022~2024년은 전국24시콜화물이 보낸 협조문의 연간 운송건수와 운송료이고, 2025년은 배차 엑셀을 더한 값입니다. 2016~2021년과 2026년은 자료가 없습니다.</li>
+      <li>경비표의 행사별 '화물' 칸에는 일부 화물비가 이미 공제되어 있습니다. 콜 운송료에서 그 금액을 뺀 차액만 '추가 반영 화물비'로 지출에 넣어 한 번만 반영했습니다. 2023년은 경비표 공제가 더 커서 추가분이 없습니다.</li>
+      <li>콜 운송료는 미등록화주(라파이벤트) 배차 건만 포함하므로, 다른 업체나 자차로 운반한 화물비는 들어 있지 않습니다.</li>
+    </ul>
+  </section>
+
+  <section class="panel" id="jongBox">
+    <h2>종합소득세 내역 <span>직접 입력 칸, 단위 만원</span></h2>
+    <div class="tablewrap"><table id="jongTable"></table></div>
+    <h3 class="gh">그래프 · 연도별 종합소득세 납부액</h3><div class="chart" id="chJong"></div><div class="lg" id="lgJong"></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px">
+      <li>홈택스 전자신고 결과 조회에서 세목을 종합소득세로 2016년부터 2026년까지 조회했을 때 사업자번호 기준으로는 신고내역이 0건이었습니다. 종합소득세는 주민등록번호 기준으로 접수되어, 주민등록번호로 조회해야 나옵니다.</li>
+      <li>점검표(가계)에는 2026년 1월 81,650원, 2월 26,200원, 4월 738,000원, 5월 500,000원이 "종소세"로 적혀 있습니다. 4월 738,000원은 홈택스에서 부가가치세(2026-04-21)로 나오므로 같은 돈이면 중복입니다.</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>부가가치세 납부내역 <span>홈택스 납부내역 조회, 단위 만원</span></h2>
+    <h3 class="gh">그래프 · 연도별 부가가치세 납부액</h3><div class="chart" id="chVat"></div><div class="lg" id="lgVat"></div>
+    <h3 class="gh">홈택스 신고내역과 납부 (전자신고 결과 조회, 2026-10-03 조회)</h3>
+    <div class="tablewrap"><table id="vatFilings"></table></div>
+    <h3 class="gh">납부내역</h3>
+    <div class="tablewrap"><table id="pay"></table></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px">
+      <li>부가세계산식 파일(2023-12-20 작성, 연도 표기 없음)에는 상반기 매출 26,489.8만원·매입 26,805.3만원, 하반기 매출 14,484.1만원·매입 10,688.2만원이 적혀 있습니다.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function () {
+  var YEARS = []; for (var y = 2016; y <= 2026; y++) YEARS.push(y);
+  /* 경비표 합계 줄 (만원). 연도 -> 구간 목록 {t: 총액, n: 순(없으면 null), w: 파일 위치 메모} */
+  var BLOCKS = {
+    2017: [{ t: 12570, n: null, w: "합계 줄(표 하단)", chk: true }],
+    2018: [{ t: 7164, n: null, w: "상반기 구간" }, { t: 11421, n: null, w: "7~8월 구간" }, { t: 4815, n: null, w: "하반기 구간" }],
+    2019: [{ t: 6197, n: null, w: "1구간" }, { t: 11864, n: null, w: "2구간" }, { t: 3384, n: null, w: "3구간" }],
+    2020: [{ t: 4631, n: null, w: "1구간" }, { t: 1550, n: null, w: "2구간" }, { t: 1240, n: null, w: "3구간" }, { t: 86, n: null, w: "4구간" }, { t: 599, n: null, w: "5구간" }, { t: 670, n: null, w: "6구간" }],
+    2022: [{ t: 2439, n: 1353, w: "상반기 구간" }, { t: 2816, n: null, w: "하반기 구간" }],
+    2023: [{ t: 7410, n: 4466, w: "상반기 구간" }, { t: 8866, n: 6498, w: "하반기 구간" }],
+    2024: [{ t: 5185, n: 3950, w: "상반기 구간", chk: true }, { t: 7037, n: 5970, w: "하반기 구간" }],
+    2025: [{ t: 5943, n: 4634, w: "상반기 구간" }, { t: 7805, n: 5663, w: "하반기 구간" }],
+    2026: [{ t: 5637, n: 4763, w: "상반기(봄)" }, { t: 7225, n: 5446, w: "중반기(여름)" }, { t: 536, n: 536, w: "하반기(가을)" }]
+  };
+  /* 판매 매출 / 원가 / 마진 (만원) */
+  var SALES = { 2017: { s: 5631, c: 3072, m: 2452 }, 2022: { s: 2801, c: 1555, m: 1246 }, 2023: { s: 4259, c: 1903, m: 2356 }, 2024: { s: 2082, c: 250, m: 1832 }, 2026: { s: 830, c: 366, m: 464 } };
+  /* 장비·광고 직접 지출 (만원) */
+  var SPEND = {
+    2017: [["방방구매 3동", 410], ["놀바2", 420], ["게임바운스 3종", 330], ["빨파롱 1개", 300], ["호버보드 6대", 126], ["중국경비", 120], ["광고비 4개월(네이버)", 112], ["1010 풀장", 100], ["아치", 70]],
+    2026: [["놀바 2대(대형·소형)", 560], ["텐트·테이블·의자", 590], ["슬라이드(둥근·무지개)", 400], ["회전비행기", 150], ["레일기차", 135], ["인형뽑기 2대", 50], ["장비·소모품 7~8월 (통장: 쿠팡·카카오페이·인터넷상거래 등)", 630.4], ["장비·소모품 9월 (통장)", 19], ["알바 7~8월 (통장 기준)", 510.8], ["알바 9월 안중행사 (통장 기준)", 35.9], ["화물·용달 (통장: 용달기사·비앤씨해운)", 71.1], ["광고·호스팅 (통장·카드)", 9.5], ["중국 제작비 (박재만, 7/8·7/14 통장)", 750]],
+    2018: [["중국장비구매", 2000], ["네이버 광고비(2달)", 380], ["컴터·차바닥·리모컨", 330], ["58바운스 2개", 250], ["5월 광고비", 171], ["1차 잡자재", 150], ["가죽시트", 50]]
+  };
+  /* 전국24시콜화물 협조문(2022~2024)과 배차 엑셀(2025). 운송건수, 운송료(원) */
+  var CARGO = { 2022: { n: 62, fare: 4410000 }, 2023: { n: 58, fare: 3930000 }, 2024: { n: 60, fare: 4110000 }, 2025: { n: 48, fare: 3070000 } };
+  /* 경비표 '화물' 칸에 이미 공제된 금액 (만원) */
+  var CARGO_SHEET = { 2022: 0, 2023: 540, 2024: 60, 2025: 190, 2026: 64 };
+  var CARGO25 = [["2025-03", 1, 30000], ["2025-04", 4, 370000], ["2025-05", 17, 1110000], ["2025-06", 1, 40000], ["2025-07", 16, 880000], ["2025-08", 5, 500000], ["2025-10", 2, 70000], ["2025-11", 1, 30000], ["2025-12", 1, 40000]];
+  var cargoMan = function (y) { return CARGO[y] ? CARGO[y].fare / 10000 : null; };
+  var cargoExtra = function (y) { return CARGO[y] ? Math.max(0, cargoMan(y) - (CARGO_SHEET[y] || 0)) : null; };
+  /* 홈택스 납부내역 (원) */
+  var PAY = [
+    ["2017-01-19", 1066810, 2016, "수원"], ["2017-05-12", 548990, 2017, "수원"],
+    ["2018-01-25", 4232110, 2017, "수원"], ["2018-04-25", 249900, 2018, "수원"], ["2018-07-25", 2308810, 2018, "수원"], ["2018-11-17", 1317370, 2018, "수원"],
+    ["2019-01-24", 4969550, 2018, "수원"], ["2019-05-08", 3590000, 2019, "수원"],
+    ["2020-01-20", 415000, 2019, "수원"], ["2020-07-22", 213620, 2020, "수원"],
+    ["2021-01-25", 32640, 2020, "수원"], ["2021-08-03", 3320, 2021, "동화성"],
+    ["2022-01-20", 88460, 2021, "동화성"], ["2022-07-21", 840900, 2022, "동화성"],
+    ["2023-01-25", 133410, 2022, "동화성"],
+    ["2024-07-21", 7168070, 2024, "동화성"], ["2024-10-13", 3584000, 2024, "동화성"],
+    ["2025-06-28", 3000000, 2024, "동화성"], ["2025-07-17", 172270, 2025, "동화성"],
+    ["2026-01-18", 1477650, 2025, "동화성"], ["2026-04-21", 738000, 2026, "동화성"]
+  ];
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return Math.round(n).toLocaleString("ko-KR"); };
+  /* 원 -> 만원, 소수 첫째 자리까지 */
+  var fmtM = function (won) { return (Math.round(won / 1000) / 10).toLocaleString("ko-KR", { maximumFractionDigits: 1 }); };
+
+  var vat = {}, cnt = {}; YEARS.forEach(function (y) { vat[y] = 0; cnt[y] = 0; });
+  PAY.forEach(function (p) { vat[+p[0].slice(0, 4)] += p[1]; cnt[+p[0].slice(0, 4)] += 1; });
+  var tot = {}, net = {}, netFull = {};
+  YEARS.forEach(function (y) {
+    var b = BLOCKS[y]; if (!b) return;
+    tot[y] = b.reduce(function (a, x) { return a + x.t; }, 0);
+    if (b.every(function (x) { return x.n != null; })) { net[y] = b.reduce(function (a, x) { return a + x.n; }, 0); }
+  });
+  var yrs = YEARS.filter(function (y) { return tot[y] != null; });
+  var sumTot = 0; yrs.forEach(function (y) { sumTot += tot[y]; });
+  $("allRange").textContent = YEARS[0] + "~" + YEARS[YEARS.length - 1] + "년 비교";
+  var best = yrs.reduce(function (a, y) { return tot[y] > tot[a] ? y : a; }, yrs[0]);
+  var vatSum = 0; YEARS.forEach(function (y) { vatSum += vat[y]; });
+  var netYrs = Object.keys(net).map(Number), netSum = 0; netYrs.forEach(function (y) { netSum += net[y]; });
+
+  $("tiles").innerHTML =
+    '<div><div class="k">행사 총액 합계</div><div class="v num">' + fmt(sumTot) + '만</div><div class="s">' + yrs[0] + '~' + yrs[yrs.length - 1] + ' · ' + yrs.length + '개 연도</div></div>' +
+    '<div><div class="k">총액이 가장 큰 해</div><div class="v num">' + best + '년</div><div class="s num">' + fmt(tot[best]) + '만</div></div>' +
+    '<div><div class="k">공제 후 순액 (확정 연도)</div><div class="v num">' + fmt(netSum) + '만</div><div class="s">' + netYrs.join(", ") + '</div></div>' +
+    '<div><div class="k">부가세 납부 합계</div><div class="v num">' + fmtM(vatSum) + '만</div><div class="s">' + PAY.length + '건</div></div>';
+
+  /* 연간 대시보드 */
+  var MONTHLY = {
+    2018: { 2: 250, 3: 212, 4: 725, 5: 5117, 6: 1050, 7: 8116, 8: 3711, 9: 1655, 10: 2256, 11: 959 },
+    2019: { 1: 200, 3: 260, 4: 819, 5: 4789, 6: 882, 7: 7443, 8: 3668, 9: 440, 10: 2944, 11: 40 },
+    2020: { 2: 159, 3: 2816, 4: 1143, 5: 359, 6: 194, 7: 314, 8: 1196, 9: 1247, 10: 86, 11: 599, 12: 670 },
+    2022: { 5: 2439, 7: 2736, 8: 115 },
+    2023: { 4: 943, 5: 6092, 6: 375, 7: 6076, 8: 2790 },
+    2024: { 4: 835, 5: 4310, 6: 40, 7: 5393, 8: 1534, 9: 110 },
+    2025: { 4: 909, 5: 4232, 6: 862, 7: 3699, 8: 4106 },
+    2026: { 4: 440, 5: 4597, 6: 600, 7: 5155, 8: 2070 }
+  };
+  /* 2026년 경비표 정밀 대조값 (만원): 행사 행을 달별로 더한 값. 합계 줄과 일치함 */
+  var DETAIL = {
+    2026: {
+      months: { 4: { n: 3, tot: 440, ded: 5 }, 5: { n: 13, tot: 4597, ded: 769 }, 6: { n: 1, tot: 600, ded: 100 }, 7: { n: 26, tot: 5155, ded: 1279 }, 8: { n: 12, tot: 2070, ded: 500 }, 9: { n: 1, tot: 330, ded: 0 }, 10: { n: 1, tot: 169, ded: 0 }, 11: { n: 1, tot: 37, ded: 0 } },
+      extra: [
+        ["판매 (전주 윤석호목사 350, 논산성구랜드 480)", "수입", 830], ["판매 원가", "지출", 366],
+        ["상반기 구매 (놀바·텐트·슬라이드 등 6건 · 통장에서 박재만 4월 745 중국 제작비 확인, 경비표 구매 줄에 포함)", "지출", 1885], ["중반기 장비·소모품 (통장 7~8월)", "지출", 630.4], ["하반기 장비·소모품 (통장 9월)", "지출", 19], ["중국 제작비 (박재만 7/8 450 · 7/14 300, 통장)", "지출", 750],
+        ["알바 (통장 기준: 7~8월 510.8 · 9/12 안중행사 35.9)", "지출", 546.7], ["화물·용달 (통장)", "지출", 71.1], ["광고·호스팅", "지출", 9.5]
+      ],
+      halves: [
+        { n: "상반기(봄)", net: 4763, sale: 464, buy: 1885, other: 0, final: 3342 },
+        { n: "중반기(여름)", net: 5446, sale: 0, buy: 1380.4, other: 584.9, final: 3480.7 },
+        { n: "하반기(가을)", net: 536, sale: 0, buy: 19, other: 42.4, final: 474.6 }
+      ],
+      check: "상반기(봄) 총액 5,637 · 순 4,763, 중반기(여름) 총액 7,225 · 순 5,446, 하반기(가을) 총액 536 (경비표 줄 합계 기준)"
+    }
+  };
+
+  var LEDGER = {"2022":{"cols":["sa","tot","exp","sale","cost","mar","cargo","ad","out","net"],"rows":[{"k":"ev","d":"","n":"인천 백호체육관 놀바 ▶","v":{"sale":240.0,"cost":-180.0,"mar":60.0},"p":"완납"},{"k":"ev","d":"","n":"인천 에어펀체육관 놀바 ▶","v":{"sale":240.0,"cost":-180.0,"mar":60.0},"p":"완납"},{"k":"ev","d":"","n":"동탄 스토어 놀바 ▶","v":{}},{"k":"ev","d":"05-01","n":"광주 효천중앙교회 고고 ▶","v":{"tot":90.0,"out":-60.0,"net":30.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-01","n":"원주 충정교회 레몬 ▶","v":{"tot":120.0,"out":-57.0,"net":63.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-01","n":"부산 이삭교회 으랏 ▶","v":{"tot":375.0,"out":-270.0,"net":105.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-01","n":"수원 호매실교회 레몬 ▶","v":{"tot":200.0,"out":-105.0,"net":95.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-01","n":"신림 제일교회 태상 ▶","v":{"tot":90.0,"out":-35.0,"net":55.0},"p":"완납","u":"미수"},{"k":"ev","d":"05-01","n":"안양 평촌교회 엔써 ▶","v":{"tot":110.0,"out":-55.0,"net":55.0},"p":"완납","u":"미납"},{"k":"ev","d":"05-03","n":"우이동 유치원 피호진 ▶","v":{"tot":75.0,"out":-35.0,"net":40.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-04","n":"오산 시립호반 피호진 ▶","v":{"tot":70.0,"out":-40.0,"net":30.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-05","n":"종로 혜성교회 재만 ▶","v":{"tot":889.0,"out":-159.0,"net":730.0},"p":"완납","u":"미수"},{"k":"ev","d":"05-08","n":"이리 신광교회 정경석▶","v":{"tot":320.0,"out":-200.0,"net":120.0},"p":"완납","u":"완납"},{"k":"ev","d":"05-12","n":"진주 슬라이드 2개 ▶","v":{"sale":528.0,"cost":-278.0,"mar":250.0}},{"k":"ev","d":"05-29","n":"대구 내당교회 정경석▶","v":{"tot":100.0,"out":-70.0,"net":30.0},"p":"미납","u":"미납"},{"k":"ev","d":"05-31","n":"광고비","v":{"exp":-20.0}},{"k":"foot","l":"","x":1353.0},{"k":"sum","v":{"tot":2439.0,"out":-1086.0,"net":1353.0}},{"k":"foot","l":"판매","x":370.0},{"k":"foot","l":"지출","x":-20.0},{"k":"ev","d":"~05-31","n":"4월","v":{},"p":"합계","u":"2022년"},{"k":"foot","l":"","x":1703.0},{"k":"ev","d":"05-30","n":"진주 수영장-중슬(2)","v":{"sale":594.0,"cost":-358.0,"mar":236.0}},{"k":"ev","d":"05-30","n":"논산 펜션-중슬(1)","v":{"sale":550.0,"cost":-179.0,"mar":371.0}},{"k":"ev","d":"06-04","n":"김구현목사님-88(1),중슬","v":{"sale":420.0,"cost":-240.0,"mar":180.0}},{"k":"ev","d":"06-09","n":"구성민목사님-10(1)","v":{"sale":229.0,"cost":-140.0,"mar":89.0}},{"k":"ev","d":"06-09","n":"천안식당 풀1(6),슬(로보트)","v":{}},{"k":"ev","d":"07-09","n":"안성 사랑의교회 물차6","v":{"tot":350.0}},{"k":"ev","d":"07-09","n":"수원아이파크 5(88,555),중,소","v":{"tot":600.0}},{"k":"ev","d":"07-16","n":"수원베들레헴 풀5(108885)중소","v":{"tot":445.0}},{"k":"ev","d":"07-16","n":"오산 성지-풀2(8),슬2(대,소)","v":{"tot":150.0}},{"k":"ev","d":"07-20","n":"제주꿈의 풀2(5,5)중,소","v":{"tot":143.0}},{"k":"ev","d":"07-23","n":"오전-중부협의회-레크","v":{"sa":30.0}},{"k":"ev","d":"07-23","n":"전주동은-90-5=0","v":{}},{"k":"ev","d":"07-23","n":"안녕 안천 풀2(10,8),대,중","v":{"tot":150.0}},{"k":"ev","d":"07-23","n":"수원 농천-풀1(8),슬1(대),홈1","v":{"tot":90.0}},{"k":"ev","d":"07-23","n":"이천 신하교회 풀2(8,8)중소","v":{"tot":120.0}},{"k":"ev","d":"07-23","n":"인천복지-풀(8),중","v":{"tot":85.0}},{"k":"ev","d":"07-23","n":"서울도봉감리 풀(10)","v":{"tot":53.0}},{"k":"ev","d":"07-23","n":"서울 양문교회 풀1(10)대","v":{"tot":90.0}},{"k":"ev","d":"07-23","n":"대구 내일교회 풀2(10,8)중,소","v":{"tot":115.0}},{"k":"ev","d":"07-23","n":"부산 이삭교회 풀2(8,8)초대","v":{"tot":140.0}},{"k":"ev","d":"07-27","n":"구리 초대 풀1(5)중,텐2","v":{"tot":70.0}},{"k":"ev","d":"07-29","n":"광주 첨단겨자씨교회","v":{"sa":40.0}},{"k":"ev","d":"07-30","n":"서울 새로운교회 10(1)중,소","v":{"tot":135.0}},{"k":"ev","d":"08-04","n":"오전-서울임마누엘1","v":{"sa":25.0}},{"k":"ev","d":"08-05","n":"서울 임마누엘 풀1(10)소","v":{"tot":80.0}},{"k":"ev","d":"08-05","n":"오전-서울임마누엘2","v":{"sa":25.0}},{"k":"ev","d":"08-06","n":"오전-서울임마누엘3","v":{"sa":25.0}},{"k":"ev","d":"08-12","n":"저녁 -구미북삼제일교회1","v":{"sa":30.0}},{"k":"ev","d":"08-13","n":"오전 -구미북삼제일교회2","v":{"sa":30.0}},{"k":"ev","d":"08-16","n":"저녁 – 제주전국주일학교1","v":{"sa":30.0}},{"k":"ev","d":"08-17","n":"저녁 – 제주전국주일학교2","v":{"sa":30.0}},{"k":"ev","d":"08-22","n":"오전 – 의정부열린교회","v":{"sa":30.0}},{"k":"ev","d":"08-22","n":"의정부 열린교회 풀1(4),시소","v":{"tot":35.0}},{"k":"ev","d":"~08-22","n":"5월 광고비","v":{"ad":-34.0}},{"k":"ev","d":"~08-22","n":"6월 광고비","v":{"ad":-15.0}},{"k":"sum","v":{"sa":120.0,"tot":2816.0,"sale":1793.0,"cost":-917.0,"mar":876.0}},{"k":"foot","l":"판매","x":876.0}]},"2023":{"cols":["sa","tot","exp","sale","cost","mar","cargo","man","rent","out","net"],"rows":[{"k":"ev","d":"01-11","n":"나눔과 섬김의 교회","v":{"sa":50.0}},{"k":"ev","d":"01-13","n":"서울평화교회","v":{"sa":30.0}},{"k":"ev","d":"01-27","n":"대구 예수 그이름교회","v":{"sa":50.0}},{"k":"ev","d":"02-11","n":"평택제일교회","v":{"sa":30.0}},{"k":"ev","d":"02-11","n":"남수원노회-강습회","v":{"sa":40.0}},{"k":"ev","d":"02-24","n":"침산동부교회","v":{"sa":40.0}},{"k":"ev","d":"02-26","n":"군포 영은교회","v":{"sa":30.0}},{"k":"ev","d":"03-11","n":"서울 송죽교회","v":{"sa":40.0}},{"k":"ev","d":"04-08","n":"해운대신일교회","v":{"sa":70.0}},{"k":"ev","d":"04-19","n":"화성 팔탄면 백상철","v":{"tot":88.0,"out":-45.0,"net":43.0},"p":"완납"},{"k":"ev","d":"04-29","n":"광주 새순 알바","v":{"tot":600.0,"cargo":-20.0,"man":-20.0,"rent":-5.0,"net":555.0},"p":"완납"},{"k":"ev","d":"04-30","n":"서울 세현교회 동진","v":{"tot":190.0,"net":190.0},"p":"완납"},{"k":"ev","d":"04-29","n":"대구 영신교회 김영일","v":{"tot":65.0,"out":-50.0,"net":15.0},"p":"완납"},{"k":"ev","d":"05-03","n":"화성 양감초 동진","v":{"tot":180.0,"rent":-10.0,"net":170.0},"p":"완납"},{"k":"ev","d":"05-03","n":"서울 방학유치원 바이킹","v":{"tot":132.0,"out":-80.0,"net":52.0},"p":"완납"},{"k":"ev","d":"05-04","n":"서울 우이동 강성철","v":{"tot":88.0,"out":-43.0,"net":45.0},"p":"완납"},{"k":"ev","d":"05-05","n":"대구 영신교회 아이비","v":{"tot":70.0,"out":-40.0,"net":30.0},"p":"완납"},{"k":"ev","d":"05-05","n":"대전 문지동 슈퍼맨","v":{"tot":240.0,"out":-100.0,"net":140.0},"p":"완납"},{"k":"ev","d":"05-05","n":"오산 포도나무 자가","v":{}},{"k":"ev","d":"05-05","n":"송탄 영광교회 자가","v":{"tot":70.0,"out":-70.0},"p":"완납"},{"k":"ev","d":"05-06","n":"신림 남서울중앙 동진","v":{"tot":190.0,"out":-60.0,"net":130.0},"p":"완납"},{"k":"ev","d":"05-07","n":"수원 평안교회 동진","v":{"tot":660.0,"out":-65.0,"net":595.0},"p":"완납"},{"k":"ev","d":"05-07","n":"수원 북부교회 동진","v":{"tot":140.0,"out":-30.0,"net":110.0},"p":"완납"},{"k":"ev","d":"05-07","n":"온누리 서빙고 레몬","v":{"tot":1595.0,"cargo":-360.0,"out":-650.0,"net":585.0},"p":"완납"},{"k":"ev","d":"05-07","n":"온누리 도곡 원주","v":{"tot":380.0,"cargo":-140.0,"out":-125.0,"net":115.0},"p":"완납"},{"k":"ev","d":"05-07","n":"온누리 양재 강성철","v":{"tot":450.0,"cargo":-20.0,"man":-8.0,"rent":-20.0,"out":-180.0,"net":222.0},"p":"완납"},{"k":"ev","d":"05-13","n":"광교 사회복지 자가","v":{"tot":44.0,"net":44.0},"p":"완납"},{"k":"ev","d":"05-16","n":"샤크1,두더지1","v":{"exp":-190.0}},{"k":"ev","d":"05-19","n":"인천 신청라 동진","v":{"tot":120.0,"net":120.0}},{"k":"ev","d":"05-20","n":"광주 동명 동진","v":{"tot":200.0,"net":200.0}},{"k":"ev","d":"05-21","n":"군포 부곡이웃 자가","v":{"tot":43.0,"net":43.0}},{"k":"ev","d":"05-21","n":"성남 제일교회 함현진","v":{"tot":110.0,"out":-70.0,"net":40.0}},{"k":"ev","d":"05-21","n":"군산 개복교회 동진","v":{"tot":830.0,"out":-483.0,"net":347.0}},{"k":"ev","d":"05-22","n":"서울 기독교대학 동진","v":{"tot":550.0,"out":-150.0,"net":400.0}},{"k":"ev","d":"06-11","n":"서울 왕십리교회 동진","v":{"tot":375.0,"out":-100.0,"net":275.0}},{"k":"ev","d":"~06-11","n":"광고비 지출 3월","v":{"exp":-18.0}},{"k":"ev","d":"~06-11","n":"광고비 지출 4월","v":{"exp":-49.0}},{"k":"ev","d":"~06-11","n":"광고비 지출 5월","v":{"exp":-12.0}},{"k":"ev","d":"~06-11","n":"장비 구매비","v":{}},{"k":"sum","v":{"sa":380.0,"tot":7410.0,"cargo":-540.0,"man":-28.0,"rent":-35.0,"out":-2341.0,"net":4466.0}},{"k":"ev","d":"~06-11","n":"4월","v":{},"p":"합계","u":"2023년"},{"k":"ev","d":"05-23","n":"순천잼잼,무지개라이드대형1","v":{"sale":295.0,"cost":-218.0,"mar":77.0}},{"k":"ev","d":"05-23","n":"곽성탁 잠수함 1대","v":{"sale":195.0,"cost":-180.0,"mar":15.0}},{"k":"ev","d":"07-03","n":"구미에스지주택 잠1대","v":{"sale":1100.0,"cost":-600.0,"mar":500.0}},{"k":"ev","d":"07-07","n":"백상철 슬대2,중1,8,5","v":{"sale":850.0,"cost":-360.0,"mar":490.0}},{"k":"ev","d":"07-07","n":"홍문석 슬대1(안전)","v":{"sale":150.0,"mar":150.0}},{"k":"ev","d":"07-11","n":"영주남부초 놀바1(43)","v":{"sale":242.0,"cost":-70.0,"mar":172.0}},{"k":"ev","d":"07-11","n":"키움 풀1(10)+화물","v":{"sale":153.0,"cost":-119.0,"mar":34.0}},{"k":"ev","d":"07-14","n":"다함 김태상 풀1(8)","v":{"sale":103.0,"mar":103.0}},{"k":"ev","d":"07-17","n":"부천아빠 방2","v":{"sale":17.0,"cost":-12.0,"mar":5.0}},{"k":"ev","d":"07-17","n":"다함 김태상 잠수함","v":{"sale":205.0,"cost":-180.0,"mar":25.0}},{"k":"ev","d":"07-17","n":"다함 김태상 방 5","v":{"sale":44.0,"cost":-29.0,"mar":15.0}},{"k":"ev","d":"07-17","n":"다함 김태상 12송풍 10","v":{"sale":85.0,"cost":-60.0,"mar":25.0}},{"k":"ev","d":"08-05","n":"의정부 열린교회 55 소슬","v":{"sale":260.0,"mar":260.0,"cargo":-80.0,"man":160.0}},{"k":"ev","d":"08-11","n":"김효민 10 슬1(준대)","v":{"sale":440.0,"mar":440.0}},{"k":"ev","d":"08-22","n":"순천함께에듀박지환에어다트1","v":{"sale":120.0,"cost":-75.0,"mar":45.0}},{"k":"ev","d":"07-01","n":"서울 맑은샘광천 풀1(8)슬1(소)","v":{"tot":75.0,"net":75.0},"p":"완납"},{"k":"ev","d":"07-01","n":"성남 선한목자 풀3(5,10,10)(텐4)","v":{"tot":180.0,"man":-6.0,"net":174.0},"p":"완납"},{"k":"ev","d":"07-01","n":"대구 황금교회 놀1(64)","v":{"tot":42.0,"out":-20.0,"net":22.0},"p":"완납"},{"k":"ev","d":"~07-01","n":"군산개복교회 청년부","v":{"sa":60.0}},{"k":"ev","d":"07-08","n":"수원 조원성당 풀1(8)슬1(중)","v":{"tot":70.0,"net":70.0},"p":"완납"},{"k":"ev","d":"07-08","n":"수원 베들레헴풀1(10)슬1(대)텐4","v":{"tot":142.0,"net":142.0},"p":"완납"},{"k":"ev","d":"07-08","n":"용인 은혜샘물놀2홈3시1라3다1","v":{"tot":150.0,"net":150.0},"p":"완납"},{"k":"ev","d":"07-08","n":"원주 충정교회풀2(5,8)슬1(중)","v":{"tot":120.0,"out":-75.0,"net":45.0},"p":"완납"},{"k":"ev","d":"07-12","n":"파주 새얼학교 풀2(5,8)슬2(중소)","v":{"tot":150.0,"out":-90.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-15","n":"군포부곡이웃홈바1자가","v":{"tot":8.0,"net":8.0},"p":"완납"},{"k":"ev","d":"07-15","n":"용인사랑을그리는풀1(58),슬1(대)","v":{"tot":170.0,"net":170.0},"p":"완납"},{"k":"ev","d":"07-15","n":"●대전 서문 풀3(1085),대중소","v":{"tot":198.0,"cargo":-15.0,"net":183.0},"p":"완납"},{"k":"ev","d":"07-15","n":"남양주감사 풀1(8),슬1(소)","v":{"tot":85.0,"out":-59.0,"net":26.0},"p":"10만"},{"k":"ev","d":"07-21","n":"능동 예찬들 홈바1(샤크)","v":{"tot":25.0,"net":25.0},"p":"완납"},{"k":"ev","d":"07-21","n":"병점 경기 풀1(5)슬1(소)홈2","v":{"tot":80.0,"net":80.0},"p":"미납"},{"k":"ev","d":"07-22","n":"동탄 시온교회 풀1(8)슬1(중)","v":{"tot":60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-22","n":"성남 은진교회 홈1(보물)","v":{"tot":24.0,"net":24.0},"p":"완납"},{"k":"ev","d":"07-22","n":"용인 정암교회 풀1(8)슬1(대)","v":{"tot":50.0,"net":50.0},"p":"미납","u":"아빠"},{"k":"ev","d":"07-22","n":"동탄 동산교회 풀1(10)슬1(대)","v":{"tot":90.0,"net":90.0},"p":"완납"},{"k":"ev","d":"07-22","n":"서울명륜중앙풀1(5)슬1(소)자가","v":{"tot":85.0,"cargo":-17.0,"net":68.0},"p":"완납"},{"k":"ev","d":"07-22","n":"이천 신하 풀2(10)","v":{"tot":95.0,"net":95.0},"p":"완납"},{"k":"ev","d":"07-22","n":"화성 마도감리 풀1(8)슬1(초대)","v":{"tot":130.0,"net":130.0}},{"k":"ev","d":"07-22","n":"서울 강동함께하는 풀1(55)슬(1)","v":{"tot":100.0,"out":-70.0,"net":30.0},"p":"완납"},{"k":"ev","d":"07-22","n":"서울 목동제자 풀1(10)슬1(중)","v":{"tot":121.0,"out":-77.0,"net":44.0},"p":"완납"},{"k":"ev","d":"07-22","n":"서울동작 동광 풀1(8)슬1(중)","v":{"tot":115.0,"out":-80.0,"net":35.0},"p":"완납"},{"k":"ev","d":"07-22","n":"서울 양문 풀1(10)슬1(대-뒷)","v":{"tot":75.0,"out":-58.0,"net":17.0},"p":"완납"},{"k":"ev","d":"07-22","n":"인천 세계비전 풀1(10)슬1(대)","v":{"tot":115.0,"out":-85.0,"net":30.0},"p":"완납"},{"k":"ev","d":"07-22","n":"대구 성일교회 풀1(5)슬1(소)","v":{"tot":50.0,"net":50.0},"p":"완납"},{"k":"ev","d":"07-22","n":"서울중량제일풀1(8)슬1(대)","v":{"tot":120.0,"out":-60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-22","n":"●여수새중앙교회 풀2(10)슬2(대)","v":{"tot":240.0,"cargo":-20.0,"man":-20.0,"net":200.0},"p":"완납"},{"k":"ev","d":"07-22","n":"음성대소순복음 풀1(10)슬1(대)","v":{"tot":120.0,"out":-75.0,"net":45.0},"p":"완납"},{"k":"ev","d":"07-22","n":"대구 황금교회 풀1(8)슬1(중)","v":{"tot":88.0,"out":-90.0,"net":-2.0},"p":"완납"},{"k":"ev","d":"07-22","n":"대구 서교회 풀1(8) 슬1(대)","v":{"tot":90.0,"out":-90.0},"p":"미납","u":"백상철"},{"k":"ev","d":"07-22","n":"부산 신명지성당 풀1(10)슬1(중)","v":{"tot":105.0,"cargo":-15.0,"net":90.0},"p":"완납"},{"k":"ev","d":"07-22","n":"김재 신광 풀1(5)","v":{"tot":40.0,"out":-20.0,"net":20.0},"p":"완납"},{"k":"ev","d":"07-23","n":"부산삼락시민풀1(8)슬1(대)","v":{"tot":100.0,"cargo":-5.0,"net":95.0},"p":"완납"},{"k":"ev","d":"07-24","n":"목포사랑의교회-PM2시","v":{"sa":50.0}},{"k":"ev","d":"07-24","n":"이천 신하중등풀2(10)","v":{"tot":45.0,"net":45.0},"p":"완납"},{"k":"ev","d":"07-27","n":"안양 복지풀3(5810)슬2(대대)","v":{"tot":220.0,"cargo":-12.0,"man":-15.0,"net":193.0},"p":"완납"},{"k":"ev","d":"07-24","n":"목포사랑의교회-PM2시","v":{"sa":50.0}},{"k":"ev","d":"07-28","n":"●진천어전협 풀2(10)슬2(대)","v":{"tot":190.0,"cargo":-20.0,"net":170.0},"p":"완납"},{"k":"ev","d":"07-28","n":"성주 동포 풀1(5)슬1(소)","v":{"tot":60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-29","n":"수원동산교회 풀1(5)","v":{"tot":40.0,"net":40.0},"p":"완납"},{"k":"ev","d":"07-29","n":"병점안천교회 풀2(108)슬2(대중)","v":{"tot":150.0,"net":150.0},"p":"완납"},{"k":"ev","d":"07-29","n":"수원 명성제일교회 풀1(8)","v":{"tot":50.0,"net":50.0},"p":"완납"},{"k":"ev","d":"07-29","n":"용인 의림교회 풀1(8)슬1(중)","v":{"tot":90.0,"net":90.0},"p":"완납"},{"k":"ev","d":"07-29","n":"동탄 크리스챤 놀1(56)","v":{"tot":30.0,"net":30.0},"p":"완납"},{"k":"ev","d":"07-29","n":"이천 신갈교회 풀1(10)슬1(대)","v":{"tot":120.0,"net":120.0},"p":"완납"},{"k":"ev","d":"07-29","n":"●동탄 장천교회 풀1(8)슬1(중)","v":{"tot":80.0,"net":80.0},"p":"완납"},{"k":"ev","d":"07-29","n":"원주 충정교회 스파크","v":{"tot":260.0,"out":-170.0,"net":90.0},"p":"완납"},{"k":"ev","d":"07-29","n":"●송탄 영광 풀1(10)슬1(중)","v":{"tot":80.0,"cargo":-10.0,"net":70.0},"p":"완납"},{"k":"ev","d":"07-29","n":"서울백석대학교회풀1(10)슬1(대)","v":{"tot":110.0,"out":-77.0,"net":33.0},"p":"완납"},{"k":"ev","d":"07-29","n":"서울서대문 명지대학풀1(10)","v":{"tot":60.0,"out":-42.0,"net":18.0},"p":"완납"},{"k":"ev","d":"07-29","n":"광명 광은교회풀1(8)슬1(대)","v":{"tot":110.0,"out":-77.0,"net":33.0},"p":"완납"},{"k":"ev","d":"07-29","n":"평창중앙교회풀1(10),슬1(중),텐2","v":{"tot":130.0,"out":-90.0,"net":40.0},"p":"완납"},{"k":"ev","d":"07-29","n":"군산동광교회풀2(510),슬2(소중)","v":{"tot":210.0,"out":-150.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-29","n":"세종온누리풀1(8),슬1(중)","v":{"tot":125.0,"out":-80.0,"net":45.0},"p":"완납"},{"k":"ev","d":"07-30","n":"군포부곡이웃 홈1(샤크)","v":{"tot":8.0,"net":8.0},"p":"완납"},{"k":"ev","d":"07-30","n":"경주펜션 풀1(5)슬1(소)","v":{"tot":65.0,"out":-45.0,"net":20.0},"p":"완납"},{"k":"ev","d":"07-30","n":"서울동막교회풀2(810)","v":{"tot":95.0,"out":-66.0,"net":29.0},"p":"완납"},{"k":"ev","d":"07-31","n":"●화순크로스풀2(510)슬2(소대)","v":{"tot":240.0,"cargo":-21.0,"net":219.0},"p":"완납"},{"k":"ev","d":"08-03","n":"개복-임실동신수양관","v":{"sa":80.0}},{"k":"ev","d":"08-04","n":"군산 개복교회 풀1(10)슬1(대)","v":{"tot":150.0,"net":150.0},"p":"완납"},{"k":"ev","d":"08-04","n":"서천 대성 체육대회","v":{"sa":190.0}},{"k":"ev","d":"08-04","n":"서천 대성 풀1(5)슬(중)","v":{"tot":110.0,"net":110.0},"p":"완납"},{"k":"ev","d":"08-04","n":"김해모든민족풀2(10)슬2(대)","v":{"tot":110.0,"out":-65.0,"net":45.0},"p":"완납"},{"k":"ev","d":"08-04","n":"김해제일교회풀2(10)슬2(대)","v":{"tot":230.0,"cargo":-20.0,"net":210.0},"p":"완납"},{"k":"ev","d":"08-04","n":"합천교회풀2(8,10)슬1(대)","v":{"tot":170.0,"out":-110.0,"net":60.0},"p":"완납"},{"k":"ev","d":"08-05","n":"의정부열린교회풀1(5)슬1(소)","v":{"tot":34.0,"net":34.0},"p":"완납"},{"k":"ev","d":"08-05","n":"남양주새암교회풀1(8)슬1(중)","v":{"tot":130.0,"out":-80.0,"net":50.0},"p":"완납"},{"k":"ev","d":"08-05","n":"양주동숭예닮풀2(88)슬2(중)","v":{"tot":190.0,"cargo":-20.0,"rent":-10.0,"net":160.0},"p":"완납"},{"k":"ev","d":"08-05","n":"울산열린문풀1(5)슬1(소)","v":{"tot":70.0,"out":-45.0,"net":25.0},"p":"완납"},{"k":"ev","d":"08-05","n":"병점주심교회풀1(5)슬1(소)","v":{"tot":20.0,"net":20.0},"p":"완납"},{"k":"ev","d":"08-08","n":"인천노회 동시찰회","v":{"sa":40.0}},{"k":"ev","d":"08-10","n":"천안청소년회 레크","v":{"sa":200.0}},{"k":"ev","d":"08-11","n":"경남노회 (음향구매-200)","v":{"sa":320.0},"p":"완납"},{"k":"ev","d":"08-11","n":"구미노회","v":{"sa":50.0}},{"k":"ev","d":"08-11","n":"안성제자들 풀2(85),슬1(중)","v":{"tot":100.0,"net":100.0},"p":"완납"},{"k":"ev","d":"08-12","n":"인천청운감리 풀1(5),슬1(소)","v":{"tot":85.0,"cargo":-6.0,"net":79.0},"p":"완납"},{"k":"ev","d":"08-14","n":"총회 축구","v":{"sa":50.0}},{"k":"ev","d":"08-15","n":"원주치악청운풀3(10)슬2(대중)","v":{"tot":270.0,"net":270.0},"p":"완납"},{"k":"ev","d":"~08-15","n":"주예수교회","v":{"sa":20.0}},{"k":"ev","d":"08-19","n":"오산성지교회풀2(10,8)슬1(중)","v":{"tot":180.0,"rent":-10.0,"net":170.0},"p":"완납"},{"k":"ev","d":"08-19","n":"평택열린문풀1(5)슬1(중)홈2","v":{"tot":80.0,"net":80.0},"p":"완납"},{"k":"ev","d":"~08-19","n":"●부산송도-놀2,슬1,스3,다1","v":{"tot":495.0,"net":495.0}},{"k":"ev","d":"~08-19","n":"●화성양감초-음향조명","v":{"tot":186.0,"net":186.0}},{"k":"ev","d":"~08-19","n":"●수원영락-바12,펀,두,농","v":{"tot":180.0,"out":-80.0,"net":100.0}},{"k":"foot","l":"","x":4259.0},{"k":"ev","d":"~08-19","n":"6월 광고비","v":{"exp":-71.0,"mar":-71.0}},{"k":"ev","d":"~08-19","n":"7월 광고비","v":{"exp":-21.0}},{"k":"foot","l":"","x":-21.0},{"k":"sum","v":{"sa":1110.0,"tot":8866.0,"exp":-92.0,"cargo":-261.0,"man":119.0,"rent":-20.0,"out":-2126.0,"net":6498.0}},{"k":"foot","l":"판매2","x":2304.0},{"k":"foot","l":"원가뺌","x":-2000.0},{"k":"foot","l":"-지출","x":-92.0}]},"2024":{"cols":["sa","tot","exp","sale","cost","mar","cargo","man","rent","out","net"],"rows":[{"k":"ev","d":"01-26","n":"침산동부교회-금요","v":{"sa":50.0}},{"k":"ev","d":"02-03","n":"한서제일교회-중고","v":{"sa":40.0}},{"k":"ev","d":"02-17","n":"주안중앙교회-초등","v":{"sa":40.0}},{"k":"ev","d":"02-23","n":"금천장로교회-유치","v":{"sa":50.0}},{"k":"ev","d":"02-23","n":"군포영광교회","v":{"sa":40.0}},{"k":"ev","d":"02-24","n":"군산개복교회","v":{"sa":40.0}},{"k":"ev","d":"04-14","n":"●수원 베들레헴 텐트","v":{"tot":75.0,"out":-61.0,"net":14.0},"p":"완납"},{"k":"ev","d":"04-28","n":"●예산 장로 체육,놀이","v":{"tot":760.0,"net":760.0},"p":"완납"},{"k":"ev","d":"05-01","n":"●화성 양감초체육","v":{"tot":210.0,"net":210.0},"p":"완납"},{"k":"ev","d":"05-04","n":"●광주 새순 놀이","v":{"tot":785.0,"net":785.0},"p":"완납"},{"k":"ev","d":"05-05","n":"●목동 대흥 놀이","v":{"tot":15.0,"net":15.0},"p":"완납"},{"k":"ev","d":"05-05","n":"●수원 박물관 놀이","v":{"tot":75.0,"out":-45.0,"net":30.0},"p":"완납"},{"k":"ev","d":"05-05","n":"●동탄 동석 홈바","v":{"tot":20.0,"net":20.0},"p":"완납"},{"k":"ev","d":"05-05","n":"●용인 우리제일 홈바","v":{"tot":115.0,"net":115.0},"p":"완납"},{"k":"ev","d":"05-05","n":"●수원 평안 놀이","v":{"tot":845.0,"out":-100.0,"net":745.0},"p":"완납"},{"k":"ev","d":"05-06","n":"●안중 목사 놀이","v":{"tot":165.0,"out":-70.0,"net":95.0},"p":"미납"},{"k":"ev","d":"05-06","n":"●대구 황금 렌탈","v":{"tot":15.0,"net":15.0},"p":"완납"},{"k":"ev","d":"05-11","n":"●광주 동명 놀이","v":{"tot":190.0,"out":-130.0,"net":60.0},"p":"완납"},{"k":"ev","d":"05-11","n":"●경기광주 새빛 렌탈","v":{"tot":25.0,"net":25.0},"p":"완납"},{"k":"ev","d":"05-12","n":"대전둔산중앙교회","v":{"sa":30.0}},{"k":"ev","d":"05-15","n":"●광명 개명교회 체육","v":{"tot":330.0,"net":330.0},"p":"완납"},{"k":"ev","d":"05-18","n":"●수원 베들레헴 놀이","v":{"tot":690.0,"out":-99.0,"net":591.0},"p":"완납"},{"k":"ev","d":"05-25","n":"●서울신길 남서울 놀이","v":{"tot":200.0,"net":200.0},"p":"완납"},{"k":"ev","d":"05-26","n":"●음성 대소 놀이","v":{"tot":300.0,"out":-80.0,"net":220.0},"p":"완납"},{"k":"ev","d":"05-29","n":"●서울 육군사관 놀이","v":{"tot":330.0,"out":-50.0,"net":280.0},"p":"완납"},{"k":"ev","d":"06-06","n":"●수지 예본 놀이","v":{"tot":40.0,"net":40.0},"p":"완납"},{"k":"ev","d":"~06-06","n":"장비 구매 - 음향스트라토스 2","v":{"exp":-150.0,"net":-150.0}},{"k":"ev","d":"~06-06","n":"정선장비 구입","v":{"exp":-400.0,"net":-400.0}},{"k":"ev","d":"~06-06","n":"장비-유지보수수리","v":{"exp":-50.0,"net":-50.0}},{"k":"sum","v":{"sa":290.0,"tot":5185.0,"out":-635.0,"net":3950.0}},{"k":"ev","d":"~06-06","n":"4월","v":{},"p":"합계","u":"2024년"},{"k":"ev","d":"~06-06","n":"오산 하람 이하정 ★차용","v":{"exp":-5460.0}},{"k":"ev","d":"~06-06","n":"군산 김동원 가을정산","v":{},"p":"미납"},{"k":"ev","d":"05-01","n":"군산 김동원 65놀바,화물","v":{"sale":80.0,"mar":80.0},"p":"160미납"},{"k":"ev","d":"05-04","n":"재만 10풀장","v":{"sale":125.0,"mar":125.0},"p":"250완납"},{"k":"ev","d":"06-04","n":"다함 김태상 무지개대형2","v":{"sale":550.0,"mar":550.0},"p":"미납"},{"k":"ev","d":"07-07","n":"임실 장진성 형중풀3,팡3송1,화","v":{"sale":337.0,"mar":337.0},"p":"미납"},{"k":"ev","d":"07-10","n":"임실 장진성 슬대형,중형(구),화","v":{"sale":640.0,"mar":640.0},"p":"미납"},{"k":"ev","d":"08-10","n":"정읍 고찬우 슬화","v":{"sale":350.0,"cost":-250.0,"mar":100.0},"p":"완납"},{"k":"buy","d":"07-07","n":"구매-밧줄,와이어","v":{"exp":-15.0}},{"k":"ev","d":"07-06","n":"서울 신답 풀2(5,10)","v":{"tot":85.0,"cargo":-5.0,"net":80.0},"p":"완납"},{"k":"ev","d":"07-06","n":"안성 무봉산 풀2(8.10)슬1(소) 물4","v":{"tot":332.0,"man":-14.0,"net":318.0}},{"k":"ev","d":"07-06","n":"남양주감사풀2(810)슬2(중대)?슬1,바","v":{"tot":400.0,"out":-70.0,"net":330.0},"p":"완납"},{"k":"ev","d":"07-12","n":"청라야시장풀2(8,8)슬2(대중)알2","v":{"tot":400.0,"man":-40.0,"net":360.0},"p":"완납"},{"k":"ev","d":"07-13","n":"안성 사랑의 풀4(10)슬4(중대) 동진","v":{"tot":484.0,"man":-55.0,"net":429.0},"p":"완납","u":"??"},{"k":"ev","d":"07-13","n":"대전 서문 풀2(10)슬2(대),유아","v":{"tot":220.0,"cargo":-30.0,"rent":-20.0,"net":170.0},"p":"완납"},{"k":"ev","d":"07-13","n":"원주 충정 풀2(85)슬1(중)","v":{"tot":110.0,"net":110.0},"p":"완납"},{"k":"ev","d":"07-14","n":"안산부곡샤크1자가","v":{"tot":15.0,"net":15.0},"p":"완납"},{"k":"ev","d":"07-19","n":"★김포학원풀1(10)슬2(중대)빔","v":{"tot":308.0,"man":-10.0,"rent":28.0,"net":326.0},"p":"완납"},{"k":"ev","d":"07-19","n":"저녁 8시 인천 성광-부흥회","v":{"sa":30.0}},{"k":"ev","d":"07-20","n":"병점 안천 풀1(10)슬1(대)","v":{"tot":60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-20","n":"수원 원천장로 풀1(5)슬1(소)","v":{"tot":70.0,"net":70.0},"p":"완납"},{"k":"ev","d":"07-20","n":"용인 사랑 풀2(8,5)슬1(대)홈1동진","v":{"tot":200.0,"cargo":-25.0,"net":175.0},"p":"완납"},{"k":"ev","d":"07-20","n":"용인 우리제일 풀1(8)슬1(중)홈2","v":{"tot":170.0,"rent":-12.0,"net":158.0},"p":"완납"},{"k":"ev","d":"07-20","n":"오산 수지선한 스포4종,두더지","v":{"tot":132.0,"net":132.0},"p":"완납"},{"k":"ev","d":"07-20","n":"목동 제자 풀1(10)슬1(대)","v":{"tot":131.0,"net":131.0},"p":"완납"},{"k":"ev","d":"07-20","n":"●부산 대연성당 풀1(5)슬1(소)","v":{"tot":80.0,"out":-45.0,"net":35.0},"p":"완납","u":"우영재"},{"k":"ev","d":"07-20","n":"●부산 신명지성당풀1(10)슬1(대)","v":{"tot":110.0,"out":-75.0,"net":35.0},"p":"완납","u":"우영재"},{"k":"ev","d":"07-25","n":"저녁 7시 전주 시온성-부흥회","v":{"sa":60.0}},{"k":"ev","d":"07-26","n":"광주 새빛풀2(5,8)슬2(소,중)동진","v":{"tot":150.0,"net":150.0},"p":"완납"},{"k":"ev","d":"07-26","n":"광주 청운풀2(10)슬2(중대)동진","v":{"tot":236.0,"net":236.0},"p":"완납"},{"k":"ev","d":"07-26","n":"파주 청훈풀1(10)90)???","v":{"tot":100.0,"net":100.0},"p":"완납","u":"정인식"},{"k":"ev","d":"07-27","n":"수원 숲평안풀1(10)슬1(대) 동진","v":{"tot":120.0,"net":120.0},"p":"완납"},{"k":"ev","d":"07-27","n":"광명 광은풀1(8)슬1(대)","v":{"tot":105.0,"net":105.0},"p":"완납"},{"k":"ev","d":"07-27","n":"수원 명성풀1(8) 동진","v":{"tot":55.0,"net":55.0},"p":"완납"},{"k":"ev","d":"07-27","n":"화성 운평풀1(5)슬1(소)","v":{"tot":90.0,"net":90.0},"p":"완납"},{"k":"ev","d":"07-27","n":"수원 차없는풀1(8)슬1(대),아치","v":{"tot":200.0,"net":200.0},"p":"완납"},{"k":"ev","d":"07-27","n":"수원 베들레헴 풀1(10)텐2","v":{"tot":60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-27","n":"인천 세계비전풀1(10)슬1(대)","v":{"tot":185.0,"out":-115.0,"net":70.0},"u":"박인천"},{"k":"ev","d":"07-27","n":"인천 제이 슬1(대)","v":{"tot":60.0,"out":-40.0,"net":20.0},"p":"완납","u":"박인천"},{"k":"ev","d":"07-27","n":"이천 신하풀2(88)슬2(중소)","v":{"tot":150.0,"out":-100.0,"net":50.0},"p":"완납","u":"백상철"},{"k":"ev","d":"07-27","n":"이천 초대홈2","v":{"tot":30.0,"net":30.0},"p":"완납","u":"백상철"},{"k":"ev","d":"07-27","n":"이천 장호원풀1(8)슬1(대)","v":{"tot":120.0,"out":-90.0,"net":30.0},"p":"완납","u":"장우주"},{"k":"ev","d":"07-27","n":"남양주 새암풀1(8)슬1(대)","v":{"tot":95.0,"out":-75.0,"net":20.0},"p":"완납","u":"정인식"},{"k":"ev","d":"07-27","n":"광주 새순풀2(8,10)슬2(중,대)","v":{"tot":180.0,"out":-144.0,"net":36.0},"p":"완납","u":"장진성"},{"k":"ev","d":"07-27","n":"서울 중량제일풀1(10)","v":{"tot":55.0,"out":-40.0,"net":15.0},"p":"완납","u":"정인식"},{"k":"ev","d":"07-27","n":"대구 황금풀1(8)슬1(중)","v":{"tot":95.0,"out":-90.0,"net":5.0},"p":"완납","u":"이영주"},{"k":"ev","d":"08-03","n":"수지 방주교회풀2(10)슬2(대중)동진","v":{"tot":264.0,"net":264.0},"u":"???"},{"k":"ev","d":"08-03","n":"평택 열린문풀1(5)슬1(중)동진","v":{"tot":77.0,"net":77.0},"p":"완납"},{"k":"ev","d":"08-03","n":"원주 충정풀3(8,10,10)슬3(대대중)","v":{"tot":270.0,"net":270.0},"p":"완납"},{"k":"ev","d":"08-03","n":"용인 의림 풀1(8)슬1(소)동진","v":{"tot":153.0,"net":153.0},"p":"완납"},{"k":"ev","d":"08-03","n":"수원 평안청소년 풀1(10)슬1(초대)동진","v":{"tot":120.0,"net":120.0},"p":"완납"},{"k":"ev","d":"08-04","n":"대구 성일교회 풀1(5)슬1(소)","v":{"tot":80.0,"net":80.0},"p":"완납"},{"k":"ev","d":"08-07","n":"평창중앙풀1(10)슬1(중)텐2","v":{"tot":140.0,"net":140.0},"p":"완납"},{"k":"ev","d":"08-10","n":"안성 제자 풀1(8)슬1(중)","v":{"tot":100.0,"net":100.0},"p":"완납"},{"k":"ev","d":"08-10","n":"병점주심 풀1(5)슬1(소)","v":{"tot":30.0,"net":30.0},"p":"완납"},{"k":"ev","d":"08-11","n":"수원 평안풀2(10,5)슬2(초,중)동진","v":{"tot":300.0,"net":300.0},"p":"완납"},{"k":"ev","d":"09-07","n":"부산 부경대 놀바1(610)","v":{"tot":110.0,"net":110.0},"p":"완납"},{"k":"ev","d":"05-31","n":"5월 광고비","v":{}},{"k":"ev","d":"~05-31","n":"6월 광고비","v":{"exp":-21.0}},{"k":"buy","d":"07-07","n":"구매비","v":{}},{"k":"ev","d":"06-03","n":"중국생산비","v":{"exp":-1100.0}},{"k":"foot","l":"","x":2082.0},{"k":"sum","v":{"tot":7037.0,"cargo":-60.0,"man":-119.0,"rent":-4.0,"out":-884.0,"net":5970.0}},{"k":"foot","l":"판 매","x":1102.0},{"k":"foot","l":"생산비","x":-2300.0}]},"2025":{"cols":["sa","tot","exp","sale","cost","mar","cargo","man","tax","out","net"],"rows":[{"k":"ev","d":"02-07","n":"인천성광교회","v":{"sa":50.0}},{"k":"ev","d":"02-14","n":"서인천중앙교회","v":{"sa":40.0}},{"k":"ev","d":"02-15","n":"청주금천교회","v":{"sa":40.0}},{"k":"ev","d":"02-21","n":"개봉교회1","v":{"sa":50.0}},{"k":"ev","d":"02-22","n":"개봉교회2","v":{"sa":40.0}},{"k":"ev","d":"~02-22","n":"●인천검단 김권수관장 놀바","v":{"sale":320.0,"cost":-220.0,"mar":100.0}},{"k":"ev","d":"~02-22","n":"●송산 섬기는교회 놀바,슬라","v":{"sale":575.0,"cost":-375.0,"mar":200.0}},{"k":"ev","d":"~02-22","n":"●전주 윤석호목사 놀바,슬라,범퍼","v":{"sale":1500.0,"cost":-210.0,"mar":1290.0}},{"k":"ev","d":"~02-22","n":"●대전 대둔산이재기  놀이동산","v":{"sale":1000.0,"mar":1000.0}},{"k":"ev","d":"~02-22","n":"●인천동양동김병길관장 놀바","v":{"sale":315.0,"cost":-240.0,"mar":75.0}},{"k":"ev","d":"04-01","n":"●서울 롯데호텔 놀이","v":{"tot":350.0,"tax":-32.0,"out":-40.0,"net":278.0},"p":"완납"},{"k":"ev","d":"04-26","n":"●인천 주안교회 놀이","v":{"tot":180.0,"net":180.0},"p":"완납"},{"k":"ev","d":"04-19","n":"●서울 성민교회 놀이","v":{"tot":379.0,"man":-10.0,"tax":-37.0,"out":-90.0,"net":242.0},"p":"완납"},{"k":"ev","d":"05-03","n":"●일산 새거룩한빛광성 바이킹","v":{"tot":165.0,"tax":-15.0,"out":-110.0,"net":40.0},"p":"완납"},{"k":"ev","d":"05-03","n":"●광주 새순 놀이","v":{"tot":795.0,"cargo":-30.0,"out":-140.0,"net":625.0},"p":"완납"},{"k":"ev","d":"05-04","n":"●수원 삼일교회 놀이","v":{"tot":80.0,"net":80.0},"p":"완납"},{"k":"ev","d":"05-04","n":"●인천 숭의교회 바이킹","v":{"tot":170.0,"out":-110.0,"net":60.0},"p":"완납"},{"k":"ev","d":"05-04","n":"●새솔 섬기는교회 놀이","v":{"tot":170.0,"cargo":-10.0,"net":160.0},"p":"완납"},{"k":"ev","d":"05-08","n":"●서울대 사범대 바이킹","v":{"tot":205.0,"out":-90.0,"net":115.0},"p":"완납"},{"k":"ev","d":"05-10","n":"●경기광주 새빛전원 놀이","v":{"tot":300.0,"net":300.0},"p":"완납"},{"k":"ev","d":"05-10","n":"●수원 평안교회 놀이","v":{"tot":780.0,"cargo":-20.0,"out":-80.0,"net":680.0},"p":"완납"},{"k":"ev","d":"05-11","n":"●새솔 그린시티교회 놀이","v":{"tot":370.0,"net":370.0},"p":"완납"},{"k":"ev","d":"05-11","n":"●서울 중앙성결교회 바이킹","v":{"tot":200.0,"cargo":-10.0,"out":-70.0,"net":120.0},"p":"완납"},{"k":"ev","d":"05-16","n":"●서울 한양대 바이킹","v":{"tot":50.0,"net":50.0},"p":"완납"},{"k":"ev","d":"05-17","n":"●수원 새빛교회 놀이","v":{"tot":105.0,"net":105.0},"p":"완납"},{"k":"ev","d":"05-24","n":"●서울 남서울교회 놀이","v":{"tot":355.0,"net":355.0},"p":"완납"},{"k":"ev","d":"05-24","n":"●인천 산곡교회 놀이","v":{"tot":96.0,"net":96.0},"p":"완납"},{"k":"ev","d":"05-25","n":"●음성 대소 놀이","v":{"tot":325.0,"cargo":-30.0,"out":-80.0,"net":215.0},"p":"완납"},{"k":"ev","d":"05-31","n":"●수원 남문통닭 놀이","v":{"tot":66.0,"tax":-20.0,"out":-105.0,"net":-59.0},"p":"완납"},{"k":"ev","d":"06-01","n":"●평양노회 체육대회","v":{"tot":170.0,"cargo":-90.0,"net":80.0},"p":"완납"},{"k":"ev","d":"06-06","n":"●수지 예본 놀이","v":{"tot":132.0,"net":132.0},"p":"완납"},{"k":"ev","d":"06-22","n":"●춘천동부 3040 놀이","v":{"tot":500.0,"out":-90.0,"net":410.0}},{"k":"ev","d":"~06-22","n":"놀바1(대형-뽀로로)","v":{"exp":-350.0,"cargo":-5.0}},{"k":"ev","d":"~06-22","n":"놀바2(소형-사파리)","v":{"exp":-125.0}},{"k":"ev","d":"~06-22","n":"옥스퍼드-야구축구농구","v":{"exp":-200.0,"cargo":-3.0}},{"k":"ev","d":"~06-22","n":"범퍼카","v":{"exp":-135.0,"cargo":-5.0}},{"k":"foot","l":"","x":-675.0},{"k":"sum","v":{"sa":220.0,"tot":5943.0,"exp":-1485.0,"net":4634.0}},{"k":"foot","l":"판매","x":2665.0},{"k":"foot","l":"지출","x":-1485.0},{"k":"ev","d":"~06-22","n":"4월","v":{},"p":"합계","u":"2024년"},{"k":"ev","d":"~06-22","n":"오산 하람 이하정 ★차용","v":{"exp":-6500.0},"p":"미납"},{"k":"ev","d":"~06-22","n":"군산 김동원 65놀바,화물","v":{"mar":30.0},"p":"미납"},{"k":"ev","d":"~06-22","n":"전북완주  장진성","v":{"mar":845.0},"p":"미납"},{"k":"ev","d":"~06-22","n":"전주 윤석호 슬라이드 외 범퍼카","v":{"mar":1700.0},"p":"미납"},{"k":"ev","d":"~06-22","n":"수원 다함김태상 대형2","v":{"mar":550.0},"p":"미납"},{"k":"ev","d":"~06-22","n":"대구 아이비 소형1","v":{"mar":150.0},"p":"완납"},{"k":"ev","d":"~06-22","n":"강진 영광정행운목사 풀1(5)","v":{"sale":120.0,"cost":-47.0,"mar":73.0},"p":"완납"},{"k":"ev","d":"06-28","n":"성남갈보리놀1(소)홈1","v":{"tot":60.0,"net":60.0},"p":"완납"},{"k":"ev","d":"07-05","n":"성남갈보리레일기차 외 놀이","v":{"tot":250.0,"man":-6.0,"out":-60.0,"net":184.0},"p":"완납"},{"k":"ev","d":"07-12","n":"안성사랑의풀4(10)슬4(중2,대2)물9","v":{"tot":810.0,"man":-70.0,"out":-220.0,"net":520.0},"p":"완납"},{"k":"ev","d":"07-19","n":"용인 사랑 풀2(8,5)슬1(대)홈2물1","v":{"tot":170.0,"man":-6.0,"net":164.0},"p":"완납"},{"k":"ev","d":"~07-19","n":"이천신하풀2(88)슬2(중소)","v":{"tot":160.0,"man":-7.0,"net":153.0},"p":"완납"},{"k":"ev","d":"~07-19","n":"이천은광풀2(10)슬2(중대)","v":{"tot":260.0,"man":-8.0,"net":252.0},"p":"완납"},{"k":"ev","d":"~07-19","n":"분당매일교회풀1(5)슬1(소)자가","v":{"tot":65.0,"net":65.0},"p":"완납"},{"k":"ev","d":"~07-19","n":"인천제이교회슬1(대)","v":{"tot":60.0,"out":-35.0,"net":25.0},"p":"완납","u":"백상철"},{"k":"ev","d":"~07-19","n":"일산거룩한풀2(8,10)슬2(중대)","v":{"tot":231.0,"tax":-22.0,"out":-130.0,"net":79.0},"p":"완납","u":"백상철"},{"k":"ev","d":"~07-19","n":"서울신탑교회 풀1(8)","v":{"tot":50.0,"out":-35.0,"net":15.0},"p":"완납","u":"강성철"},{"k":"ev","d":"~07-19","n":"서울상도동광풀1(8)슬1(소)최소","v":{"tot":95.0,"out":-55.0,"net":40.0},"p":"완납","u":"김진명"},{"k":"ev","d":"07-26","n":"성남갈보리 바이킹 외 놀이","v":{"tot":300.0,"cargo":-7.0,"man":-15.0,"out":-70.0,"net":208.0},"p":"완납"},{"k":"ev","d":"~07-26","n":"서울신탑교회 풀2(10,5)슬1(대)","v":{"tot":140.0,"cargo":-7.0,"man":-18.0,"net":115.0},"p":"완납"},{"k":"ev","d":"~07-26","n":"서울빛소금교회 풀3(10)슬2(중)","v":{"tot":385.0,"cargo":-6.0,"man":-32.0,"net":347.0},"p":"완납"},{"k":"ev","d":"~07-26","n":"화성운평풀1(5)슬1(중)","v":{"tot":85.0,"net":85.0},"p":"완납"},{"k":"ev","d":"~07-26","n":"재만렌탈슬1(중)","v":{"tot":35.0,"net":35.0},"p":"미납"},{"k":"ev","d":"~07-26","n":"조암교회풀2(88)슬2(소중)","v":{"tot":120.0,"net":120.0},"p":"완납"},{"k":"ev","d":"~07-26","n":"서울미암교회 풀1(8)슬1(중)","v":{"tot":100.0,"out":-60.0,"net":40.0},"p":"완납","u":"강성철"},{"k":"ev","d":"~07-26","n":"남양주예닮 풀1(8)슬1(중)","v":{"tot":95.0,"out":-55.0,"net":40.0},"p":"완납","u":"김진명"},{"k":"ev","d":"~07-26","n":"의성중부교회풀1(8)슬1(중)","v":{"tot":93.0,"tax":-8.0,"out":-65.0,"net":20.0},"p":"완납","u":"장우주"},{"k":"ev","d":"~07-26","n":"부산명지신도시성당풀1(10)슬1(대)","v":{"tot":100.0,"out":-75.0,"net":25.0},"p":"완납","u":"우영재"},{"k":"ev","d":"~07-26","n":"부산서문교회 풀1(8)슬1(대)","v":{"tot":95.0,"out":-70.0,"net":25.0},"p":"완납","u":"우영재"},{"k":"ev","d":"08-01","n":"★구미동부풀2(88)슬2(중)","v":{"tot":180.0,"out":-130.0,"net":50.0},"p":"완납","u":"정경석"},{"k":"ev","d":"~08-01","n":"★광주새순장수풀2(88)슬2(중대)","v":{"tot":170.0,"out":-120.0,"net":50.0},"p":"완납","u":"장우주"},{"k":"ev","d":"~08-01","n":"광주새순교회풀2(108)슬2(중대)","v":{"tot":180.0,"out":-120.0,"net":60.0},"p":"완납","u":"윤석호"},{"k":"ev","d":"08-02","n":"●남양감리풀(5810)슬3(소대초대)자","v":{"tot":225.0,"net":225.0},"p":"완납","u":"방민성"},{"k":"ev","d":"~08-02","n":"●부천제일풀3(5810)슬3(소중대)부","v":{"tot":290.0,"cargo":-7.0,"tax":-24.0,"net":259.0},"p":"완납"},{"k":"ev","d":"~08-02","n":"●수지방주풀3(51010)슬1(대)","v":{"tot":264.0,"cargo":-5.0,"tax":-24.0,"net":235.0},"p":"완납"},{"k":"ev","d":"~08-02","n":"대전서문풀2(10)슬2(중대)자가","v":{"tot":230.0,"cargo":-30.0,"net":200.0},"p":"완납"},{"k":"ev","d":"08-03","n":"수원평안풀2(10)슬2(중대)","v":{"tot":300.0,"cargo":-10.0,"tax":-16.0,"net":274.0},"p":"미납"},{"k":"ev","d":"08-08","n":"창녕 통합 경남노회 1박 2일","v":{"sa":250.0}},{"k":"ev","d":"08-09","n":"●안성제자들풀2(85)슬1(대)","v":{"tot":115.0,"net":115.0},"p":"완납"},{"k":"ev","d":"~08-09","n":"●화성섬김의교회풀1(8)","v":{"tot":45.0,"net":45.0},"p":"완납"},{"k":"ev","d":"~08-09","n":"전주예닮풀2(10)슬2(중대)","v":{"tot":260.0,"out":-130.0,"net":130.0},"p":"완납","u":"윤석호"},{"k":"ev","d":"~08-09","n":"●부산대연풀5(5221010)슬4(소중중대)","v":{"tot":500.0,"cargo":-40.0,"tax":-40.0,"net":420.0},"p":"완납"},{"k":"ev","d":"~08-09","n":"○하남향기슬1(소),홈1","v":{"tot":50.0,"out":-35.0,"net":15.0},"p":"완납","u":"강성철"},{"k":"ev","d":"~08-09","n":"○수원율전슬1(8)슬(1대)안전3","v":{"tot":165.0,"out":-65.0,"net":100.0},"p":"완납","u":"백상철"},{"k":"ev","d":"~08-09","n":"부산대연성당 풀1(8)슬1(중)","v":{"tot":100.0,"out":-60.0,"net":40.0},"p":"완납","u":"우영재"},{"k":"ev","d":"08-11","n":"●광주김준희풀2(85)슬1(대)","v":{"tot":150.0,"out":-4.0,"net":146.0},"p":"완납","u":"윤석호"},{"k":"ev","d":"~08-11","n":"원주 청운교회","v":{"sa":100.0}},{"k":"ev","d":"08-15","n":"원주청운명성 풀4(5810)물2","v":{"tot":405.0,"cargo":-40.0,"tax":-15.0,"net":350.0}},{"k":"ev","d":"~08-15","n":"●안성북한풀2(1010)슬1(대)물4","v":{"tot":330.0,"tax":-20.0,"net":310.0},"p":"완납"},{"k":"ev","d":"08-16","n":"보령사랑교회풀1(5)슬1(소)","v":{"tot":73.0,"out":-45.0,"net":28.0},"u":"백상철"},{"k":"ev","d":"~08-16","n":"정읍감곡반석풀1(10)","v":{"tot":74.0,"cargo":-40.0,"out":-40.0,"net":-6.0},"p":"완납","u":"윤석호"},{"k":"foot","l":"","x":120.0},{"k":"sum","v":{"tot":7805.0,"mar":223.0,"net":5663.0}},{"k":"foot","l":"판매금","x":223.0},{"k":"foot","l":"광고비","x":-70.0},{"k":"foot","l":"구매비","x":-800.0}]},"2026":{"cols":["sa","tot","exp","sale","cost","mar","cargo","man","tax","out","net"],"rows":[{"k":"ev","d":"","n":"전주 윤석호목사","v":{"tot":350.0,"cost":-136.0,"mar":214.0,"cargo":12.0}},{"k":"ev","d":"","n":"논산성구랜드","v":{"tot":480.0,"cost":-230.0,"mar":250.0}},{"k":"ev","d":"04-19","n":"●용인 수지 바운스 놀이","v":{"tot":100.0,"man":-5.0,"net":95.0}},{"k":"ev","d":"04-25","n":"●병점 안천교회 놀이","v":{"tot":90.0,"net":90.0}},{"k":"ev","d":"04-26","n":"●서울 성민교회 놀이","v":{"tot":250.0,"net":250.0}},{"k":"ev","d":"05-02","n":"●수원 평안교회 놀이","v":{"tot":600.0,"man":-10.0,"out":-110.0,"net":480.0}},{"k":"ev","d":"05-02","n":"●평택 신정수 텐트","v":{"tot":55.0,"cargo":-12.0,"out":-10.0,"net":33.0}},{"k":"ev","d":"05-03","n":"●인천 숭의교회 놀이","v":{"tot":190.0,"out":-90.0,"net":100.0}},{"k":"ev","d":"05-03","n":"●성남 갈보리교회 놀이","v":{"tot":200.0,"cargo":-12.0,"net":188.0}},{"k":"ev","d":"05-05","n":"●서울 구로 우신고 음향","v":{"tot":185.0,"cargo":-10.0,"net":175.0},"p":"완납"},{"k":"ev","d":"05-09","n":"●광주 새순교회 놀이","v":{"tot":800.0,"cargo":-30.0,"man":-30.0,"out":-140.0,"net":600.0}},{"k":"ev","d":"05-10","n":"●송산 그린시티 놀이","v":{"tot":285.0,"net":285.0}},{"k":"ev","d":"05-10","n":"●안성 온누리교회 놀이","v":{"tot":570.0,"man":-20.0,"out":-90.0,"net":460.0}},{"k":"ev","d":"05-16","n":"●서울 남서울교회 놀이","v":{"tot":550.0,"net":550.0}},{"k":"ev","d":"05-16","n":"●수원 국중일교회 놀이","v":{"tot":170.0,"man":-10.0,"net":160.0}},{"k":"ev","d":"05-25","n":"●성남 연합교회 체육","v":{"tot":232.0,"man":-50.0,"net":182.0}},{"k":"ev","d":"05-30","n":"●부산 삼양교회 놀이","v":{"tot":610.0,"man":-30.0,"out":-110.0,"net":470.0}},{"k":"ev","d":"05-31","n":"●용인 신흥교회 놀이","v":{"tot":150.0,"man":-5.0,"net":145.0}},{"k":"ev","d":"06-14","n":"●춘천 동부 3040 놀이","v":{"tot":600.0,"out":-100.0,"net":500.0}},{"k":"buy","d":"","n":"구매1.회전비행기","v":{"exp":-150.0}},{"k":"buy","d":"","n":"구매2.놀바2(대형,소형)","v":{"exp":-560.0}},{"k":"buy","d":"","n":"구매3.슬라이드(둥근,무지개)","v":{"exp":-400.0}},{"k":"buy","d":"","n":"구매4.텐트,테이블,의자","v":{"exp":-590.0}},{"k":"buy","d":"","n":"구매5.레일기차","v":{"exp":-135.0}},{"k":"buy","d":"","n":"구매6.인형뽑기2","v":{"exp":-50.0}},{"k":"sum","v":{"tot":5637.0,"exp":-1885.0,"mar":464.0,"cargo":-64.0,"man":-160.0,"out":-650.0,"net":4763.0}},{"k":"foot","l":"판매","x":464.0},{"k":"foot","l":"구매","x":-1885.0},{"k":"foot","l":"","x":3342.0},{"k":"ev","d":"~06-14","n":"4월","v":{}},{"k":"foot","l":"","x":3342.0},{"k":"ev","d":"07-03","n":"●수원제이교회풀1(5)슬1(소)","v":{"tot":60.0,"net":60.0},"p":"완료"},{"k":"ev","d":"07-04","n":"●성남갈보리놀2(64,,33)","v":{"tot":50.0,"net":50.0},"p":"완료"},{"k":"ev","d":"07-11","n":"●안성사랑의풀4(10)슬4(중2대2)물12","v":{"tot":900.0,"out":-264.0,"net":636.0},"p":"완료","u":"◀경기급수"},{"k":"ev","d":"07-11","n":"●송산그린시티풀2(8,10)슬1(중)홈1","v":{"tot":165.0,"net":165.0},"p":"완료"},{"k":"ev","d":"07-11","n":"□서울신답유치부풀1(8)","v":{"tot":50.0,"out":-30.0,"net":20.0},"p":"완료","u":"◀백상철"},{"k":"ev","d":"07-11","n":"□서울양문교회풀1(8)슬1(대)","v":{"tot":110.0,"out":-75.0,"net":35.0},"p":"완료","u":"◀백상철"},{"k":"ev","d":"07-17","n":"부산파티마성당풀1(10)슬1(대)","v":{"tot":120.0,"out":-85.0,"net":35.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"07-18","n":"●용인사랑그리풀2(8,5)슬1(대)홈1물1","v":{"tot":300.0,"net":300.0},"p":"완료"},{"k":"ev","d":"07-18","n":"●평택온누리교회풀1(8)일찍,은박","v":{"tot":50.0,"net":50.0},"p":"완료"},{"k":"ev","d":"07-19","n":"수원평안풀3(5810)슬3(소대초대)","v":{"tot":330.0,"net":330.0},"p":"완료"},{"k":"ev","d":"07-25","n":"●전남영광 놀이기구한차","v":{"tot":550.0,"net":550.0},"p":"완료"},{"k":"ev","d":"07-25","n":"●송탄영광풀2(8,5)슬1(대)","v":{"tot":140.0,"net":140.0},"p":"완료"},{"k":"ev","d":"07-25","n":"●화성운평풀1(5)슬1(중)","v":{"tot":85.0,"net":85.0},"p":"완료"},{"k":"ev","d":"07-25","n":"□이천신하풀2(8,8)슬2(소중)매트","v":{"tot":180.0,"out":-120.0,"net":60.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"07-25","n":"□남양주예닮교회풀1(8)슬1(중)","v":{"tot":100.0,"out":-70.0,"net":30.0},"p":"완료","u":"◀정인식"},{"k":"ev","d":"07-25","n":"□서울신답초등풀2(10,5)슬1(대)","v":{"tot":130.0,"out":-85.0,"net":45.0},"p":"완료","u":"◀백상철"},{"k":"ev","d":"07-25","n":"□파주거룩한풀2(10)슬2(대)부","v":{"tot":275.0,"out":-170.0,"net":105.0},"p":"완료","u":"◀김진명"},{"k":"ev","d":"07-25","n":"□서울상도동광풀1(8)슬1(소)","v":{"tot":90.0,"out":-60.0,"net":30.0},"p":"완료","u":"◀백상철"},{"k":"ev","d":"07-25","n":"□서울남서울풀2(5,10)슬1(대)","v":{"tot":165.0,"out":-120.0,"net":45.0},"p":"완료","u":"◀정인식"},{"k":"ev","d":"07-25","n":"□오산제일풀2(10,10)슬2(중중)홈2","v":{"tot":150.0,"net":150.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"07-25","n":"□서울성산풀1(5)슬1(소)홈1","v":{"tot":100.0,"out":-40.0,"net":60.0},"p":"완료","u":"◀정인식"},{"k":"ev","d":"07-31","n":"●수지방주풀2(10)슬2(대중)","v":{"tot":300.0,"net":300.0},"p":"완료","u":"◀오석균"},{"k":"ev","d":"07-31","n":"□조암방민성풀2(510)슬2(소초)","v":{"tot":190.0,"net":190.0},"p":"미입금"},{"k":"ev","d":"07-31","n":"청송진보(대경)풀2(58)슬2(중)","v":{"tot":170.0,"out":-110.0,"net":60.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"07-31","n":"●광주새순2(8,10)슬2(중,대)연장","v":{"tot":295.0,"net":295.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"07-31","n":"□문경가은제일풀2(58)","v":{"tot":100.0,"out":-50.0,"net":50.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"08-01","n":"●안성제자풀1(81)슬1(대)홈1","v":{"tot":100.0,"net":100.0},"p":"완료"},{"k":"ev","d":"08-01","n":"●서울남교회풀1(8)슬1(중)홈1","v":{"tot":99.0,"net":99.0},"p":"완료"},{"k":"ev","d":"08-01","n":"●수원삼일풀2(55)슬2(중소)","v":{"tot":150.0,"net":150.0},"p":"완료"},{"k":"ev","d":"08-01","n":"●양평감리풀2(85)슬1(대)부","v":{"tot":165.0,"net":165.0},"p":"완료"},{"k":"ev","d":"08-06","n":"●용인나곡초풀2(105)","v":{"tot":315.0,"net":315.0},"p":"완료"},{"k":"ev","d":"08-07","n":"천안총회풀3(10)슬2(중,대),물9","v":{"tot":380.0,"out":-150.0,"net":230.0},"p":"완료","u":"◀경기급수"},{"k":"ev","d":"08-08","n":"●병점주심교회풀1(5)슬1(소)","v":{"tot":30.0,"net":30.0},"p":"완료"},{"k":"ev","d":"08-08","n":"□의성중부풀1(8)슬1(중)","v":{"tot":130.0,"out":-65.0,"net":65.0},"p":"완료","u":"◀장우주"},{"k":"ev","d":"08-08","n":"□서울신광풀1(5)슬1(소)홈1","v":{"tot":40.0,"out":-35.0,"net":5.0},"p":"완료","u":"◀김진명"},{"k":"ev","d":"08-08","n":"□양평감리풀2(88)슬1(대)홈1","v":{"tot":165.0,"out":-80.0,"net":85.0},"p":"완료","u":"◀정인식"},{"k":"ev","d":"08-09","n":"병점 주심교회","v":{"sa":70.0}},{"k":"ev","d":"08-15","n":"●안성북한풀2(10)슬1(대)물6","v":{"tot":396.0,"out":-105.0,"net":291.0},"p":"완료","u":"◀경기급수"},{"k":"ev","d":"08-18","n":"●대구광진풀1(8)슬1(대)","v":{"tot":100.0,"out":-65.0,"net":35.0},"p":"완료","u":"◀장우주"},{"k":"buy","d":"","n":"구매7.텐트8개","v":{"exp":-250.0,"net":-250.0}},{"k":"buy","d":"","n":"구매8.의자","v":{"exp":-99.0,"net":-99.0}},{"k":"sum","v":{"tot":7225.0,"out":-1779.0,"net":5446.0}},{"k":"foot","l":"구매","x":-750.0},{"k":"foot","l":"알바","x":-350.0},{"k":"foot","l":"화물","x":-340.0},{"k":"foot","l":"","x":4006.0},{"k":"ev","d":"09-12","n":"●안중텐트(텐트테이블의자)","v":{"tot":330.0,"net":330.0}},{"k":"ev","d":"10-24","n":"●서울북서울꿈(레크,장비)","v":{"tot":169.0,"net":169.0}},{"k":"ev","d":"11-01","n":"●안산하늘품놀바1(4x6)","v":{"tot":37.0,"net":37.0}}]}};
+  var LABEL = { sa: '사례', tot: '총액', exp: '지출', sale: '판매', cost: '원가', mar: '마진', cargo: '화물', man: '인력', ad: '광고', rent: '렌탈', tax: '세금', out: '외주', net: '순' };
+  var fmt1 = function (n) { return (Math.round(n * 10) / 10).toLocaleString('ko-KR', { maximumFractionDigits: 1 }); };
+  var cst = function (n) { return n > 0 ? '-' + fmt(n) : n < 0 ? '+' + fmt(-n) : '0'; };
+  function mk(n) { return esc(n).replace(/^([●○■□◆◇★☆])/, '<span class="mk">$1</span>'); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  var PERIODS3 = ['상반기(봄)', '중반기(여름)', '하반기(가을)'];
+  function splitHalves(rows, y) {
+    var segs = [[]], seenSum = false;
+    rows.forEach(function (r) {
+      if (seenSum && (r.k === 'ev' || r.k === 'buy')) { segs.push([]); seenSum = false; }
+      segs[segs.length - 1].push(r);
+      if (r.k === 'sum') seenSum = true;
+    });
+    if (y === 2026) {
+      return segs.filter(function (sg) { return sg.some(function (r) { return r.k === 'ev' || r.k === 'buy'; }); }).map(function (sg, i) {
+        if (i === 0) return sg;
+        var k = 0; while (k < sg.length && sg[k].k === 'foot') k++;   // drop stray footer rows that belong to the previous block
+        return sg.slice(k);
+      });
+    }
+    var out = [];
+    segs.forEach(function (sg, i) {
+      var hasSum = sg.some(function (r) { return r.k === 'sum'; });
+      if (i > 0 && !hasSum && out.length) out[out.length - 1] = out[out.length - 1].concat(sg); else out.push(sg);
+    });
+    return out;
+  }
+  function halfHtml(y, seg, hi, cols, label) {
+    var rowBased = y === 2026;
+    var sum = null; seg.forEach(function (r) { if (r.k === 'sum' && !sum) sum = r.v; });
+    var evs = seg.filter(function (r) { return r.k === 'ev'; });
+    var months = evs.filter(function (r) { return r.d && r.d.charAt(0) !== '~'; }).map(function (r) { return +r.d.slice(0, 2); }).filter(Boolean);
+    var mrange = months.length ? (Math.min.apply(null, months) === Math.max.apply(null, months) ? Math.min.apply(null, months) + '월' : Math.min.apply(null, months) + '~' + Math.max.apply(null, months) + '월') : '';
+    var saleRows = evs.filter(function (r) { return r.v.mar != null || r.v.sale != null; });
+    var rentRows = evs.filter(function (r) { return !(r.v.mar != null || r.v.sale != null) && r.v.tot; });
+    var rentTot = rowBased ? rentRows.reduce(function (a, r) { return a + (r.v.tot || 0); }, 0) : (sum && sum.tot != null ? sum.tot : rentRows.reduce(function (a, r) { return a + (r.v.tot || 0); }, 0));
+    var saleRev = 0, saleCost = 0, saleMar = 0;
+    saleRows.forEach(function (r) { saleRev += (r.v.sale != null ? r.v.sale : (r.v.tot || 0)); saleCost += -(r.v.cost || 0); saleMar += (r.v.mar || 0); });
+    var ded = [];
+    ['cargo', 'man', 'rent', 'tax', 'ad', 'out'].forEach(function (k) {
+      var v = rowBased ? rentRows.reduce(function (a, r) { return a + Math.max(0, -(r.v[k] || 0)); }, 0) : (sum && sum[k] ? -sum[k] : 0);
+      if (v) ded.push([LABEL[k], v]);
+    });
+    var foots = seg.filter(function (r) { return r.k === 'foot'; });
+    var buyRows = seg.filter(function (r) { return r.k === 'buy'; });
+    var buySum = buyRows.reduce(function (a, r) { return a + -(r.v.exp || 0); }, 0);
+    var directOut = foots.filter(function (f) { return f.l && f.x < 0 && !(rowBased && buyRows.length && f.l.indexOf('구매') >= 0); });
+    var direct = directOut.map(function (f) { return [f.l, -f.x]; });
+    if (rowBased && buyRows.length) direct.unshift(['구매', buySum]);
+    else if (!directOut.length && buySum) direct = [['구매', buySum]];
+    var otherIn = foots.filter(function (f) { return f.l && f.x > 0 && f.l.replace(/\s/g, '').indexOf('판매') !== 0; });
+    var finalFoot = foots.filter(function (f) { return !f.l && f.x; });
+    var printed = finalFoot.length ? finalFoot[finalFoot.length - 1].x : null;
+    var dedSum = ded.reduce(function (a, d) { return a + d[1]; }, 0), directSum = direct.reduce(function (a, d) { return a + d[1]; }, 0);
+    var income = rentTot + saleRev;
+    var final = rowBased ? (rentTot - dedSum + saleMar - directSum) : null;
+    var mism = rowBased && printed != null && Math.round(printed) !== Math.round(final) && !(hi === 0 && false);
+    var h = '<div class="half"><header><b>' + label + '</b><span>' + mrange + ' · 행사 ' + rentRows.length + '건' + (saleRows.length ? ' · 판매 ' + saleRows.length + '건' : '') + '</span>' +
+      (final != null ? '<span class="fin">확정 금액 <b class="num">' + fmt(final) + '</b></span>' + (mism ? '<span class="warn">경비표 하단 표기 ' + fmt(printed) + '과 다름 (줄 합계 기준으로 계산)</span>' : '') :
+        (sum && sum.net != null ? '<span class="fin">합계 줄 순액 <b class="num">' + fmt(sum.net) + '</b></span>' : '')) + '</header>';
+    h += '<div class="hcols"><div><h3 class="in">수입</h3>' +
+      '<div class="hl in b"><span>행사 총액 <small>' + rentRows.length + '건</small></span><span class="num">' + fmt(rentTot) + '</span></div>' +
+      (saleRows.length ? '<div class="hl sale"><span>판매 매출 <small>' + saleRows.length + '건 · 원가 ' + fmt(saleCost) + ' · 마진 ' + fmt(saleMar) + '</small></span><span class="num">' + fmt(saleRev) + '</span></div>' : '') +
+      otherIn.map(function (f) { return '<div class="hl in"><span>' + esc(f.l) + ' <small>표 하단</small></span><span class="num">' + fmt(f.x) + '</span></div>'; }).join('') +
+      '<div class="hl t in b"><span>수입 합계</span><span class="num">' + fmt(income) + '</span></div></div>' +
+      '<div><h3 class="out">지출</h3>' +
+      ded.map(function (d) { return '<div class="hl ' + (d[0] === '인력' ? 'lab' : d[0] === '외주' ? 'sub' : 'out') + '"><span>' + d[0] + ' <small>행사 공제</small></span><span class="num">' + cst(d[1]) + '</span></div>'; }).join('') +
+      (saleCost ? '<div class="hl sale"><span>판매 원가</span><span class="num">-' + fmt(saleCost) + '</span></div>' : '') +
+      direct.map(function (d) { return '<div class="hl ' + (/알바|인건|인력/.test(d[0]) ? 'lab' : /외주/.test(d[0]) ? 'sub' : /판매|원가|생산/.test(d[0]) ? 'sale' : 'out') + '"><span>' + esc(d[0]) + ' <small>직접 지출</small></span><span class="num">-' + fmt(d[1]) + '</span></div>'; }).join('') +
+      '<div class="hl t out b"><span>지출 합계</span><span class="num">-' + fmt(dedSum + saleCost + directSum) + '</span></div></div></div>';
+    var head = '<tr><th>날짜</th><th>집회 / 교회 / 행사지</th>' + cols.map(function (c) { return '<th>' + LABEL[c] + '</th>'; }).join('') + '<th>입금</th><th>업체</th></tr>';
+    var body = seg.map(function (r) {
+      if (r.k === 'ev' || r.k === 'buy') {
+        var dt = r.d ? (r.d.charAt(0) === '~' ? r.d.slice(1) : r.d).replace('-', '/') : '';
+        return '<tr class="' + (r.k === 'buy' ? 'lbuy' : '') + '"><td class="dt' + (r.d && r.d.charAt(0) === '~' ? ' cf' : '') + '">' + dt + '</td><td class="nm">' + mk(r.n) + '</td>' +
+          cols.map(function (c) { var v = r.v[c]; return '<td class="num c-' + c + '">' + (v != null ? fmt(v) : '') + '</td>'; }).join('') +
+          '<td class="c-pay">' + esc(r.p || '') + '</td><td class="c-vend">' + esc(r.u || '') + '</td></tr>';
+      }
+      if (r.k === 'sum') {
+        return '<tr class="lsum"><td></td><td class="nm">합계 (경비표 합계 줄)</td>' + cols.map(function (c) { var v = r.v[c]; return '<td class="num c-' + c + '">' + (v != null ? fmt(v) : '') + '</td>'; }).join('') + '<td class="c-pay"></td><td class="c-vend"></td></tr>';
+      }
+      return '<tr class="lfoot"><td></td><td class="nm">' + esc(r.l || (rowBased ? '경비표 하단 표기' : '')) + '</td>' + cols.map(function (c) { return c === 'net' ? '<td class="num c-net">' + fmt(r.x) + '</td>' : '<td class="c-' + c + '"></td>'; }).join('') + '<td class="c-pay"></td><td class="c-vend"></td></tr>';
+    }).join('');
+    h += '<details class="led"' + (rowBased && hi === 2 ? ' open' : '') + '><summary>경비표 행사 내역 (' + evs.length + '행, 단위 만원)</summary><div class="ledwrap"><table class="led"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div></details></div>';
+    return h;
+  }
+  function renderHalves(y) {
+    var L = LEDGER[y], box = $("halves");
+    if (!L) { box.innerHTML = '<div class="note" style="margin-top:12px">' + y + '년은 경비표 행사 내역을 열 단위로 읽는 형식이 맞지 않아 구간별 표를 만들지 못했습니다. 위의 합계 기준 숫자를 보세요.</div>'; return; }
+    var segs = splitHalves(L.rows, y);
+    var labels = y === 2026 ? PERIODS3 : ['상반기', '하반기'];
+    var warn = y === 2026 ? '<div class="note" style="margin-top:12px">구분: 상반기(봄)는 1~6월, 중반기(여름)는 7~8월, 하반기(가을)는 9월 이후입니다. 구간별 금액은 경비표의 행사 줄을 더해 계산했고, 경비표 하단에 적힌 확정 금액과 다르면 구간 머리에 표시합니다. 라파목사 집회의 사례(사례 칸)는 라파멀티 수입에 넣지 않습니다.</div>' :
+      '<div class="note" style="margin-top:12px">이 해의 수입·지출 세부는 경비표 열을 그대로 읽은 값이라 합계 줄 순액과 맞지 않을 수 있습니다. 확정 값은 각 구간의 "합계 줄 순액"입니다.</div>';
+    var lg = '<div class="lg"><span><i style="background:var(--c-in)"></i>수입</span><span><i style="background:var(--c-out)"></i>지출</span><span><i style="background:var(--c-sale)"></i>판매</span><span><i style="background:var(--c-labor)"></i>인건비(인력·알바)</span><span><i style="background:var(--c-sub)"></i>외주</span><span><b>총액·합계는 굵게</b></span></div>';
+    var vp = PAY.filter(function (pp) { return +pp[0].slice(0, 4) === y; });
+    var dtl = DETAIL[y], finSum = dtl ? dtl.halves.reduce(function (a, h) { return a + h.final; }, 0) : null, vsum = vp.reduce(function (a, pp) { return a + pp[1]; }, 0) / 10000, jong = JONG[y] || 0;
+    var vcard = '<div class="half"><header><b>세금 (지출)</b><span>부가세는 홈택스 납부내역, 종합소득세는 직접 입력</span>' + (finSum != null ? '<span class="fin">세금 반영 후 <b class="num">' + fmt1(finSum - vsum - jong) + '</b></span>' : '') + '</header><div class="hcols"><div><h3 class="out">납부 내역</h3>' +
+      (vp.length ? vp.map(function (pp) { return '<div class="hl out"><span>부가세 ' + pp[0] + ' <small>귀속 ' + pp[2] + '</small></span><span class="num">-' + fmtM(pp[1]) + '</span></div>'; }).join('') : '<div class="hl"><span>이 해 부가세 납부내역이 없습니다</span><span></span></div>') +
+      '<div class="hl out"><span>종합소득세 <small>' + (jong ? '직접 입력' : '입력 대기') + '</small></span><span class="num">' + (jong ? '-' + fmt1(jong) : '-') + '</span></div>' +
+      '<div class="hl t out b"><span>세금 합계</span><span class="num">-' + fmt1(vsum + jong) + '</span></div></div>' +
+      '<div>' + (finSum != null ? '<h3 class="in">경비표 확정 금액에서</h3><div class="hl in"><span>구간별 확정 금액 합계</span><span class="num">' + fmt(finSum) + '</span></div><div class="hl out"><span>부가세 납부</span><span class="num">-' + fmt1(vsum) + '</span></div>' + (jong ? '<div class="hl out"><span>종합소득세</span><span class="num">-' + fmt1(jong) + '</span></div>' : '') + '<div class="hl t in b"><span>세금 반영 후 손익</span><span class="num">' + fmt1(finSum - vsum - jong) + '</span></div>' : '<div class="note">이 해는 경비표 구간별 확정 금액을 대조하지 않아 세금 반영 후 손익은 계산하지 않았습니다.</div>') + '</div></div></div>';
+    box.innerHTML = lg + warn + segs.map(function (seg, i) { return halfHtml(y, seg, i, L.cols, labels[i] || ('구간 ' + (i + 1))); }).join('') + vcard;
+  }
+  /* 일정표 (00.일정표(클로드).hwpx 에서 읽은 값, 행사만 기록). 상태가 완료가 아닌 행사의 금액은 예정 수입 */
+  var SCHED = [{"d":"2026-04-19","w":"일","n":"용인 수지","c":"바운스 놀이","a":100.0,"k":"확정","s":"완료"},{"d":"2026-04-25","w":"토","n":"병점 안천교회","c":"놀이","a":90.0,"k":"확정","s":"완료"},{"d":"2026-04-26","w":"일","n":"서울 성민교회","c":"놀이","a":250.0,"k":"확정","s":"완료"},{"d":"2026-05-02","w":"토","n":"수원 평안교회","c":"놀이","a":600.0,"k":"확정","s":"완료"},{"d":"2026-05-02","w":"토","n":"평택 신정수","c":"텐트","a":55.0,"k":"확정","s":"완료"},{"d":"2026-05-03","w":"일","n":"성남 갈보리교회","c":"놀이","a":200.0,"k":"확정","s":"완료"},{"d":"2026-05-03","w":"일","n":"인천 숭의교회","c":"놀이","a":190.0,"k":"확정","s":"완료"},{"d":"2026-05-05","w":"화","n":"서울 구로 우신고","c":"음향","a":185.0,"k":"확정","s":"완료","m":"완납"},{"d":"2026-05-09","w":"토","n":"광주 새순교회","c":"놀이","a":800.0,"k":"확정","s":"완료"},{"d":"2026-05-10","w":"일","n":"송산 그린시티","c":"놀이","a":285.0,"k":"확정","s":"완료"},{"d":"2026-05-10","w":"일","n":"안성 온누리교회","c":"놀이","a":570.0,"k":"확정","s":"완료"},{"d":"2026-05-16","w":"토","n":"서울 남서울교회","c":"놀이","a":550.0,"k":"확정","s":"완료"},{"d":"2026-05-16","w":"토","n":"수원 국중일교회","c":"놀이","a":170.0,"k":"확정","s":"완료"},{"d":"2026-05-25","w":"월","n":"성남 연합교회","c":"체육","a":232.0,"k":"확정","s":"완료"},{"d":"2026-05-30","w":"토","n":"부산 삼양교회","c":"놀이","a":610.0,"k":"확정","s":"완료"},{"d":"2026-05-31","w":"일","n":"용인 신흥교회","c":"놀이","a":150.0,"k":"확정","s":"완료"},{"d":"2026-06-14","w":"일","n":"춘천 동부 3040","c":"놀이","a":600.0,"k":"확정","s":"완료"},{"d":"2026-07-03","w":"금","n":"수원제이교회","c":"풀1(5)슬1(소)","a":60.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-04","w":"토","n":"성남갈보리","c":"놀2(64,,33)","a":50.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-11","w":"토","n":"서울신답유치부","c":"풀1(8)","a":50.0,"k":"하청","u":"백상철","s":"완료","m":"완료"},{"d":"2026-07-11","w":"토","n":"서울양문교회","c":"풀1(8)슬1(대)","a":110.0,"k":"하청","u":"백상철","s":"완료","m":"완료"},{"d":"2026-07-11","w":"토","n":"송산그린시티","c":"풀2(8,10)슬1(중)홈1","a":165.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-11","w":"토","n":"안성사랑의","c":"풀4(10)슬4(중2대2)물12","a":900.0,"k":"하청","u":"경기급수","s":"완료","m":"완료"},{"d":"2026-07-17","w":"금","n":"부산파티마성당","c":"풀1(10)슬1(대)","a":120.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-07-18","w":"토","n":"용인사랑그리","c":"풀2(8,5)슬1(대)홈1물1","a":300.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-18","w":"토","n":"평택온누리교회","c":"풀1(8)일찍,은박","a":50.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-19","w":"일","n":"수원평안","c":"풀3(5810)슬3(소대초대)","a":330.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"남양주예닮교회","c":"풀1(8)슬1(중)","a":100.0,"k":"하청","u":"정인식","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"서울남서울","c":"풀2(5,10)슬1(대)","a":165.0,"k":"하청","u":"정인식","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"서울상도동광","c":"풀1(8)슬1(소)","a":90.0,"k":"하청","u":"백상철","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"서울성산","c":"풀1(5)슬1(소)홈1","a":100.0,"k":"하청","u":"정인식","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"서울신답초등","c":"풀2(10,5)슬1(대)","a":130.0,"k":"하청","u":"백상철","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"송탄영광","c":"풀2(8,5)슬1(대)","a":140.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"오산제일","c":"풀2(10,10)슬2(중중)홈2","a":150.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"이천신하","c":"풀2(8,8)슬2(소중)매트","a":180.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"전남영광","c":"놀이기구한차","a":550.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"파주거룩한","c":"풀2(10)슬2(대)부","a":275.0,"k":"하청","u":"김진명","s":"완료","m":"완료"},{"d":"2026-07-25","w":"토","n":"화성운평","c":"풀1(5)슬1(중)","a":85.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-07-31","w":"금","n":"광주새순2","c":"(8,10)슬2(중,대)연장","a":295.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-07-31","w":"금","n":"문경가은제일","c":"풀2(58)","a":100.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-07-31","w":"금","n":"수지방주","c":"풀2(10)슬2(대중)","a":300.0,"k":"하청","u":"오석균","s":"완료","m":"완료"},{"d":"2026-07-31","w":"금","n":"조암방민성","c":"풀2(510)슬2(소초)","a":190.0,"k":"하청","s":"완료","m":"미입금"},{"d":"2026-07-31","w":"금","n":"청송진보(대경)","c":"풀2(58)슬2(중)","a":170.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-08-01","w":"토","n":"서울남교회","c":"풀1(8)슬1(중)홈1","a":99.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-01","w":"토","n":"수원삼일","c":"풀2(55)슬2(중소)","a":150.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-01","w":"토","n":"안성제자","c":"풀1(81)슬1(대)홈1","a":100.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-01","w":"토","n":"양평감리","c":"풀2(85)슬1(대)부","a":165.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-06","w":"목","n":"용인나곡초","c":"풀2(105)","a":315.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-07","w":"금","n":"천안총회","c":"풀3(10)슬2(중,대),물9","a":380.0,"k":"하청","u":"경기급수","s":"완료","m":"완료"},{"d":"2026-08-08","w":"토","n":"병점주심교회","c":"풀1(5)슬1(소)","a":30.0,"k":"확정","s":"완료","m":"완료"},{"d":"2026-08-08","w":"토","n":"서울신광","c":"풀1(5)슬1(소)홈1","a":40.0,"k":"하청","u":"김진명","s":"완료","m":"완료"},{"d":"2026-08-08","w":"토","n":"양평감리","c":"풀2(88)슬1(대)홈1","a":165.0,"k":"하청","u":"정인식","s":"완료","m":"완료"},{"d":"2026-08-08","w":"토","n":"의성중부","c":"풀1(8)슬1(중)","a":130.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-08-15","w":"토","n":"안성북한","c":"풀2(10)슬1(대)물6","a":396.0,"k":"하청","u":"경기급수","s":"완료","m":"완료"},{"d":"2026-08-18","w":"화","n":"대구광진","c":"풀1(8)슬1(대)","a":100.0,"k":"하청","u":"장우주","s":"완료","m":"완료"},{"d":"2026-09-12","w":"토","n":"안중텐트","c":"텐트·테이블·의자","a":330,"k":"확정","s":"완료","m":"달력: 평택서부지역회 텐트·바운스 400"},{"d":"2026-10-24","w":"토","n":"서울 북서울꿈","c":"레크, 장비","a":169,"k":"확정","s":"완료","m":"달력: 170"},{"d":"2026-11-01","w":"일","n":"안산 하늘품","c":"놀바1(4x6)","a":37,"k":"확정","s":"완료"}];
+  var JONG = {};   /* 종합소득세 납부액 (만원), 연도 -> 금액. 금액이 확인되면 여기에 넣는다 */
+  function renderSched(y) {
+    var box = $("schedBox"), evs = SCHED.filter(function (e) { return +e.d.slice(0, 4) === y; });
+    if (!evs.length) { box.innerHTML = ''; return; }
+    var now = new Date(), t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    function dd(e) { var p = e.d.split('-'); return Math.round((new Date(+p[0], +p[1] - 1, +p[2]) - t0) / 86400000); }
+    var plan = evs.filter(function (e) { return e.s !== '완료'; }), done = evs.filter(function (e) { return e.s === '완료'; });
+    var planAmt = plan.reduce(function (a, e) { return a + (e.a || 0); }, 0), doneAmt = done.reduce(function (a, e) { return a + (e.a || 0); }, 0);
+    var next = plan.filter(function (e) { return dd(e) >= 0; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; })[0];
+    var future = done.filter(function (e) { return dd(e) >= 0; });
+    var h = '<h2 style="margin-top:16px">일정표 <span>00.일정표(클로드).hwpx 기준, 행사만 기록, 예정 수입은 아직 수입 합계에 넣지 않았습니다, 단위 만원</span></h2>';
+    h += '<div class="kpis"><div class="in"><div class="k">예정 수입 (일정표)</div><div class="v num">' + fmt(planAmt) + '</div><div class="s">예정 ' + plan.length + '건</div></div>' +
+      '<div><div class="k">완료 (경비표 입력됨)</div><div class="v num">' + fmt(doneAmt) + '</div><div class="s">' + done.length + '건</div></div>' +
+      '<div><div class="k">다음 행사</div><div class="v num">' + (function () { var c = evs.filter(function (e) { return dd(e) >= 0; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; })[0]; return c ? c.d.slice(5).replace('-', '/') + ' ' + c.w : '-'; })() + '</div><div class="s">' + (function () { var c = evs.filter(function (e) { return dd(e) >= 0; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; })[0]; return c ? esc(c.n) + (dd(c) === 0 ? ' · 오늘' : ' · D-' + dd(c)) : '남은 행사 없음'; })() + '</div></div>' +
+      '<div><div class="k">앞으로 남은 행사</div><div class="v num">' + evs.filter(function (e) { return dd(e) >= 0; }).length + '건</div><div class="s">' + fmt(evs.filter(function (e) { return dd(e) >= 0; }).reduce(function (a, e) { return a + (e.a || 0); }, 0)) + '만원</div></div></div>';
+    var mo = {};
+    evs.forEach(function (e) {
+      var m = +e.d.slice(5, 7), o = mo[m] || (mo[m] = { dn: 0, da: 0, pn: 0, pa: 0 });
+      if (e.s === '완료') { o.dn++; o.da += e.a || 0; } else { o.pn++; o.pa += e.a || 0; }
+    });
+    var tn = [0, 0, 0, 0];
+    h += '<h3>월별</h3><div class="tablewrap"><table><thead><tr><th>월</th><th>경비표 입력 건수</th><th>금액</th><th>예정 건수</th><th>예정 금액</th></tr></thead><tbody>' +
+      Object.keys(mo).map(Number).sort(function (a, b) { return a - b; }).map(function (m) {
+        var o = mo[m]; tn[0] += o.dn; tn[1] += o.da; tn[2] += o.pn; tn[3] += o.pa;
+        return '<tr><td>' + m + '월</td><td class="num">' + (o.dn || '-') + '</td><td class="num in">' + (o.da ? fmt(o.da) : '-') + '</td><td class="num">' + (o.pn || '-') + '</td><td class="num in b">' + (o.pa ? fmt(o.pa) : '-') + '</td></tr>';
+      }).join('') +
+      '<tr class="tot"><td>합계</td><td class="num">' + tn[0] + '</td><td class="num in">' + fmt(tn[1]) + '</td><td class="num">' + tn[2] + '</td><td class="num in b">' + fmt(tn[3]) + '</td></tr></tbody></table></div>';
+    var up = evs.filter(function (e) { return e.s !== '완료' || dd(e) >= 0; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+    h += '<h3>예정 · 앞으로 남은 행사 (' + up.length + '건)</h3><div class="tablewrap"><table><thead><tr><th class="l">날짜</th><th class="l">행사지</th><th class="l">장비 · 내용</th><th>금액</th><th>상태</th><th class="l">하청업체</th><th class="l">비고</th><th>D-day</th></tr></thead><tbody>' +
+      up.map(function (e) {
+        var n = dd(e), badge = n === 0 ? '오늘' : n > 0 ? 'D-' + n : '지남 ' + (-n) + '일';
+        return '<tr><td class="l num">' + e.d.slice(5).replace('-', '/') + ' (' + e.w + ')</td><td class="l">' + esc(e.n) + '</td><td class="l">' + esc(e.c || '') + '</td><td class="num in b">' + (e.a ? fmt(e.a) : '-') + '</td><td>' + (e.s === '완료' ? '경비표 입력' : '예정') + '</td><td class="l" style="color:var(--c-sub)">' + esc(e.u || '') + '</td><td class="l">' + esc(e.m || '') + '</td><td><span class="dd' + (n < 0 ? ' late' : '') + '">' + badge + '</span></td></tr>';
+      }).join('') + '</tbody></table></div>';
+    box.innerHTML = h;
+  }
+  var spendSum = function (y) { return SPEND[y] ? SPEND[y].reduce(function (a, x) { return a + x[1]; }, 0) : null; };
+  var selYear = yrs[yrs.length - 1];
+  function renderYear() {
+    var y = selYear;
+    $("yearPills").innerHTML = YEARS.map(function (yy) {
+      var has = tot[yy] != null;
+      return '<button type="button" class="pill" data-y="' + yy + '" aria-pressed="' + (yy === y) + '"' + (has ? '' : ' disabled title="자료 없음"') + '>' + yy + '</button>';
+    }).join("");
+    Array.prototype.forEach.call($("yearPills").querySelectorAll("button"), function (b) {
+      b.onclick = function () { selYear = +b.getAttribute("data-y"); renderYear(); };
+    });
+    var t = tot[y], sale = SALES[y] || null, income = t + (sale ? sale.s : 0);
+    var ded = net[y] != null ? t - net[y] : null;
+    var sp = spendSum(y), cg = CARGO[y] ? cargoExtra(y) : null;
+    var costs = [];
+    if (ded != null) costs.push(["행사 공제 (화물·인력·외주·세금)", ded]);
+    if (sale) costs.push(["판매 원가", sale.c]);
+    if (sp != null) costs.push(["직접 지출 (장비·광고·알바·화물)", sp]);
+    if (cg != null) costs.push(["추가 화물비 (24시콜, 겹침 제외)", cg]);
+    if (vat[y]) costs.push(["부가세 납부 (홈택스)", Math.round(vat[y] / 1000) / 10]);
+    if (JONG[y]) costs.push(["종합소득세 납부", JONG[y]]);
+    var costSum = costs.reduce(function (a, c) { return a + c[1]; }, 0);
+    var complete = net[y] != null;
+    var profit = income - costSum;
+    $("kpis").innerHTML =
+      '<div class="in"><div class="k">수입 (행사 총액' + (sale ? ' + 판매' : '') + ')</div><div class="v num">' + fmt(income) + '</div><div class="s">' + (sale ? '총액 ' + fmt(t) + ' · 판매 ' + fmt(sale.s) : '행사 총액') + '</div></div>' +
+      '<div class="out"><div class="k">지출 (부가세 포함)' + (complete ? '' : ' · 확인된 항목만') + '</div><div class="v num">' + fmt(costSum) + '</div><div class="s">' + costs.length + '개 항목</div></div>' +
+      '<div><div class="k">' + (complete ? (sp != null ? '손익 (부가세 반영)' : '손익 (확인된 지출 기준)') : '손익 (미확정)') + '</div><div class="v num">' + (complete ? fmt(profit) : '-') + '</div><div class="s">' + (complete ? '수입 대비 ' + Math.round(profit / income * 100) + '%' : '순액 자료 없음') + '</div></div>' +
+      '<div><div class="k">부가세 납부 (홈택스)</div><div class="v num">' + fmtM(vat[y]) + '</div><div class="s">' + cnt[y] + '건</div></div>';
+    var rows = [['수입 합계', income, 'var(--c-in)', true]];
+    costs.forEach(function (c) { rows.push([c[0], -c[1], /판매/.test(c[0]) ? 'var(--c-sale)' : 'var(--c-out)', false]); });
+    rows.push([complete ? (sp != null ? '손익 (부가세 반영)' : '손익 (확인된 지출 기준)') : '손익 (미확정)', complete ? profit : null, 'var(--accent)', true]);
+    $("flow").innerHTML = rows.map(function (r) {
+      var w = r[1] == null ? 0 : Math.max(2, Math.abs(r[1]) / income * 100);
+      return '<div class="flow' + (r[3] ? ' total' : '') + '"><span>' + r[0] + '</span><div class="bar"><i style="width:' + Math.min(100, w) + '%;background:' + r[2] + '"></i></div><span class="amt num">' + (r[1] == null ? '-' : (r[1] < 0 ? '-' : '') + fmt(Math.abs(r[1]))) + '</span></div>';
+    }).join("");
+    var mm = MONTHLY[y], ldg = LEDGER[y], W2 = 420, H2 = 230, L2 = 8, R2 = 8, T2 = 18, B2 = 24, pw2 = W2 - L2 - R2, ph2 = H2 - T2 - B2;
+    var mon = {};
+    function MM(m) { return mon[m] || (mon[m] = { tot: 0, out: 0, man: 0, oth: 0, vat: 0 }); }
+    if (ldg) {
+      ldg.rows.forEach(function (r) {
+        if (r.k !== 'ev') return;
+        var v = r.v;
+        if (v.mar != null || v.sale != null || !v.tot || !r.d) return;
+        var o = MM(+r.d.replace('~', '').slice(0, 2));
+        o.tot += v.tot; o.out += Math.max(0, -(v.out || 0)); o.man += Math.max(0, -(v.man || 0));
+        ['cargo', 'rent', 'tax', 'ad'].forEach(function (k) { o.oth += Math.max(0, -(v[k] || 0)); });
+      });
+    } else if (mm) { Object.keys(mm).forEach(function (k) { MM(+k).tot = mm[k]; }); }
+    PAY.forEach(function (pp) { if (+pp[0].slice(0, 4) === y) MM(+pp[0].slice(5, 7)).vat += pp[1] / 10000; });
+    var plm = {};
+    SCHED.forEach(function (e) { if (+e.d.slice(0, 4) === y && e.s !== '완료' && e.a > 0) plm[+e.d.slice(5, 7)] = (plm[+e.d.slice(5, 7)] || 0) + e.a; });
+    Object.keys(plm).forEach(function (k) { MM(+k); });
+    var mkeys = Object.keys(mon).map(Number);
+    if (!mkeys.length) { $("mchart").innerHTML = '<div class="note">월별 날짜가 있는 행사 자료가 없습니다.</div>'; }
+    else {
+      var heights = mkeys.map(function (k) { var o = mon[k]; return Math.max(o.tot, o.out + o.man + o.oth + o.vat) + (plm[k] || 0); });
+      var mx = Math.max.apply(null, heights);
+      var sl = pw2 / 12, bw2 = Math.min(24, sl * 0.66);
+      var sv = '<svg viewBox="0 0 ' + W2 + ' ' + H2 + '" role="img" aria-label="' + y + '년 월별 행사 총액과 지출 누적 막대 차트">';
+      sv += '<defs><pattern id="vh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" style="fill:var(--c-out)"/><line x1="0" y1="0" x2="0" y2="5" stroke="var(--surface)" stroke-width="2"/></pattern></defs>';
+      sv += '<line x1="' + L2 + '" x2="' + (W2 - R2) + '" y1="' + (T2 + ph2) + '" y2="' + (T2 + ph2) + '" stroke="var(--line)"/>';
+      for (var m = 1; m <= 12; m++) {
+        var o = mon[m], cx = L2 + sl * (m - 1) + sl / 2;
+        sv += '<text x="' + cx + '" y="' + (H2 - 8) + '" text-anchor="middle">' + m + '월</text>';
+        if (!o) continue;
+        var costsM = o.out + o.man + o.oth + o.vat, blue = Math.max(0, o.tot - costsM), top = Math.max(o.tot, costsM);
+        var segs = [[blue, 'fill:var(--c-in)'], [o.out, 'fill:var(--c-sub)'], [o.man, 'fill:var(--c-labor)'], [o.oth, 'fill:var(--c-out)'], [o.vat, 'fill:url(#vh)']];
+        var yy = T2 + ph2, tip = m + '월 총액 ' + fmt(o.tot) + ' · 남는 금액 ' + fmt(blue) + ' · 외주 ' + fmt(o.out) + ' · 인건비 ' + fmt(o.man) + ' · 기타 공제 ' + fmt(o.oth) + ' · 부가세 ' + (Math.round(o.vat * 10) / 10) + (plm[m] ? ' · 예정(일정표) ' + fmt(plm[m]) : '');
+        sv += '<g><title>' + tip + '</title>';
+        segs.forEach(function (sg) {
+          if (!sg[0]) return;
+          var hh = sg[0] / mx * ph2; yy -= hh;
+          sv += '<rect x="' + (cx - bw2 / 2) + '" y="' + yy + '" width="' + bw2 + '" height="' + hh + '" style="' + sg[1] + '" stroke="var(--surface)" stroke-width="0.6"/>';
+        });
+        sv += '<text class="val" style="font-weight:800" x="' + cx + '" y="' + (T2 + ph2 - top / mx * ph2 - 4) + '" text-anchor="middle">' + (o.tot ? fmt(o.tot) : (costsM ? '-' + fmt(costsM) : '')) + '</text>';
+        var pv = plm[m] || 0;
+        if (pv) {
+          var ph3 = pv / mx * ph2, y3 = T2 + ph2 - top / mx * ph2 - ph3;
+          sv += '<rect x="' + (cx - bw2 / 2) + '" y="' + y3 + '" width="' + bw2 + '" height="' + ph3 + '" style="fill:none;stroke:var(--c-in);stroke-width:1.2;stroke-dasharray:3 2"/>' +
+            '<text x="' + cx + '" y="' + (y3 - 4) + '" text-anchor="middle" style="fill:var(--c-in);font-style:italic">+' + fmt(pv) + '</text>';
+        }
+        sv += '</g>';
+      }
+      $("mchart").innerHTML = sv + '</svg><div class="lg"><span><i style="background:var(--c-in)"></i>남는 금액</span><span><i style="background:var(--c-sub)"></i>외주</span><span><i style="background:var(--c-labor)"></i>인건비</span><span><i style="background:var(--c-out)"></i>기타 공제</span><span><i style="background:repeating-linear-gradient(45deg,var(--c-out) 0 3px,var(--surface) 3px 5px)"></i>부가세 납부(납부한 달)</span><span><i style="border:1px dashed var(--c-in);background:transparent"></i>예정 수입(일정표, 점선)</span><span><b>막대 위 숫자는 총액</b></span></div>';
+    }
+    renderSched(y);
+    renderHalves(y);
+    var dt = DETAIL[y];
+    $("mdetail").hidden = true;
+    if (dt) {
+      var hn = 0, hs = 0, hb = 0, ho = 0, hf = 0;
+      $("htable").innerHTML = '<thead><tr><th>구분</th><th>행사 순액</th><th>판매 마진</th><th>구매</th><th>알바·화물</th><th>확정 금액</th></tr></thead><tbody>' +
+        dt.halves.map(function (h) {
+          hn += h.net; hs += h.sale; hb += h.buy; ho += h.other; hf += h.final;
+          return '<tr class="tot"><td>' + h.n + '</td><td class="num">' + fmt(h.net) + '</td><td class="num">' + (h.sale ? fmt(h.sale) : '-') + '</td><td class="num">' + (h.buy ? '-' + fmt(h.buy) : '-') + '</td><td class="num">' + (h.other ? '-' + fmt(h.other) : '-') + '</td><td class="num">' + fmt(h.final) + '</td></tr>';
+        }).join("") +
+        '<tr class="tot"><td>' + y + '년 합계</td><td class="num">' + fmt(hn) + '</td><td class="num">' + fmt(hs) + '</td><td class="num">-' + fmt(hb) + '</td><td class="num">-' + fmt(ho) + '</td><td class="num">' + fmt(hf) + '</td></tr></tbody>';
+      var mk = Object.keys(dt.months).map(Number).sort(function (a, b) { return a - b; });
+      var sn = 0, st = 0, sd = 0;
+      var body = mk.map(function (k) {
+        var o = dt.months[k]; sn += o.n; st += o.tot; sd += o.ded;
+        return '<tr><td>' + k + '월</td><td class="num">' + o.n + '</td><td class="num">' + fmt(o.tot) + '</td><td class="num">-' + fmt(o.ded) + '</td><td class="num">' + fmt(o.tot - o.ded) + '</td></tr>';
+      }).join("");
+      body += '<tr class="tot"><td>행사 합계</td><td class="num">' + sn + '</td><td class="num">' + fmt(st) + '</td><td class="num">-' + fmt(sd) + '</td><td class="num">' + fmt(st - sd) + '</td></tr>';
+      body += '<tr class="sec"><td colspan="5">월이 적히지 않은 항목</td></tr>';
+      var ein = 0, eout = 0;
+      dt.extra.forEach(function (e) {
+        if (e[1] === "수입") ein += e[2]; else eout += e[2];
+        body += '<tr><td class="l" colspan="3" style="text-align:left">' + e[0] + '</td><td class="num">' + (e[1] === "지출" ? '-' + fmt(e[2]) : '') + '</td><td class="num">' + (e[1] === "수입" ? fmt(e[2]) : '') + '</td></tr>';
+      });
+      body += '<tr class="tot"><td colspan="4" style="text-align:left">' + y + '년 최종 손익 (행사 순액 + 판매 − 원가 − 구매·알바·화물)</td><td class="num">' + fmt(st - sd + ein - eout) + '</td></tr>';
+      $("mtable").innerHTML = '<thead><tr><th>월</th><th>행사 수</th><th>총액</th><th>공제</th><th>순액</th></tr></thead><tbody>' + body + '</tbody>';
+      $("mdetailSub").textContent = '단위 만원, ' + dt.check;
+    }
+    var msum = mm ? Object.keys(mm).reduce(function (a, k) { return a + mm[k]; }, 0) : null;
+    var notes = [];
+    notes.push('수입은 경비표 합계 줄의 행사 총액' + (sale ? '과 판매 매출' : '') + '입니다. 월별 막대는 날짜가 적힌 행사 행을 달별로 더한 값입니다' + (msum != null && msum !== t ? ' (월별 합 ' + fmt(msum) + ', 합계 줄 ' + fmt(t) + ', 차이는 날짜가 다르게 적힌 행 때문입니다)' : '') + '.');
+    if (!complete) notes.push('이 해는 경비표 합계 줄에서 공제 후 순액을 확정하지 못해 지출과 최종 손익을 일부만 보여 줍니다.');
+    if (CARGO[y]) notes.push('화물비는 전국24시콜화물 운송료 ' + fmt(cargoMan(y)) + '만원 중 경비표 공제분 ' + fmt(CARGO_SHEET[y] || 0) + '만원을 뺀 차액입니다.');
+    notes.push('부가세 납부 ' + fmtM(vat[y]) + '만원은 지출에 포함했습니다. 경비표 확정 금액(반기 카드)에는 부가세가 들어 있지 않고, 연간 손익과 월별 막대에서 납부한 달에 반영했습니다.');
+    var plAmt = SCHED.filter(function (e) { return +e.d.slice(0, 4) === y && e.s !== '완료' && e.a > 0; }).reduce(function (a, e) { return a + e.a; }, 0);
+    if (plAmt) notes.push('일정표의 예정 수입 ' + fmt(plAmt) + '만원은 수입 합계에 넣지 않았습니다. 행사가 끝나 경비표에 금액을 입력하고 일정표 상태를 완료로 바꾸면 수입에 반영됩니다.');
+    $("yearNote").innerHTML = notes.map(function (n) { return '<li>' + n + '</li>'; }).join("");
+  }
+  renderYear();
+
+  /* 막대 차트: 연도별 총액 + 순액 */
+  var W = 720, H = 290, L = 48, R = 8, T = 32, B = 28, pw = W - L - R, ph = H - T - B;
+  var maxv = Math.max.apply(null, yrs.map(function (y) { return tot[y]; }));
+  var step = 5000, top = Math.ceil(maxv / step) * step;
+  var slot = pw / YEARS.length, bw = Math.min(18, slot * 0.36);
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="연도별 행사 총액과 공제 후 순액 막대 차트. 아래 연도별 재무표에 같은 숫자가 있습니다.">';
+  for (var v = 0; v <= top; v += step) {
+    var gy = T + ph - v / top * ph;
+    svg += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="tick" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + v.toLocaleString("ko-KR") + '</text>';
+  }
+  YEARS.forEach(function (y, i) {
+    var cx = L + slot * i + slot / 2;
+    if (tot[y] != null) {
+      var h1 = tot[y] / top * ph;
+      svg += '<rect x="' + (cx - bw - 1) + '" y="' + (T + ph - h1) + '" width="' + bw + '" height="' + h1 + '" rx="2" fill="var(--s1)"/>' +
+        '<text class="val" style="font-size:10px;font-weight:800" x="' + (cx - bw / 2 - 1) + '" y="' + (T + ph - h1 - 4) + '" text-anchor="middle">' + fmt(tot[y]) + '</text>';
+      if (net[y] != null) { var h2 = net[y] / top * ph; svg += '<rect x="' + (cx + 1) + '" y="' + (T + ph - h2) + '" width="' + bw + '" height="' + h2 + '" rx="2" fill="var(--s2)"/>' +
+        '<text class="val" style="font-size:10px;font-weight:700;fill:var(--s2)" x="' + (cx + bw / 2 + 1) + '" y="' + (T + ph - h2 - 4) + '" text-anchor="middle">' + fmt(net[y]) + '</text>'; }
+    } else {
+      svg += '<text class="nodata" x="' + cx + '" y="' + (T + ph - 6) + '" text-anchor="middle">자료 없음</text>';
+    }
+    svg += '<text x="' + cx + '" y="' + (H - 9) + '" text-anchor="middle">' + String(y).slice(2) + '</text>';
+  });
+  $("chart").innerHTML = svg + '</svg>';
+
+  /* 재무표 */
+  var dash = '<td class="blank">-</td>';
+  function cell(val, chk) { return '<td class="num' + (chk ? ' chk' : '') + '">' + val + '</td>'; }
+  var rows = [
+    { sec: "수입" },
+    { cl: "in", n: "행사 총액", b: 1, f: function (y) { return tot[y] != null ? cell(fmt(tot[y]), y === 2017) : dash; }, s: function () { return sumTot; } },
+    { cl: "sale", n: "판매 매출", f: function (y) { return SALES[y] ? cell(fmt(SALES[y].s), y === 2017) : dash; }, s: function () { return Object.keys(SALES).reduce(function (a, k) { return a + SALES[k].s; }, 0); } },
+    { cl: "in", n: "수입 합계", b: 1, t: 1, f: function (y) { return tot[y] != null ? cell(fmt(tot[y] + (SALES[y] ? SALES[y].s : 0))) : dash; }, s: function () { return sumTot + Object.keys(SALES).reduce(function (a, k) { return a + SALES[k].s; }, 0); } },
+    { sec: "지출 · 공제" },
+    { cl: "out", n: "행사 공제 (화물·인력·외주·세금)", f: function (y) { return net[y] != null ? cell('-' + fmt(tot[y] - net[y]), y === 2024) : dash; }, s: function () { return -netYrs.reduce(function (a, y) { return a + tot[y] - net[y]; }, 0); } },
+    { cl: "sale", n: "판매 원가", f: function (y) { return SALES[y] ? cell('-' + fmt(SALES[y].c), y === 2017) : dash; }, s: function () { return -Object.keys(SALES).reduce(function (a, k) { return a + SALES[k].c; }, 0); } },
+    { cl: "out", n: "직접 지출 (장비·광고·알바·화물)", f: function (y) { if (!SPEND[y]) return dash; return cell('-' + fmt(SPEND[y].reduce(function (a, x) { return a + x[1]; }, 0))); }, s: function () { return -Object.keys(SPEND).reduce(function (a, k) { return a + SPEND[k].reduce(function (b, x) { return b + x[1]; }, 0); }, 0); } },
+    { sec: "화물비 (전국24시콜화물)" },
+    { cl: "out", n: "화물비 · 24시콜 운송료", f: function (y) { return CARGO[y] ? cell('-' + fmt(cargoMan(y))) : dash; }, s: function () { return -Object.keys(CARGO).reduce(function (a, k) { return a + cargoMan(+k); }, 0); } },
+    { cl: "out", n: "경비표 화물 칸 (이미 공제)", f: function (y) { return CARGO_SHEET[y] != null && CARGO[y] ? cell('-' + fmt(CARGO_SHEET[y])) : dash; }, s: function () { return -Object.keys(CARGO).reduce(function (a, k) { return a + (CARGO_SHEET[k] || 0); }, 0); } },
+    { cl: "out", n: "추가 반영 화물비 (겹침 제외)", f: function (y) { return CARGO[y] ? cell('-' + fmt(cargoExtra(y))) : dash; }, s: function () { return -Object.keys(CARGO).reduce(function (a, k) { return a + cargoExtra(+k); }, 0); } },
+    { sec: "손익" },
+    { n: "행사 공제 후 순액", t: 1, f: function (y) { return net[y] != null ? cell(fmt(net[y]), y === 2024) : dash; }, s: function () { return netSum; } },
+    { n: "화물비 반영 후 순액", t: 1, f: function (y) { return (net[y] != null && CARGO[y]) ? cell(fmt(net[y] - cargoExtra(y))) : dash; }, s: function () { return YEARS.reduce(function (a, y) { return a + ((net[y] != null && CARGO[y]) ? net[y] - cargoExtra(y) : 0); }, 0); } },
+    { cl: "sale", n: "판매 마진", f: function (y) { return SALES[y] ? cell(fmt(SALES[y].m), y === 2017) : dash; }, s: function () { return Object.keys(SALES).reduce(function (a, k) { return a + SALES[k].m; }, 0); } },
+    { n: "최종 손익 (순액 + 판매 마진 - 직접 지출)", t: 1, f: function (y) { return (net[y] != null && SPEND[y]) ? cell(fmt(net[y] + (SALES[y] ? SALES[y].m : 0) - SPEND[y].reduce(function (a, x) { return a + x[1]; }, 0))) : dash; }, s: function () { return YEARS.reduce(function (a, y) { return a + ((net[y] != null && SPEND[y]) ? net[y] + (SALES[y] ? SALES[y].m : 0) - SPEND[y].reduce(function (b, x) { return b + x[1]; }, 0) : 0); }, 0); } },
+    { n: "세금 반영 후 최종 손익", t: 1, f: function (y) { var fin = (net[y] != null && SPEND[y]) ? net[y] + (SALES[y] ? SALES[y].m : 0) - SPEND[y].reduce(function (a, x) { return a + x[1]; }, 0) : null; return fin != null ? cell(fmt(fin - vat[y] / 10000 - (JONG[y] || 0))) : dash; }, s: function () { return YEARS.reduce(function (a, y) { return a + ((net[y] != null && SPEND[y]) ? net[y] + (SALES[y] ? SALES[y].m : 0) - SPEND[y].reduce(function (b, x) { return b + x[1]; }, 0) - vat[y] / 10000 - (JONG[y] || 0) : 0); }, 0); } },
+    { sec: "세금 (지출에 포함)" },
+    { cl: "out", n: "부가세 납부 (홈택스, 만원)", f: function (y) { return cell(fmtM(vat[y])); }, s: function () { return vatSum / 10000; } },
+    { cl: "out", n: "종합소득세 납부 (직접 입력, 만원)", f: function (y) { return JONG[y] ? cell(fmt1(JONG[y])) : '<td class="blank">-</td>'; }, s: function () { return Object.keys(JONG).reduce(function (a, k) { return a + JONG[k]; }, 0); } }
+  ];
+  $("fin").innerHTML = '<thead><tr><th>항목</th>' + YEARS.map(function (y) { return '<th>' + y + '</th>'; }).join("") + '<th>합계</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      if (r.sec) return '<tr class="sec"><td colspan="' + (YEARS.length + 2) + '">' + r.sec + '</td></tr>';
+      return '<tr class="' + (r.t ? 'tot ' : '') + (r.cl ? 'k-' + r.cl : '') + (r.b ? ' kb' : '') + '"><td>' + r.n + '</td>' + YEARS.map(r.f).join("") + '<td class="num">' + fmt(r.s()) + '</td></tr>';
+    }).join("") + '</tbody>';
+
+  /* 원본 합계 줄 */
+  var brow = [];
+  Object.keys(BLOCKS).forEach(function (y) {
+    BLOCKS[y].forEach(function (b) {
+      brow.push('<tr><td class="num l">' + y + '</td><td class="l">' + b.w + '</td><td class="num' + (b.chk ? ' chk' : '') + '">' + fmt(b.t) + '</td><td class="' + (b.n != null ? 'num' : 'blank') + (b.chk && b.n != null ? ' chk' : '') + '">' + (b.n != null ? fmt(b.n) : '-') + '</td><td class="' + (b.n != null ? 'num' : 'blank') + '">' + (b.n != null ? fmt(b.t - b.n) : '-') + '</td></tr>');
+    });
+  });
+  $("blocks").innerHTML = '<thead><tr><th class="l">연도</th><th class="l">구간</th><th>총액</th><th>순</th><th>공제(총액-순)</th></tr></thead><tbody>' + brow.join("") + '</tbody>';
+
+  /* 직접 지출 */
+  var sp = [];
+  Object.keys(SPEND).forEach(function (y) {
+    var s = SPEND[y].reduce(function (a, x) { return a + x[1]; }, 0);
+    SPEND[y].forEach(function (x, i) { sp.push('<tr><td class="num l">' + (i ? '' : y) + '</td><td class="l">' + x[0] + '</td><td class="num">' + fmt(x[1]) + '</td></tr>'); });
+    sp.push('<tr class="tot"><td class="num l"></td><td class="l">' + y + '년 합계</td><td class="num">' + fmt(s) + '</td></tr>');
+  });
+  $("spend").innerHTML = '<thead><tr><th class="l">연도</th><th class="l">항목</th><th>금액</th></tr></thead><tbody>' + sp.join("") + '</tbody>';
+
+  /* 화물비 */
+  var cy = Object.keys(CARGO).map(Number);
+  $("cargo").innerHTML = '<thead><tr><th>연도</th><th>운송건수</th><th>운송료(만원)</th><th>건당 평균(만원)</th><th>경비표 화물 칸(만원)</th><th>추가 반영(만원)</th></tr></thead><tbody>' +
+    cy.map(function (y) {
+      var c = CARGO[y];
+      return '<tr><td>' + y + '</td><td class="num">' + c.n + '</td><td class="num">' + fmtM(c.fare) + '</td><td class="num">' + fmtM(c.fare / c.n) + '</td><td class="num">' + fmt(CARGO_SHEET[y] || 0) + '</td><td class="num">' + fmt(cargoExtra(y)) + '</td></tr>';
+    }).join("") +
+    '<tr class="tot"><td>합계</td><td class="num">' + fmt(cy.reduce(function (a, y) { return a + CARGO[y].n; }, 0)) + '</td><td class="num">' + fmtM(cy.reduce(function (a, y) { return a + CARGO[y].fare; }, 0)) + '</td><td class="num">-</td><td class="num">' + fmt(cy.reduce(function (a, y) { return a + (CARGO_SHEET[y] || 0); }, 0)) + '</td><td class="num">' + fmt(cy.reduce(function (a, y) { return a + cargoExtra(y); }, 0)) + '</td></tr></tbody>';
+  $("cargo25").innerHTML = '<thead><tr><th>월</th><th>건수</th><th>운임 (만원)</th></tr></thead><tbody>' +
+    CARGO25.map(function (m) { return '<tr><td>' + m[0] + '</td><td class="num">' + m[1] + '</td><td class="num">' + fmtM(m[2]) + '</td></tr>'; }).join("") +
+    '<tr class="tot"><td>합계</td><td class="num">' + CARGO25.reduce(function (a, m) { return a + m[1]; }, 0) + '</td><td class="num">' + fmtM(CARGO25.reduce(function (a, m) { return a + m[2]; }, 0)) + '</td></tr></tbody>';
+
+  /* 납부내역 */
+  $("pay").innerHTML = '<thead><tr><th class="l">납부일</th><th class="l">세목</th><th>귀속연도</th><th>수납관서</th><th>납부세액(만원)</th></tr></thead><tbody>' +
+    PAY.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).map(function (p) {
+      return '<tr><td class="num l">' + p[0] + '</td><td class="l">부가가치세</td><td class="num">' + p[2] + '</td><td>' + p[3] + '</td><td class="num">' + fmtM(p[1]) + '</td></tr>';
+    }).join("") + '</tbody>';
+
+  /* ---------- 그래프 (표와 같은 숫자, 막대 위에 금액 표시) ---------- */
+  function drawBars(elId, lgId, cats, label, series, o) {
+    o = o || {};
+    var el = $(elId), lg = $(lgId);
+    var W = o.w || 720, H = o.h || 270, L = 52, R = 8, T = 34, B = 28, pw = W - L - R, ph = H - T - B;
+    var max = 0;
+    series.forEach(function (sr) { cats.forEach(function (c) { var v = sr.v[c]; if (v != null && v > max) max = v; }); });
+    if (!max) { el.innerHTML = '<div class="note">' + (o.empty || '아직 입력된 금액이 없습니다.') + '</div>'; if (lg) lg.innerHTML = ''; return; }
+    var raw = max / 5, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), n = raw / p, step = p * (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10);
+    var top = Math.ceil(max / step) * step;
+    var slot = pw / cats.length, bw = Math.min(26, slot * 0.78 / series.length);
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + (o.aria || '막대 그래프') + '">';
+    for (var v = 0; v <= top + 1e-9; v += step) {
+      var gy = T + ph - v / top * ph;
+      svg += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="tick" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + (Math.round(v * 10) / 10).toLocaleString('ko-KR') + '</text>';
+    }
+    var rotate = series.length >= 3;
+    cats.forEach(function (c, i) {
+      var cx = L + slot * i + slot / 2, x0 = cx - bw * series.length / 2, any = false;
+      series.forEach(function (sr, k) {
+        var val = sr.v[c];
+        if (val == null) return;
+        any = true;
+        var hh = val / top * ph, x = x0 + bw * k, y = T + ph - hh;
+        svg += '<rect x="' + (x + 0.5) + '" y="' + y + '" width="' + (bw - 1) + '" height="' + Math.max(hh, 0.6) + '" rx="2" style="' + sr.st + '"><title>' + label(c) + ' ' + sr.n + ' ' + (sr.f || fmt)(val) + '</title></rect>';
+        var tx = x + bw / 2;
+        if (rotate) svg += '<text class="val" transform="translate(' + (tx + 3) + ',' + (y - 4) + ') rotate(-90)" style="font-size:10px;font-weight:700">' + (sr.f || fmt)(val) + '</text>';
+        else svg += '<text class="val" x="' + tx + '" y="' + (y - 4) + '" text-anchor="middle" style="font-size:10px;font-weight:700">' + (sr.f || fmt)(val) + '</text>';
+      });
+      svg += '<text x="' + cx + '" y="' + (H - 9) + '" text-anchor="middle">' + label(c) + '</text>';
+      if (!any && o.noData) svg += '<text class="nodata" x="' + cx + '" y="' + (T + ph - 6) + '" text-anchor="middle">' + o.noData + '</text>';
+    });
+    el.innerHTML = svg + '</svg>';
+    if (lg) lg.innerHTML = series.map(function (sr) { return '<span><i style="' + (sr.lgst || sr.st) + '"></i>' + sr.n + '</span>'; }).join('') + (o.lgExtra || '');
+  }
+  var yl = function (y) { return String(y).slice(2); };
+  var R_ = 'fill:var(--c-out)', R2 = 'fill:color-mix(in srgb, var(--c-out) 40%, var(--surface))';
+
+  /* 1) 연도별 재무표 */
+  var incomeY = {}, netY = {}, taxY = {};
+  YEARS.forEach(function (y) {
+    if (tot[y] != null) incomeY[y] = tot[y] + (SALES[y] ? SALES[y].s : 0);
+    if (net[y] != null) netY[y] = net[y];
+    taxY[y] = Math.round((vat[y] / 10000 + (JONG[y] || 0)) * 10) / 10;
+  });
+  drawBars('chFin', 'lgFin', YEARS, yl, [
+    { n: '수입 (행사 총액 + 판매)', v: incomeY, st: 'fill:var(--c-in)' },
+    { n: '행사 공제 후 순액', v: netY, st: 'fill:var(--accent)' },
+    { n: '세금 (부가세 + 종소세)', v: taxY, st: R_, f: fmt1 }
+  ], { aria: '연도별 수입, 공제 후 순액, 세금 막대 그래프', noData: '자료 없음' });
+
+  /* 2) 화물비 분류 */
+  var cy2 = Object.keys(CARGO).map(Number), cA = {}, cB = {}, cC = {};
+  cy2.forEach(function (y) { cA[y] = cargoMan(y); cB[y] = CARGO_SHEET[y] || 0; cC[y] = cargoExtra(y); });
+  drawBars('chCargo', 'lgCargo', cy2, function (y) { return y + '년'; }, [
+    { n: '24시콜 운송료', v: cA, st: R_, f: fmt1 },
+    { n: '경비표 화물 칸 (이미 공제)', v: cB, st: R2, f: fmt1 },
+    { n: '추가 반영 화물비', v: cC, st: 'fill:none;stroke:var(--c-out);stroke-width:1.4;stroke-dasharray:3 2', lgst: 'border:1px dashed var(--c-out);background:transparent', f: fmt1 }
+  ], { aria: '연도별 화물비 분류 막대 그래프' });
+  var m25 = {}, m25cat = [];
+  CARGO25.forEach(function (m) { var k = +m[0].slice(5); m25cat.push(k); m25[k] = Math.round(m[2] / 1000) / 10; });
+  drawBars('chCargo25', 'lgCargo25', m25cat, function (k) { return k + '월'; }, [{ n: '2025년 월별 운임 (만원)', v: m25, st: R_, f: fmt1 }], { aria: '2025년 월별 화물 운임 막대 그래프' });
+
+  /* 3) 부가가치세: 연도별 납부 + 신고 목록 */
+  var vatY = {};
+  YEARS.forEach(function (y) { if (vat[y] > 0) vatY[y] = Math.round(vat[y] / 1000) / 10; });
+  drawBars('chVat', 'lgVat', YEARS, yl, [{ n: '부가가치세 납부액 (홈택스 납부내역)', v: vatY, st: R_, f: fmt1 }], { aria: '연도별 부가가치세 납부액 막대 그래프', noData: '납부 없음' });
+  var FIL = [
+    ['2016년 1기', '확정', '기한후신고', '2016-08-23'], ['2016년 2기', '확정', '정기신고', '2017-01-18', '2017-01-19', 1066810],
+    ['2017년 1기', '확정', '정기신고', '2017-07-25'], ['2017년 2기', '확정', '정기신고', '2018-01-22', '2018-01-25', 4232110],
+    ['2018년 1기', '예정', '정기신고', '2018-04-24', '2018-04-25', 249900], ['2018년 1기', '확정', '정기신고', '2018-07-24', '2018-07-25', 2308810],
+    ['2018년 2기', '확정', '정기신고', '2019-01-21', '2019-01-24', 4969550], ['2019년 1기', '확정', '정기신고', '2019-07-19'],
+    ['2019년 2기', '확정', '정기신고', '2020-01-17', '2020-01-20', 415000], ['2020년 1기', '확정', '정기신고', '2020-07-22', '2020-07-22', 213620],
+    ['2020년 2기', '확정', '정기신고', '2021-01-25', '2021-01-25', 32640], ['2021년 1기', '확정', '정기신고', '2021-07-20', '2021-08-03', 3320],
+    ['2021년 2기', '확정', '정기신고', '2022-01-18', '2022-01-20', 88460], ['2022년 1기', '확정', '정기신고', '2022-07-20', '2022-07-21', 840900],
+    ['2022년 2기', '확정', '정기신고', '2023-01-26', '2023-01-25', 133410], ['2023년 1기', '확정', '기한후신고', '2023-07-27'],
+    ['2023년 2기', '확정', '정기신고', '2024-01-24'], ['2024년 1기', '확정', '정기신고', '2024-07-19', '2024-07-21', 7168070],
+    ['2024년 2기', '확정', '정기신고', '2025-01-19', '2025-06-28', 3000000], ['2025년 1기', '예정', '정기신고', '2025-04-18'],
+    ['2025년 1기', '확정', '정기신고', '2025-07-17', '2025-07-17', 172270], ['2025년 2기', '확정', '정기신고', '2026-01-18', '2026-01-18', 1477650],
+    ['2026년 1기', '확정', '정기신고', '2026-07-16']
+  ];
+  var NOTICE = [['2017-05-12', 548990, '2017년 1기 예정고지 납부로 보임'], ['2018-11-17', 1317370, '2018년 2기 예정고지 납부로 보임'], ['2019-05-08', 3590000, '2019년 1기 예정고지 납부로 보임'], ['2024-10-13', 3584000, '2024년 2기 예정고지 납부로 보임'], ['2026-04-21', 738000, '2026년 1기 예정고지 납부로 보임']];
+  var ftot = 0;
+  $('vatFilings').innerHTML = '<thead><tr><th class="l">과세기간</th><th class="l">구분</th><th class="l">신고유형</th><th>접수일</th><th>납부일</th><th>납부세액 (만원)</th></tr></thead><tbody>' +
+    FIL.map(function (f) { if (f[5]) ftot += f[5]; return '<tr><td class="l num">' + f[0] + '</td><td class="l">' + f[1] + '</td><td class="l' + (f[2] === '기한후신고' ? ' chk' : '') + '">' + f[2] + '</td><td class="num">' + f[3] + '</td><td class="num">' + (f[4] || '-') + '</td><td class="num out" style="color:var(--c-out)">' + (f[5] ? fmtM(f[5]) : '-') + '</td></tr>'; }).join('') +
+    '<tr class="sec"><td colspan="6">신고 없이 납부한 고지 세액 (신고서에 연결되지 않은 납부)</td></tr>' +
+    NOTICE.map(function (n) { ftot += n[1]; return '<tr><td class="l num">' + n[0].slice(0, 4) + '년 고지</td><td class="l">고지</td><td class="l">' + n[2] + '</td><td>-</td><td class="num">' + n[0] + '</td><td class="num" style="color:var(--c-out)">' + fmtM(n[1]) + '</td></tr>'; }).join('') +
+    '<tr class="tot"><td class="l" colspan="5">합계 (납부내역 21건과 같음)</td><td class="num" style="color:var(--c-out)">' + fmtM(ftot) + '</td></tr></tbody>';
+
+  /* 4) 종합소득세 */
+  var jy = {}; YEARS.forEach(function (y) { if (JONG[y]) jy[y] = JONG[y]; });
+  $('jongTable').innerHTML = '<thead><tr><th class="l">연도</th><th class="l">납부일</th><th class="l">구분</th><th>납부세액 (만원)</th></tr></thead><tbody>' +
+    (Object.keys(jy).length ? Object.keys(jy).map(function (y) { return '<tr><td class="l num">' + y + '</td><td class="l">-</td><td class="l">종합소득세</td><td class="num" style="color:var(--c-out)">' + fmt1(jy[y]) + '</td></tr>'; }).join('') :
+      '<tr><td class="l">입력 대기</td><td class="l" colspan="3">주민등록번호 기준 조회가 필요합니다. 금액을 알려 주시면 이 표와 그래프, 연도별 재무표에 반영합니다.</td></tr>') + '</tbody>';
+  drawBars('chJong', 'lgJong', YEARS, yl, [{ n: '종합소득세 납부액', v: jy, st: R_, f: fmt1 }], { aria: '연도별 종합소득세 납부액 막대 그래프', empty: '종합소득세 금액이 아직 입력되지 않아 그래프가 비어 있습니다. 금액이 확인되면 막대와 금액이 표시됩니다.' });
+  /* 통장 기준 라파멀티 가계부 */
+  var BIZ = {"months": ["25.1", "25.2", "25.3", "25.4", "25.5", "25.6", "25.7", "25.8", "25.9", "25.10", "25.11", "25.12", "26.1", "26.2", "26.3", "26.4", "26.5", "26.6", "26.7", "26.8", "26.9", "26.10"], "inc": [9033130, 3150000, 12974310, 29360000, 30209000, 22040000, 39184707, 34897665, 13518400, 20036097, 10800000, 3192167, 1590000, 1287000, 7256838, 11275000, 38144500, 14650000, 55094750, 16680000, 7710000, 0], "sale": [33130, 0, 0, 0, 0, 0, 102707, 0, 0, 42167, 0, 42167, 0, 0, 135838, 0, 0, 0, 0, 0, 1300000, 0], "groups": [{"l": "외주", "v": [100000, 1110000, 11880000, 3460000, 9836000, 1110000, 14004000, 10973000, 3517000, 2665000, 300000, 1015000, 1238000, 4436000, 3000000, 6420000, 9276600, 6659452, 12430000, 7570000, 2690000, 0]}, {"l": "중국 제작비", "v": [0, 6740000, 0, 0, 2000000, 5000000, 4000000, 4000000, 0, 0, 0, 0, 0, 0, 1500000, 7450000, 0, 0, 7500000, 0, 0, 0]}, {"l": "알바·용달", "v": [205000, 58700, 247300, 932000, 1894200, 362000, 2607760, 3193500, 182500, 252820, 271770, 250000, 371500, 341000, 299500, 730401, 3480900, 1712490, 3073800, 2241270, 359000, 30000]}, {"l": "물품·소모품", "v": [0, 200000, 5073636, 9554318, 2451287, 3930326, 4051327, 2563061, 2625000, 0, 0, 300000, 600000, 0, 2352555, 4133087, 4708623, 3815448, 4882476, 1509799, 14000, 0]}, {"l": "판매비용", "v": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5500, 46300, 20500, 47800, 5000, 242900, 21800, 57000, 0, 0]}, {"l": "창고·리스(고정)", "v": [2033100, 1363100, 1363100, 1363100, 670000, 2056200, 1363100, 670000, 2056200, 1948030, 670000, 2056200, 780000, 693100, 2946781, 1475850, 780000, 1386200, 1049700, 1054100, 1054100, 0]}, {"l": "주유·톨", "v": [16180, 4800, -319828, 125000, 253600, 508798, 431644, -490402, 95529, 221100, 93700, 70100, 81020, 145200, 103300, 130505, 1362380, 244200, 298125, 159139, 154700, 0]}, {"l": "세금·세무", "v": [100000, 0, 0, 0, 800000, 3000000, 272270, 0, 0, 0, 0, 0, 1577650, 0, 0, 738000, 500000, 0, 0, 0, 0, 0]}], "alba": {"2025": {"in_n": 63, "in_a": 3329500, "out_n": 103, "out_a": 4258550}, "2026": {"in_n": 87, "in_a": 6164800, "out_n": 160, "out_a": 6036561}}};
+  (function () {
+    var N = BIZ.months.length, mn = function (v) { return Math.round(v / 10000); }, G = BIZ.groups;
+    var col = { '외주': 'var(--c-sub)', '알바·용달': 'var(--c-labor)' };
+    var sumR = function (arr, a, b) { var t = 0; for (var i = a; i < b; i++) t += arr[i] || 0; return t; };
+    var exp = BIZ.months.map(function (_, i) { return G.reduce(function (a, g) { return a + (g.v[i] || 0); }, 0); });
+    var head = '<tr><th class="l">구분</th><th>수입</th><th>그중 판매</th>' + G.map(function (g) { return '<th>' + g.l + '</th>'; }).join('') + '<th>지출 합계</th><th>수지</th></tr>';
+    function row(label, a, b, cls) {
+      var inc = sumR(BIZ.inc, a, b), sale = sumR(BIZ.sale, a, b), e = sumR(exp, a, b), net = inc - e;
+      return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td class="l num">' + label + '</td><td class="num" style="color:var(--c-in)">' + fmt(mn(inc)) + '</td><td class="num" style="color:var(--c-sale)">' + (sale ? fmt(mn(sale)) : '-') + '</td>' +
+        G.map(function (g) { return '<td class="num" style="color:' + (col[g.l] || 'var(--c-out)') + '">' + (sumR(g.v, a, b) ? fmt(mn(sumR(g.v, a, b))) : '-') + '</td>'; }).join('') +
+        '<td class="num" style="color:var(--c-out);font-weight:800">' + fmt(mn(e)) + '</td><td class="num" style="font-weight:800;color:' + (net >= 0 ? 'var(--c-in)' : 'var(--c-out)') + '">' + (net >= 0 ? '+' : '') + fmt(mn(net)) + '</td></tr>';
+    }
+    var cmpRow = function (y, a) { return '<tr><td class="l">경비표 행사 총액 ' + y + ' (참고, 행사일 기준)</td><td class="num">' + fmt(a) + '</td><td colspan="' + (G.length + 3) + '"></td></tr>'; };
+    $('bizYear').innerHTML = '<thead>' + head + '</thead><tbody>' + row('2025년 (12개월)', 0, 12, 'tot') + cmpRow(2025, tot[2025]) + row('2026년 (1~10월 초)', 12, N, 'tot') + cmpRow(2026, tot[2026]) + row('합계 (21개월)', 0, N, 'tot') + '</tbody>';
+    var rows = BIZ.months.map(function (m, i) { return row(m.replace('.', '년 ') + '월', i, i + 1); });
+    $('bizTable').innerHTML = '<thead>' + head + '</thead><tbody>' + rows.join('') + '</tbody>';
+    $('bizAlba').innerHTML = '<thead><tr><th class="l">지급 연도</th><th>명단 확인</th><th>명단 외(소액 추정)</th><th>합계</th><th class="l">종소세 신고</th></tr></thead><tbody>' + Object.keys(BIZ.alba).sort().map(function (y) { var a = BIZ.alba[y]; return '<tr><td class="l num">' + y + '년</td><td class="num">' + a.in_n + '명 · ' + fmt(mn(a.in_a)) + '만원</td><td class="num">' + a.out_n + '명 · ' + fmt(mn(a.out_a)) + '만원</td><td class="num" style="font-weight:800;color:var(--c-labor)">' + (a.in_n + a.out_n) + '명 · ' + fmt(mn(a.in_a + a.out_a)) + '만원</td><td class="l">' + (+y + 1) + '년 5월</td></tr>'; }).join('') + '</tbody>';
+    var cats = BIZ.months.map(function (_, i) { return i; }), inc = {}, ex = {}, ws = {}, lb = {};
+    cats.forEach(function (i) { inc[i] = mn(BIZ.inc[i]); ex[i] = mn(exp[i]); G.forEach(function (g) { if (g.l === '외주') ws[i] = mn(g.v[i]); if (g.l === '알바·용달') lb[i] = mn(g.v[i]); }); });
+    drawBars('chBiz', 'lgBiz', cats, function (i) { return BIZ.months[i]; }, [
+      { n: '수입', v: inc, st: 'fill:var(--c-in)', f: fmt }, { n: '외주', v: ws, st: 'fill:var(--c-sub)', f: fmt },
+      { n: '알바·용달', v: lb, st: 'fill:var(--c-labor)', f: fmt }, { n: '지출 합계', v: ex, st: R_, f: fmt }
+    ], { w: 1000, h: 330, aria: '월별 라파멀티 통장 기준 수입과 지출 막대 그래프' });
+  })();
+  /* 통장 기준 끝 */
+
+})();
+</script>
+
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script></body></html>

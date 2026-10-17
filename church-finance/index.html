@@ -1,5 +1,351 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1f4e5f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="교회재정"><title>함께걷는교회 재정</title><style>body{margin:0;font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;background:#1f4e5f;color:#222;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}.c{background:#fff;border-radius:20px;padding:28px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.15)}img{width:84px;height:84px;border-radius:20px}h1{font-size:20px;margin:14px 0 6px}p{font-size:13px;color:#666;margin:0 0 18px;line-height:1.6}a{display:block;background:#222;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:14px}</style></head><body>
-<div class="c"><img src="icon-192.png" alt=""><h1>함께걷는교회 재정</h1><p id="m">자료는 공개 저장소에 두지 않고 Claude에 보관된 원본을 엽니다.</p><a id="go" href="../rapa/">라파의 모든것 열기</a></div>
-<script>(function(){var L={};try{L=JSON.parse(localStorage.getItem('rapa.links')||'{}')}catch(e){}var id=L['church-finance'];if(id){var u='https://claude.ai/artifact/'+id;document.getElementById('go').href=u;document.getElementById('go').textContent='열기';document.getElementById('m').innerHTML='자료는 공개 저장소에 두지 않고 Claude에 보관된 원본을 엽니다.<br>잠시 후 자동으로 열려요.';setTimeout(function(){location.href=u},400)}else{document.getElementById('m').innerHTML='이 폰에서 아직 연결되지 않았어요.<br>Claude가 보내 준 <b>연결 링크</b>를 한 번 열면 그다음부터 바로 열립니다.'}})()</script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#1f4e5f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="교회재정">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>함께걷는교회 재정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EDF1F3; --surface:#FFFFFF; --ink:#1B2A33; --muted:#5E6E78; --line:#D5DDE2;
+  --carry:#8A98A3; --in:#2F7D6B; --out:#B8503C; --bal:#1F4E79;
+  --c1:#2F7D6B; --c2:#D3A53A; --c3:#3C7A9E; --c4:#7A4E6D; --c5:#8A98A3;
+  --serif:"Noto Serif KR","Nanum Myeongjo",serif; --sans:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10181D; --surface:#18232A; --ink:#E6EDF1; --muted:#9AA9B3; --line:#2C3A43;
+    --carry:#7B8A95; --in:#4DB39B; --out:#E0735D; --bal:#6FA8DC;
+    --c1:#4DB39B; --c2:#E3B94F; --c3:#6AA9CC; --c4:#B27FA3; --c5:#7B8A95;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10181D; --surface:#18232A; --ink:#E6EDF1; --muted:#9AA9B3; --line:#2C3A43;
+  --carry:#7B8A95; --in:#4DB39B; --out:#E0735D; --bal:#6FA8DC;
+  --c1:#4DB39B; --c2:#E3B94F; --c3:#6AA9CC; --c4:#B27FA3; --c5:#7B8A95;
+}
+html{height:auto;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-family:var(--serif);font-weight:800;font-size:clamp(24px,5vw,34px);margin:0;letter-spacing:-.02em}
+.period{color:var(--muted);font-size:14px;margin-top:4px}
+.asof{color:var(--muted);font-size:13px;text-align:right}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 16px;margin-bottom:16px}
+h2{font-family:var(--serif);font-size:18px;margin:0 0 4px;font-weight:600}
+.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.num{font-variant-numeric:tabular-nums}
+
+/* waterfall */
+.wf{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;height:260px;margin-top:8px;border-bottom:1px solid var(--line)}
+.wf .col{position:relative;height:100%}
+.wf .bar{position:absolute;left:12%;right:12%;border-radius:4px 4px 0 0;min-height:3px}
+.wf .val{position:absolute;left:0;right:0;text-align:center;font-size:13px;font-weight:700;transform:translateY(-100%);padding-bottom:3px;white-space:nowrap}
+.wf-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;text-align:center;font-size:13px;color:var(--muted)}
+.wf-labels b{display:block;color:var(--ink);font-size:14px}
+.wf .link{position:absolute;left:0;right:0;border-top:1px dashed var(--muted);opacity:.5}
+.big{display:flex;flex-wrap:wrap;gap:8px 28px;margin:6px 0 14px}
+.big div{min-width:130px}
+.big small{display:block;color:var(--muted);font-size:12px}
+.big strong{font-family:var(--serif);font-size:22px}
+
+/* income */
+.mrow{margin:12px 0}
+.mrow .t{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+.stack{display:flex;height:34px;border-radius:5px;overflow:hidden;background:var(--line)}
+.stack button{border:0;padding:0;cursor:pointer;min-width:2px;position:relative;outline-offset:-2px}
+.stack button:focus-visible{outline:2px solid var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:12px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+.tip{min-height:24px;font-size:14px;margin-top:8px;color:var(--ink)}
+
+/* expense groups */
+.grp{border-top:1px solid var(--line)}
+.grp:first-of-type{border-top:0}
+.gh{width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:12px 0;cursor:pointer;display:block}
+.gh:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.gl{display:flex;justify-content:space-between;gap:8px;font-size:15px;font-weight:500}
+.gl .p{color:var(--muted);font-weight:400;font-size:13px;margin-left:6px}
+.track{height:10px;background:var(--line);border-radius:5px;margin-top:7px;overflow:hidden}
+.fill{height:100%;border-radius:5px;transition:width .5s ease}
+.items{display:none;padding:2px 0 12px}
+.grp.open .items{display:block}
+.grp .caret{display:inline-block;transition:transform .2s;margin-right:6px;color:var(--muted)}
+.grp.open .caret{transform:rotate(90deg)}
+.it{display:flex;justify-content:space-between;gap:10px;padding:7px 0 7px 18px;font-size:14px;border-bottom:1px dashed var(--line)}
+.it:last-child{border-bottom:0}
+.it .n{flex:1}
+.it .note{display:block;color:var(--muted);font-size:12px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.btn{font:inherit;font-size:13px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;min-height:36px}
+.btn:focus-visible{outline:2px solid var(--ink)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+/* tables */
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:500;font-size:13px}
+tfoot td{font-weight:700;border-bottom:0}
+.neg{color:var(--out)}.pos{color:var(--in)}
+/* agenda */
+.agenda{list-style:none;margin:0;padding:0;counter-reset:step}
+.agenda>li{counter-increment:step;border-bottom:1px solid var(--line)}
+.agenda>li:last-child{border-bottom:0}
+.ag{display:flex;align-items:baseline;gap:10px;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:11px 0;cursor:pointer;min-height:44px}
+.ag:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ag::before{content:counter(step);flex:0 0 22px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.ag .w{flex:1;font-size:15px;font-weight:500}
+.ag .who{color:var(--muted);font-size:13px;white-space:nowrap}
+.ag a{color:var(--bal);font-size:13px;margin-left:8px;font-weight:400}
+li.done .w{text-decoration:line-through;color:var(--muted)}
+li.done .who{opacity:.6}
+.sublist{list-style:none;margin:0 0 12px 32px;padding:0}
+.sublist li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:14px;border-bottom:1px dashed var(--line)}
+.sublist li:last-child{border-bottom:0}
+.sublist .d{color:var(--muted);font-size:13px;white-space:nowrap}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+@media (max-width:520px){.wf{height:220px}.big strong{font-size:19px}}
+@media (prefers-reduced-motion:reduce){.fill,.caret{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>함께걷는교회 재정</h1>
+      <div class="period" id="period"></div>
+    </div>
+    <div class="asof" id="asof"></div>
+  </header>
+
+  <section aria-labelledby="h-agenda">
+    <h2 id="h-agenda">2026년 10월 제직회 순서</h2>
+    <p class="sub">진행한 순서를 누르면 줄이 그어집니다. 다시 누르면 취소됩니다.</p>
+    <ol class="agenda" id="agenda">
+      <li><button class="ag"><span class="w">회순채택</span><span class="who">의장</span></button></li>
+      <li><button class="ag"><span class="w">회원점명</span><span class="who">서기</span></button></li>
+      <li><button class="ag"><span class="w">개회선언</span><span class="who">의장</span></button></li>
+      <li><button class="ag"><span class="w">전 회의록 낭독</span><span class="who">서기</span></button></li>
+      <li><button class="ag"><span class="w">선교보고</span><span class="who">선교부장</span></button></li>
+      <li><button class="ag"><span class="w">8, 9월 재정보고<a href="#h-flow">재정 현황 보기</a></span><span class="who">재정부장</span></button></li>
+      <li>
+        <button class="ag"><span class="w">10, 11월 행사 계획</span><span class="who">의장</span></button>
+        <ul class="sublist">
+          <li><span>야외예배 (포천)</span><span class="d"></span></li>
+          <li><span>장로임직식</span><span class="d">11월 7일 오전 11시</span></li>
+          <li><span>4주년 설립기념예배</span><span class="d">11월 8일</span></li>
+        </ul>
+      </li>
+      <li><button class="ag"><span class="w">기타 건의사항</span><span class="who">의장</span></button></li>
+      <li><button class="ag"><span class="w">폐회</span><span class="who">다 같이</span></button></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-flow">
+    <h2 id="h-flow">이월금에서 현잔액까지</h2>
+    <p class="sub">이월금에 이번 기간 수입을 더하고 지출을 빼면 현잔액이 됩니다.</p>
+    <div class="big" id="big"></div>
+    <div class="wf" id="wf" role="img" aria-label="이월금, 수입, 지출, 현잔액 흐름 차트"></div>
+    <div class="wf-labels" id="wfl"></div>
+  </section>
+
+  <section aria-labelledby="h-in">
+    <h2 id="h-in">월별 수입</h2>
+    <p class="sub">막대의 색 구간을 누르면 금액을 볼 수 있습니다. 이월금은 제외했습니다.</p>
+    <div id="months"></div>
+    <div class="legend" id="legend"></div>
+    <div class="tip" id="tip" aria-live="polite">구간을 눌러 보세요.</div>
+    <div class="scroll" style="margin-top:10px">
+      <table id="intable"></table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-out">
+    <h2 id="h-out">지출 내역</h2>
+    <p class="sub">분류를 누르면 세부 항목이 열립니다. 지출은 기간 합계만 기록되어 있습니다.</p>
+    <div class="tools">
+      <button class="btn" id="expand">모두 펼치기</button>
+      <button class="btn" id="sortbtn" aria-pressed="true">금액 큰 순</button>
+    </div>
+    <div id="groups"></div>
+  </section>
+
+  <section aria-labelledby="h-ratio">
+    <h2 id="h-ratio">수입 대비 지출</h2>
+    <p class="sub">이월금을 뺀 이번 기간 수입과 지출을 비교합니다.</p>
+    <div id="ratio"></div>
+  </section>
+
+  <footer>2026.8.1~2026.9.30 재정보고 기준 · 2026.10.4 작성</footer>
+</div>
+
+<script>
+const D = {
+  period:"2026.8.1 ~ 2026.9.30", asof:"2026.10.4 기준",
+  carry:7274200,
+  income:[
+    {k:"십일조",m:[3730000,3580000],c:"var(--c1)"},
+    {k:"감사헌금",m:[870000,1100000],c:"var(--c2)"},
+    {k:"주일헌금",m:[1549000,910000],c:"var(--c3)"},
+    {k:"선교헌금",m:[460000,480000],c:"var(--c4)"},
+    {k:"건축헌금",m:[700000,700000],c:"var(--c5)"}
+  ],
+  expense:[
+    {g:"사례·인건",c:"var(--c1)",items:[
+      {n:"담임목사 생활비",v:4001000,note:"2,000,000원 × 2개월 (이체 500원 포함)"},
+      {n:"전도사 생활비",v:3001000,note:"1,500,500원 × 2개월"},
+      {n:"이동진 목사",v:1000000,note:"500,000원 × 2개월"},
+      {n:"강사료",v:200000,note:"세계선교찬양교회 목사"}]},
+    {g:"선교·후원",c:"var(--c2)",items:[
+      {n:"지역 선교사",v:801000,note:"400,000원 × 2개월 (이체 500원 포함)"},
+      {n:"아이티 후원금",v:301000,note:"150,000원 × 2개월 (이체 500원 포함)"},
+      {n:"장학금 (최다성)",v:201000,note:"100,000원 × 2개월 (이체 500원 포함)"}]},
+    {g:"운영",c:"var(--c3)",items:[
+      {n:"임대료",v:1200000,note:"600,000원 × 2개월"},
+      {n:"공과금",v:402390,note:"전기세(2달) 202,390원 · 화재보험금 200,000원"},
+      {n:"사무비",v:162660,note:"문자메시지 2,620 · 교회폰요금 84,740 · 정수기렌탈 40,800 · 화분(4) 29,000 · 사무용품 5,500"},
+      {n:"시찰회비",v:60500,note:"이체 500원 포함"},
+      {n:"상회비",v:60000,note:"30,000원 × 2회 (노회)"}]},
+    {g:"예배·행사·전도",c:"var(--c4)",items:[
+      {n:"야외예배 숙소비",v:415500,note:"12인실 240,500원 · 8인실 175,000원"},
+      {n:"주일점심",v:229000,note:""},
+      {n:"전도비",v:194700,note:"물티슈 162,200원 · 전도활동 32,500원"},
+      {n:"생일축하",v:79000,note:"케익·화분"},
+      {n:"성찬식",v:10400,note:"줌, 빵"}]}
+  ],
+  total:{ income:21353200, expense:12319150, balance:9034050 }
+};
+const f = n => n.toLocaleString("ko-KR")+"원";
+const man = n => (n/10000).toLocaleString("ko-KR",{maximumFractionDigits:0})+"만";
+const sum = a => a.reduce((x,y)=>x+y,0);
+
+const monthIn = [0,1].map(i => sum(D.income.map(r=>r.m[i])));
+const periodIn = sum(monthIn);
+const outTotal = sum(D.expense.flatMap(g=>g.items.map(i=>i.v)));
+
+document.getElementById("period").textContent = D.period;
+document.getElementById("asof").textContent = D.asof;
+
+/* big numbers */
+document.getElementById("big").innerHTML =
+  `<div><small>이월금</small><strong class="num">${f(D.carry)}</strong></div>
+   <div><small>기간 수입</small><strong class="num pos">${f(periodIn)}</strong></div>
+   <div><small>기간 지출</small><strong class="num neg">${f(outTotal)}</strong></div>
+   <div><small>현잔액</small><strong class="num" style="color:var(--bal)">${f(D.carry+periodIn-outTotal)}</strong></div>`;
+
+/* agenda toggle */
+document.querySelectorAll("#agenda .ag").forEach(b=>{
+  b.addEventListener("click",e=>{
+    if(e.target.closest("a")) return;
+    b.parentElement.classList.toggle("done");
+  });
+});
+
+/* waterfall */
+(function(){
+  const top = D.carry+periodIn, max = top*1.12;
+  const steps = [
+    {l:"이월금",s:"기초",from:0,to:D.carry,c:"var(--carry)",v:f(D.carry)},
+    {l:"기간 수입",s:"8~9월",from:D.carry,to:top,c:"var(--in)",v:"+"+f(periodIn)},
+    {l:"기간 지출",s:"8~9월",from:D.carry+periodIn-outTotal,to:top,c:"var(--out)",v:"−"+f(outTotal)},
+    {l:"현잔액",s:"9월 말",from:0,to:D.carry+periodIn-outTotal,c:"var(--bal)",v:f(D.carry+periodIn-outTotal)}
+  ];
+  const wf = document.getElementById("wf"), lb = document.getElementById("wfl");
+  steps.forEach(s=>{
+    const b = s.from/max*100, h=(s.to-s.from)/max*100;
+    wf.insertAdjacentHTML("beforeend",
+      `<div class="col"><div class="bar" style="bottom:${b}%;height:${h}%;background:${s.c}"></div>
+       <div class="val num" style="bottom:${b+h}%">${s.v.length>12? s.v.replace("원","") : s.v}</div></div>`);
+    lb.insertAdjacentHTML("beforeend",`<div><b>${s.l}</b>${s.s}</div>`);
+  });
+  [D.carry, top, D.carry+periodIn-outTotal].forEach(v=>{
+    wf.insertAdjacentHTML("beforeend",`<div class="link" style="bottom:${v/max*100}%"></div>`);
+  });
+})();
+
+/* monthly income */
+(function(){
+  const mo = document.getElementById("months"), tip = document.getElementById("tip");
+  const maxM = Math.max(...monthIn);
+  ["8월","9월"].forEach((name,i)=>{
+    const row = document.createElement("div"); row.className="mrow";
+    row.innerHTML = `<div class="t"><span>${name}</span><span class="num"><b>${f(monthIn[i])}</b></span></div>`;
+    const st = document.createElement("div"); st.className="stack"; st.style.width = (monthIn[i]/maxM*100)+"%";
+    D.income.forEach(r=>{
+      const b = document.createElement("button");
+      b.style.flex = r.m[i]; b.style.background = r.c;
+      b.setAttribute("aria-label",`${name} ${r.k} ${f(r.m[i])}`);
+      b.onclick = ()=>{ tip.innerHTML = `<b>${name} ${r.k}</b> ${f(r.m[i])} <span style="color:var(--muted)">(${(r.m[i]/monthIn[i]*100).toFixed(1)}%)</span>`; };
+      st.appendChild(b);
+    });
+    row.appendChild(st); mo.appendChild(row);
+  });
+  document.getElementById("legend").innerHTML = D.income.map(r=>`<span><i class="sw" style="background:${r.c}"></i>${r.k}</span>`).join("");
+  const diff = monthIn[1]-monthIn[0];
+  let h = `<thead><tr><th>항목</th><th>8월</th><th>9월</th><th>합계</th></tr></thead><tbody>`;
+  D.income.forEach(r=>{ h+=`<tr><td>${r.k}</td><td class="num">${r.m[0].toLocaleString()}</td><td class="num">${r.m[1].toLocaleString()}</td><td class="num">${(r.m[0]+r.m[1]).toLocaleString()}</td></tr>`; });
+  h += `</tbody><tfoot><tr><td>합계</td><td class="num">${monthIn[0].toLocaleString()}</td><td class="num">${monthIn[1].toLocaleString()}</td><td class="num">${periodIn.toLocaleString()}</td></tr></tfoot>`;
+  document.getElementById("intable").innerHTML = h;
+})();
+
+/* expense groups */
+const gEl = document.getElementById("groups");
+let sortDesc = true;
+function renderGroups(){
+  const openSet = new Set([...gEl.querySelectorAll(".grp.open")].map(e=>e.dataset.g));
+  const groups = D.expense.map(g=>({...g,total:sum(g.items.map(i=>i.v))}));
+  if(sortDesc) groups.sort((a,b)=>b.total-a.total);
+  const maxG = Math.max(...groups.map(g=>g.total));
+  gEl.innerHTML = groups.map(g=>{
+    const items = [...g.items]; if(sortDesc) items.sort((a,b)=>b.v-a.v);
+    return `<div class="grp ${openSet.has(g.g)?"open":""}" data-g="${g.g}">
+      <button class="gh" aria-expanded="${openSet.has(g.g)}">
+        <div class="gl"><span><span class="caret">▸</span>${g.g}<span class="p">${(g.total/outTotal*100).toFixed(1)}%</span></span><span class="num">${f(g.total)}</span></div>
+        <div class="track"><div class="fill" style="width:${g.total/maxG*100}%;background:${g.c}"></div></div>
+      </button>
+      <div class="items">${items.map(i=>`<div class="it"><span class="n">${i.n}${i.note?`<span class="note">${i.note}</span>`:""}</span><span class="num">${i.v.toLocaleString()}</span></div>`).join("")}</div>
+    </div>`;
+  }).join("") + `<div class="it" style="padding-left:0;border-top:1px solid var(--line);font-weight:700"><span class="n">총지출</span><span class="num">${f(outTotal)}</span></div>`;
+  gEl.querySelectorAll(".gh").forEach(b=>b.onclick=()=>{
+    const p=b.parentElement; p.classList.toggle("open"); b.setAttribute("aria-expanded",p.classList.contains("open"));
+    syncExpand();
+  });
+}
+function syncExpand(){
+  const all = gEl.querySelectorAll(".grp"), open = gEl.querySelectorAll(".grp.open");
+  document.getElementById("expand").textContent = open.length===all.length ? "모두 접기" : "모두 펼치기";
+}
+document.getElementById("expand").onclick = ()=>{
+  const all = gEl.querySelectorAll(".grp"), open = gEl.querySelectorAll(".grp.open");
+  const want = open.length!==all.length;
+  all.forEach(g=>{g.classList.toggle("open",want); g.querySelector(".gh").setAttribute("aria-expanded",want);});
+  syncExpand();
+};
+document.getElementById("sortbtn").onclick = e=>{
+  sortDesc=!sortDesc; e.target.setAttribute("aria-pressed",sortDesc);
+  e.target.textContent = sortDesc? "금액 큰 순":"보고서 순서";
+  renderGroups(); syncExpand();
+};
+renderGroups();
+
+/* ratio */
+(function(){
+  const r = outTotal/periodIn*100, net = periodIn-outTotal;
+  document.getElementById("ratio").innerHTML =
+   `<div class="gl"><span>기간 수입</span><span class="num">${f(periodIn)}</span></div>
+    <div class="track"><div class="fill" style="width:100%;background:var(--in)"></div></div>
+    <div class="gl" style="margin-top:12px"><span>기간 지출<span class="p">수입의 ${r.toFixed(1)}%</span></span><span class="num">${f(outTotal)}</span></div>
+    <div class="track"><div class="fill" style="width:${Math.min(r,100)}%;background:var(--out)"></div></div>
+    <p style="margin:14px 0 0;font-size:14px">이번 기간 수입에서 지출을 빼면 <b class="num ${net<0?"neg":"pos"}">${net<0?"−":"+"}${f(Math.abs(net))}</b>이고, 이월금 ${f(D.carry)}이 더해져 현잔액은 <b class="num">${f(D.carry+net)}</b>입니다.</p>`;
+})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}</script></body>
+</html>

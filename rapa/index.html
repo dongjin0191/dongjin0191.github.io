@@ -63,7 +63,7 @@ a.app div{min-width:0}
 <header><img src="icon-192.png" alt="라파 이동진 목사"><div><h1>라파의 모든것</h1><div class="sub">내가 만든 대시보드를 한곳에</div></div></header>
 <button type="button" class="install" id="install"><img src="icon-192.png" alt="">홈 화면에 앱 설치</button>
 <div id="list"></div>
-<p class="note">🔒 표시는 자료를 공개 저장소에 두지 않고 Claude에 보관된 원본을 여는 앱입니다. 앱마다 각각 홈 화면에 추가할 수도 있어요.</p>
+<p class="note">앱마다 각각 홈 화면에 추가할 수도 있어요.</p>
 </div>
 <div id="how" role="dialog" aria-label="앱 설치"><div class="sheet"><img class="hdicon" src="icon-192.png" alt=""><h2>홈 화면에 앱 설치</h2><p class="sub">사용하시는 휴대폰을 고르세요.</p><div class="tab"><button type="button" data-os="and">안드로이드</button><button type="button" data-os="ios">아이폰</button></div>
 <ol id="st-ios" hidden><li><b>Safari</b>에서 화면 아래 <b>공유 버튼</b> <span class="k">□↑</span> 누르기</li><li><b>홈 화면에 추가</b> → <b>추가</b> 누르기</li></ol>
@@ -79,15 +79,15 @@ document.getElementById('howclose').onclick=function(){h.classList.remove('open'
 <script>
 var GROUPS=[
  ['라파 개인 & 가정',[
-  ['ledger','라파네 가계부','통장·카드·지출 분석',1],
+  ['ledger','라파네 가계부','통장·카드·지출 분석'],
   ['gyeongjosa','경조사 장부','보낸·받은 경조사'],
   ['glucose','혈당·인슐린 기록','건강 기록']]],
  ['라파 사업 & 라파엘',[
-  ['rapamulti','라파멀티엔터 재무표','사업 매출·장부',1],
-  ['haengsaji','행사지 목록표','연도별 행사지',1]]],
+  ['rapamulti','라파멀티엔터 재무표','사업 매출·장부'],
+  ['haengsaji','행사지 목록표','연도별 행사지']]],
  ['라파 교회 관련',[
-  ['church-finance','함께걷는교회 재정','월별 재정 보고',1],
-  ['sermons','라파목사이동진의 설교','2003~ 설교 모음',1],
+  ['church-finance','함께걷는교회 재정','월별 재정 보고'],
+  ['sermons','라파목사이동진의 설교','2003~ 설교 모음'],
   ['','영광교회','교회 홈페이지','images/']]],
  ['시찰과 노회',[
   ['namboo','남부시찰 영상 모음','라파티비']]],
@@ -103,7 +103,7 @@ GROUPS.forEach(function(g){
   g[1].forEach(function(a){
     var base='../'+(a[0]?a[0]+'/':''), icon=base+(a[3]==='images/'?'images/':'')+'icon-192.png';
     var url='https://dongjin0191.github.io/'+(a[0]?a[0]+'/':'');
-    h+='<div class="card"><a class="app" href="'+base+'"><img src="'+icon+'" alt=""><div><b>'+a[1]+(a[3]===1?' <span class="lock">🔒</span>':'')+'</b><small>'+a[2]+'</small></div></a><div class="acts"><button type="button" data-copy="'+url+'">주소 복사</button><button type="button" class="kt" data-share="'+url+'" data-title="'+a[1]+'">카톡 공유</button></div></div>';
+    h+='<div class="card"><a class="app" href="'+base+'"><img src="'+icon+'" alt=""><div><b>'+a[1]+'</b><small>'+a[2]+'</small></div></a><div class="acts"><button type="button" data-copy="'+url+'">주소 복사</button><button type="button" class="kt" data-share="'+url+'" data-title="'+a[1]+'">카톡 공유</button></div></div>';
   });
   h+='</div>';
 });
