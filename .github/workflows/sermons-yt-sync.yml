@@ -1,0 +1,27 @@
+name: 라파 설교 유튜브 자동 반영
+
+on:
+  schedule:
+    - cron: '0 13 * * *'   # 매일 밤 10시(한국 시간)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/sermons_yt_sync.py
+      - name: 바뀐 것이 있으면 저장
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add sermons
+          git commit -m 'Sync new rafa0191 YouTube videos into sermons page'
+          git push
