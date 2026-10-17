@@ -25,7 +25,12 @@ h1{margin:0;font-size:26px;letter-spacing:-.02em}
 .date{margin-top:4px;font-size:14px;color:var(--muted)}
 .photos{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px;scroll-snap-type:x mandatory}
 .photos img{height:150px;border-radius:14px;flex:none;scroll-snap-align:start;object-fit:cover}
-.cats{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:2px 16px 4px;scrollbar-width:none}
+.cats{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:8px 16px;scrollbar-width:none;position:sticky;top:0;z-index:5;background:var(--bg);box-shadow:0 6px 8px -8px #0003}
+details.addd summary{list-style:none;margin-top:10px;text-align:center;border:1px dashed var(--muted);border-radius:11px;padding:10px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer}
+details.addd summary::-webkit-details-marker{display:none}
+details.addd[open] summary{display:none}
+section{scroll-margin-top:64px;padding-top:6px}
+section+section,#secs>section:first-child{margin-top:26px;border-top:1px dashed var(--line);padding-top:20px}
 .cats::-webkit-scrollbar{display:none}
 .cats button{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .cats button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -94,8 +99,8 @@ footer{margin-top:22px;text-align:center;font-size:12.5px;color:var(--muted);lin
 </header>
 <div class="photos" id="photos" hidden></div>
 <div class="cats" id="cats"></div>
-<div class="tabs" id="tabs"></div>
-<div id="view"></div>
+<section id="s-day"><div class="ctitle">일일</div><p class="chint">가족 한 사람씩 하루 일과</p><div class="tabs" id="tabs"></div><div id="view"></div></section>
+<div id="secs"></div>
 <footer>항목을 누르면 체크됩니다. 체크는 날마다 새로 시작해요.<br>체크와 직접 추가한 일정은 이 휴대폰에만 저장돼요.</footer>
 </div>
 <script>
@@ -221,18 +226,21 @@ var CATS=[
  ['trip','가족여행','여행 계획과 기록'],
  ['etc','기타','그 밖의 가족 일정']
 ];
-var cat=get('plan.cat','day');
+var cat='day';
 var WHO={all:['가족','#2a1f25','#ece4e1'],mom:['유미','var(--mom)','var(--mom-soft)'],jina:['진아','var(--jina)','var(--jina-soft)'],jun:['준형','var(--jun)','var(--jun-soft)']};
 function cats(){
   var el=document.getElementById('cats');
   el.innerHTML=CATS.map(function(c){var n=c[0]==='day'?'':get('plan.c.'+c[0],[]).length;return '<button type="button" data-c="'+c[0]+'"'+(c[0]===cat?' class="on"':'')+'>'+c[1]+(n?'<small>'+n+'</small>':'')+'</button>'}).join('');
-  el.querySelectorAll('button').forEach(function(b){b.onclick=function(){cat=b.dataset.c;put('plan.cat',cat);render()}});
+  el.querySelectorAll('button').forEach(function(b){b.onclick=function(){cat=b.dataset.c;mark();var t=document.getElementById('s-'+cat);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}});
 }
-function catView(c){
+// 화면에 보이는 분류의 칩을 표시
+function mark(){document.querySelectorAll('#cats button').forEach(function(b){var on=b.dataset.c===cat;b.classList.toggle('on',on);if(on&&b.scrollIntoView)b.parentNode.scrollLeft=b.offsetLeft-16})}
+var lock=0;window.addEventListener('scroll',function(){clearTimeout(lock);lock=setTimeout(function(){var y=66,cur=CATS[0][0];CATS.forEach(function(c){var el=document.getElementById('s-'+c[0]);if(el&&el.getBoundingClientRect().top<=y+10)cur=c[0]});if(cur!==cat){cat=cur;mark()}},80)},{passive:true});
+function catView(c,v){
   var key='plan.c.'+c[0],list=get(key,[]),sub=c[3],h='<div class="ctitle">'+c[1]+'</div><p class="chint">'+c[2]+'</p>';
   var groups=sub?sub.slice():[''];
   if(!sub)list.sort(function(a,b){return (a.when||'').localeCompare(b.when||'')});
-  if(!list.length)h+='<div class="card empty">아직 일정이 없어요.<br>아래에서 추가해 보세요.</div>';
+  if(!list.length)h+='<div class="card empty" style="padding:14px">아직 일정이 없어요.</div>';
   groups.forEach(function(g){
     var gi=list.filter(function(x){return !sub||x.sub===g});if(!gi.length)return;
     if(g)h+='<h2>'+g+'</h2>';else h+='<div style="height:4px"></div>';
@@ -241,22 +249,27 @@ function catView(c){
       h+='<li style="cursor:default"><span class="who" style="color:'+w[1]+';background:'+w[2]+'">'+w[0]+'</span>'+(x.when?'<span class="t" style="flex:0 0 auto">'+esc(x.when)+'</span>':'')+'<span class="w">'+t+'</span><button type="button" class="x" data-del="'+x.id+'" aria-label="삭제">×</button></li>'});
     h+='</ul>';
   });
-  h+='<form id="cadd">'+(sub?'<select id="cs">'+sub.map(function(o){return '<option>'+o+'</option>'}).join('')+'</select>':'')+
-    '<select id="cw">'+Object.keys(WHO).map(function(k){return '<option value="'+k+'">'+WHO[k][0]+'</option>'}).join('')+'</select>'+
-    '<input type="text" id="cn" placeholder="'+(c[0]==='month'?'날짜 (예: 11/3)':'언제 (선택)')+'" style="flex:1 1 110px">'+
-    '<input type="text" id="ct" required placeholder="'+(c[0]==='yt'?'영상 제목이나 링크':'내용')+'">'+
-    '<button type="submit" style="background:var(--ink)">+ '+c[1]+' 일정 추가</button></form>';
-  var v=document.getElementById('view');v.innerHTML=h;
+  h+='<details class="addd"><summary>+ '+c[1]+' 일정 추가</summary><form class="cadd">'+(sub?'<select class="cs">'+sub.map(function(o){return '<option>'+o+'</option>'}).join('')+'</select>':'')+
+    '<select class="cw">'+Object.keys(WHO).map(function(k){return '<option value="'+k+'">'+WHO[k][0]+'</option>'}).join('')+'</select>'+
+    '<input type="text" class="cn" placeholder="'+(c[0]==='month'?'날짜 (예: 11/3)':'언제 (선택)')+'" style="flex:1 1 110px">'+
+    '<input type="text" class="ct" required placeholder="'+(c[0]==='yt'?'영상 제목이나 링크':'내용')+'">'+
+    '<button type="submit" style="background:var(--ink)">+ '+c[1]+' 일정 추가</button></form></details>';
+  v.innerHTML=h;
   v.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){put(key,get(key,[]).filter(function(x){return String(x.id)!==b.dataset.del}));render()}});
-  document.getElementById('cadd').onsubmit=function(e){e.preventDefault();var t=document.getElementById('ct').value.trim();if(!t)return;
-    var a=get(key,[]);a.push({id:Date.now(),sub:sub?document.getElementById('cs').value:'',who:document.getElementById('cw').value,when:document.getElementById('cn').value.trim(),text:t});put(key,a);render()};
+  var q=function(k){return v.querySelector(k)};
+  q('.cadd').onsubmit=function(e){e.preventDefault();var t=q('.ct').value.trim();if(!t)return;
+    var a=get(key,[]);a.push({id:Date.now(),sub:sub?q('.cs').value:'',who:q('.cw').value,when:q('.cn').value.trim(),text:t});put(key,a);render()};
 }
+// 모든 분류를 세로로 이어서 펼친다. 칩은 해당 분류로 이동.
+var secs=document.getElementById('secs');
+CATS.slice(1).forEach(function(c){var s=document.createElement('section');s.id='s-'+c[0];secs.appendChild(s)});
 function render(){
-  cats();var c=CATS.filter(function(x){return x[0]===cat})[0]||CATS[0];
-  var tb=document.getElementById('tabs');
-  if(c[0]!=='day'){tb.style.display='none';catView(c);return}
-  tb.style.display='';tabs();if(P[tab])person(tab);else{tab='all';all()}
+  var y=window.scrollY;
+  cats();tabs();if(P[tab])person(tab);else{tab='all';all()}
+  CATS.slice(1).forEach(function(c){catView(c,document.getElementById('s-'+c[0]))});
+  window.scrollTo(0,y);
 }
+cat='day';
 if(PHOTOS.length){var ph=document.getElementById('photos');ph.innerHTML=PHOTOS.map(function(s){return '<img src="'+s+'" alt="라파네 가족사진" loading="lazy">'}).join('');ph.hidden=false}
 render();setInterval(function(){var a=document.activeElement;if(!(a&&a.tagName==='INPUT'))render()},60000);
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
