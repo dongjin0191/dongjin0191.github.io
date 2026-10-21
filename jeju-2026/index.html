@@ -1116,23 +1116,23 @@ a.instbtn { color: inherit; text-decoration: none; }
     ]);
   }
   // 교육친교부 임원 소개 (초대의 글 아래)
-  var STAFF = [["총무", "이동진", "목사"], ["부총무", "김선민", "목사"], ["서기", "김창룡", "장로"], ["회계", "안상천", "목사"]];
+  var STAFF = [["총무", "이동진", "목사"], ["부총무", "김선민", "목사"], ["서기", "김창룡", "장로", "010-6288-4226"], ["회계", "안상천", "목사"]];
   function staffCard() {
     return h("section", { cls: "card staff" }, [
       h("h3", { text: "교육친교부 임원 소개" }),
       h("ul", { cls: "staff-list" }, STAFF.map(function (s) {
         var p = (S.people || []).filter(function (x) { return x.name === s[1]; })[0];
-        var tel = p && p.phone ? p.phone.replace(/[^\d]/g, "") : "";
+        var ph = (p && p.phone) || s[3] || "", tel = ph.replace(/[^\d]/g, "");
         var key = "kk-" + s[1], kk = (S.links && S.links[key]) || "";
         // 카톡: 1:1 오픈채팅 링크가 있으면 그 방으로, 없으면 번호를 복사하고 카카오톡을 연다(친구 추가 → 번호로 추가)
         var talk = function (e) {
           if (kk) return;
           e.preventDefault();
-          if (tel) copy(p.phone, e.currentTarget);
+          if (tel) copy(ph, e.currentTarget);
           setTimeout(function () { location.href = "kakaotalk://launch"; }, 300);
         };
         var li = h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
-          h("span", { cls: "staff-name" }, [h("b", { text: s[1] + " " + s[2] }), p && p.church ? h("small", { text: p.church.split(" · ")[0] + "교회" }) : null, tel ? h("small", { cls: "num", text: p.phone }) : null]),
+          h("span", { cls: "staff-name" }, [h("b", { text: s[1] + " " + s[2] }), p && p.church ? h("small", { text: p.church.split(" · ")[0] + "교회" }) : null, tel ? h("small", { cls: "num", text: ph }) : null]),
           (kk || tel) ? h("a", { cls: "staff-tel kk", href: kk || "kakaotalk://launch", target: "_blank", rel: "noopener", "aria-label": s[1] + " " + s[2] + " 카톡", text: "💬", onclick: talk }) : h("span"),
           tel ? h("a", { cls: "staff-tel", href: "tel:" + tel, "aria-label": s[1] + " " + s[2] + " 전화" , text: "📞" }) : h("span")]);
         if (canWrite) {
