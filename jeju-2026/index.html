@@ -107,9 +107,11 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .editgo-s { justify-self: start; margin-top: 4px; font-size: 13px; font-weight: 800; color: var(--magenta); }
 .hotel-pts { margin: 10px 0 4px; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; }
 .staff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.staff-list li { display: grid; grid-template-columns: 64px 1fr 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
+.staff-list li { display: grid; grid-template-columns: 64px 1fr 40px 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
 .staff-role { justify-self: start; padding: 3px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 12.5px; font-weight: 800; }
 .staff-name { display: grid; min-width: 0; } .staff-name b { font-size: 15.5px; } .staff-name small { color: var(--muted); font-size: 12.5px; }
+.staff-tel.kk { background: #fee500; }
+.staff-kk { grid-column: 1 / -1; font-size: 13px; }
 .staff-tel { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #fff; text-decoration: none; font-size: 18px; box-shadow: 0 1px 4px rgba(20,33,61,.15); }
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .sponsors li { background: var(--tangerine-soft); border-radius: 10px; padding: 7px 10px; display: grid; min-width: 0; }
@@ -1069,9 +1071,25 @@ a.instbtn { color: inherit; text-decoration: none; }
       h("ul", { cls: "staff-list" }, STAFF.map(function (s) {
         var p = (S.people || []).filter(function (x) { return x.name === s[1]; })[0];
         var tel = p && p.phone ? p.phone.replace(/[^\d]/g, "") : "";
-        return h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
-          h("span", { cls: "staff-name" }, [h("b", { text: s[1] + " " + s[2] }), p && p.church ? h("small", { text: p.church.split(" · ")[0] + "교회" }) : null]),
+        var key = "kk-" + s[1], kk = (S.links && S.links[key]) || "";
+        // 카톡: 1:1 오픈채팅 링크가 있으면 그 방으로, 없으면 번호를 복사하고 카카오톡을 연다(친구 추가 → 번호로 추가)
+        var talk = function (e) {
+          if (kk) return;
+          e.preventDefault();
+          if (tel) copy(p.phone, e.currentTarget);
+          setTimeout(function () { location.href = "kakaotalk://launch"; }, 300);
+        };
+        var li = h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
+          h("span", { cls: "staff-name" }, [h("b", { text: s[1] + " " + s[2] }), p && p.church ? h("small", { text: p.church.split(" · ")[0] + "교회" }) : null, tel ? h("small", { cls: "num", text: p.phone }) : null]),
+          (kk || tel) ? h("a", { cls: "staff-tel kk", href: kk || "kakaotalk://launch", target: "_blank", rel: "noopener", "aria-label": s[1] + " " + s[2] + " 카톡", text: "💬", onclick: talk }) : h("span"),
           tel ? h("a", { cls: "staff-tel", href: "tel:" + tel, "aria-label": s[1] + " " + s[2] + " 전화" , text: "📞" }) : h("span")]);
+        if (canWrite) {
+          var ki = h("input", { cls: "field staff-kk", placeholder: s[1] + " " + s[2] + " 1:1 오픈채팅 링크 (https://open.kakao.com/o/…)", "aria-label": s[1] + " 카톡 링크" });
+          ki.value = kk;
+          ki.addEventListener("change", function () { var u = ki.value.trim(); if (u && !/^https:\/\/open\.kakao\.com\//.test(u)) { ki.value = ""; return; } S.links[key] = u; changed(); renderHome(); });
+          li.appendChild(ki);
+        }
+        return li;
       }))
     ]);
   }
