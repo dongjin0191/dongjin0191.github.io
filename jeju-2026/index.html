@@ -105,6 +105,7 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .editgo { display: grid; gap: 3px; margin: 0 0 14px; padding: 14px 16px; border-radius: 16px; background: var(--magenta); color: #fff; text-decoration: none; box-shadow: 0 4px 14px rgba(200,30,110,.25); }
 .editgo b { font-size: 17px; } .editgo small { font-size: 12.5px; opacity: .92; line-height: 1.5; }
 .editgo-s { justify-self: start; margin-top: 4px; font-size: 13px; font-weight: 800; color: var(--magenta); }
+.hotel-pts { margin: 10px 0 4px; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; }
 .staff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .staff-list li { display: grid; grid-template-columns: 64px 1fr 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
 .staff-role { justify-self: start; padding: 3px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 12.5px; font-weight: 800; }
@@ -824,6 +825,27 @@ a.instbtn { color: inherit; text-decoration: none; }
     ]);
     w.appendChild(contactCard("문의 · 교육친교부 총무", "이동진 목사", "010-2540-0533", "kakao"));
     w.appendChild(acc);
+    // 숙소 소개 (찬조자 소개 앞)
+    var HV = "8-HKe2b4EbA", hvu = "https://youtu.be/" + HV;
+    w.appendChild(h("div", { cls: "card hotel" }, [
+      h("h3", { text: "🏨 숙소 소개 · 라마다 제주함덕 호텔" }),
+      h("a", { cls: "vthumb", href: hvu, target: "_blank", rel: "noopener", "aria-label": "라마다 함덕 호텔 소개 영상 유튜브에서 재생" }, [
+        h("img", { src: HOSTED ? "https://i.ytimg.com/vi/" + HV + "/hqdefault.jpg" : POSTER, alt: "", onerror: function (e) { if (e.target.src !== POSTER) e.target.src = POSTER; } }),
+        h("span", { cls: "vplay", "aria-hidden": "true" }, [h("i")]),
+        h("span", { cls: "vcap" }, [h("b", { text: "라마다 함덕 호텔 · 오션뷰 소개 영상 (4K)" }), h("small", { text: "유튜브 '휴&락' 호텔 리뷰" })])
+      ]),
+      h("ul", { cls: "hotel-pts" }, [
+        h("li", { text: "함덕 서우봉 해변 바로 앞 · 오션뷰 객실" }),
+        h("li", { text: "9층 루프탑 정원, 카페·레스토랑(조식), 피트니스, 편의점" }),
+        h("li", { text: "제주공항에서 차로 약 20분 · 2박 (11/2~11/4)" })
+      ]),
+      h("p", { cls: "muted", text: "제주시 조천읍 신북로 470 · 064-793-5500" }),
+      h("div", { cls: "vbtns" }, [
+        h("a", { cls: "vbtn yt", href: hvu, target: "_blank", rel: "noopener", text: "▶ 영상 보기" }),
+        h("a", { cls: "vbtn", href: "https://map.naver.com/p/search/" + encodeURIComponent("라마다 제주함덕호텔"), target: "_blank", rel: "noopener", text: "지도" }),
+        h("a", { cls: "vbtn", href: "#people", onclick: goRooms, text: "방배정표" })
+      ])
+    ]));
     var sp = h("ul", { cls: "sponsors" }, S.income.filter(function (r) { return r.kind === "찬조"; }).map(function (r) { return h("li", null, [h("b", { text: r.name }), h("span", { cls: "num", text: man(r.amt) })]); }));
     w.appendChild(h("div", { cls: "card" }, [
       h("h3", { text: "찬조해 주신 분들" }),
