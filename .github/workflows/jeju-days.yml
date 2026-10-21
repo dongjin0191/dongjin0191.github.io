@@ -1,0 +1,67 @@
+name: 제주수양회 당일사진 가져오기
+
+# 구글 드라이브 '26년제주부부수양회' 폴더 안의 1일차·2일차·3일차 폴더 사진을 받아
+# jeju-2026/days/d1~d3 에 줄여서 저장하고 days.json 을 만듭니다. 앱은 이 목록을 읽어 날짜별 칸에 보여 줍니다.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/jeju-days.yml'
+
+permissions:
+  contents: write
+
+env:
+  DRIVE_FOLDER: ''   # 26년제주부부수양회 폴더 ID (드라이브 연결 후 채움)
+
+jobs:
+  days:
+    if: ${{ vars.JEJU_DAYS_FOLDER != '' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install gdown pillow pillow-heif
+      - name: 드라이브 폴더 내려받기
+        run: |
+          ID="${DRIVE_FOLDER:-${{ vars.JEJU_DAYS_FOLDER }}}"
+          if [ -z "$ID" ]; then echo "폴더 ID 없음"; exit 0; fi
+          gdown --folder "https://drive.google.com/drive/folders/$ID" -O /tmp/drive/ || true
+      - name: 날짜별로 줄이기
+        run: |
+          python - <<'PY'
+          import os, json
+          from PIL import Image, ImageOps
+          from pillow_heif import register_heif_opener
+          register_heif_opener()
+          src, out = "/tmp/drive", "jeju-2026/days"
+          os.makedirs(out, exist_ok=True)
+          res = {"d1": [], "d2": [], "d3": []}
+          ext = ("jpg", "jpeg", "png", "heic", "heif", "webp")
+          for root, _, names in os.walk(src):
+              rel = os.path.relpath(root, src)
+              day = next((k for k in (1, 2, 3) if f"{k}일차" in rel), None)
+              if not day: continue
+              for n in sorted(names):
+                  if n.lower().rsplit(".", 1)[-1] not in ext: continue
+                  f = os.path.join(root, n)
+                  try: im = ImageOps.exif_transpose(Image.open(f)).convert("RGB")
+                  except Exception as e: print("skip", f, e); continue
+                  im.thumbnail((1280, 1280))
+                  d = os.path.join(out, f"d{day}"); os.makedirs(d, exist_ok=True)
+                  name = "%03d.jpg" % (len(res[f"d{day}"]) + 1)
+                  im.save(os.path.join(d, name), quality=78, optimize=True)
+                  res[f"d{day}"].append({"src": f"d{day}/{name}", "cap": os.path.splitext(n)[0]})
+          json.dump(res, open(os.path.join(out, "days.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print({k: len(v) for k, v in res.items()})
+          PY
+      - name: 저장
+        run: |
+          git add jeju-2026/days
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Update Jeju retreat day photos from Google Drive'
+          git push
