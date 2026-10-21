@@ -114,6 +114,20 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.chkrow { display: flex; gap: 6px; align-items: flex-start; margin-top: 4px; }
+.chkrow .memo { flex: 1; }
+.chkbtn { flex: none; padding: 8px 14px; }
+.chkmark { font-weight: 900; color: var(--ok); width: 18px; text-align: center; padding-top: 2px; }
+.item:not(.done) .chkmark { color: var(--muted); }
+.chkdone { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13.5px; color: var(--ok); font-weight: 700; }
+.linkish { border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; color: var(--muted); text-decoration: underline; }
+.alert .items { margin: 0; }
+.summary h3 { margin: 0 0 8px; }
+.sumlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sumlist li { display: grid; gap: 1px; padding: 8px 10px; border-radius: 10px; background: var(--ok-soft); }
+.sumlist b { font-size: 13.5px; }
+.sumlist span { font-size: 13.5px; }
+.stopnote { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 800; color: var(--ok); }
 .alert { background: var(--bad-soft); border: 1px solid #f3b9b4; border-radius: 16px; padding: 14px 16px; display: grid; gap: 8px; }
 .alert h3 { color: var(--bad); }
 .alert ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
@@ -1029,23 +1043,73 @@ a.instbtn { color: inherit; text-decoration: none; }
     return (k.getUTCMonth() + 1) + "/" + k.getUTCDate() + " " + String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
   }
 
+  /* ---------- 확인 메모 (누구나 적고 '확인') ---------- */
+  // checks/<항목 id> = { a: 메모, ok: true|false, at }  — db에 있으면 그것이 우선
+  var DBNS = null, CHK = {};
+  var STOPNOTE = { p9: "d1-1", p11: "d1-2", p15: "d1-6", p30: "d2-5", p34: "d2-8", p37: "d3-1", p43: "d3-7" };
+  var PERSONFIX = { p61: "박양수", p62: "박영수", p63: "김영돈" };
+  function watchChecks(dbNs) {
+    DBNS = dbNs;
+    dbNs.collection("checks").onSnapshot(function (snap) {
+      CHK = {}; snap.docs.forEach(function (d) { CHK[d.id] = d.data(); });
+      applyChecks();
+      if (cur === "prep" || cur === "sched" || cur === "people" || cur === "home") R[cur]();
+    }, function () {});
+  }
+  function chk(p) { var c = CHK[p.id]; return c ? { ok: !!c.ok, a: c.a || "", at: c.at || "" } : { ok: !!p.done, a: p.m || "", at: p.at || "" }; }
+  function chkById(id) { var p = S.prep.filter(function (x) { return x.id === id; })[0]; return p ? chk(p) : { ok: false, a: "" }; }
+  function applyChecks() {
+    Object.keys(PERSONFIX).forEach(function (id) {
+      var c = chkById(id); if (!c.ok) return;
+      var ph = (c.a.match(/01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/) || [])[0];
+      var who = S.people.filter(function (x) { return x.name === PERSONFIX[id]; })[0];
+      if (ph && who) who.phone = ph.replace(/[\s.]/g, "-").replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
+    });
+    var a = chkById("p9"); var tm = a.ok && (a.a.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/) || [])[0];
+    S.arr1 = tm || S.arr1 || "";
+  }
+  function canCheck() { return !HOSTED && (canWrite || !!DBNS); }
+  function saveCheck(p, val, ok, btn) {
+    var rec = { a: val, ok: ok, at: new Date().toISOString() };
+    var done = function () { CHK[p.id] = rec; if (canWrite) { p.m = val; p.done = ok; p.at = rec.at; changed(); } applyChecks(); renderPrep(); };
+    if (DBNS) DBNS.collection("checks").doc(p.id).set(rec).then(done, function () {
+      if (canWrite) done(); else if (btn) { btn.textContent = "저장 권한 없음"; btn.disabled = true; }
+    });
+    else if (canWrite) done();
+  }
+  function checkRow(p, pre) {
+    var c = chk(p), id = pre + p.id;
+    var kids = [h("label", { "for": id, cls: "t" }, [p.c ? h("span", { cls: "tag c", text: "확인 필요" }) : (p.r ? h("span", { cls: "tag r", text: "검토 추가" }) : null), p.t]),
+      p.d ? h("span", { cls: "d", text: p.d }) : null];
+    if (c.ok) {
+      kids.push(h("div", { cls: "chkdone" }, [h("span", { text: "✔ " + (c.a || "확인 완료") }),
+        canCheck() ? h("button", { cls: "linkish", type: "button", text: "다시 열기", onclick: function (e) { saveCheck(p, c.a, false, e.currentTarget); } }) : null]));
+    } else if (canCheck()) {
+      var ta = h("textarea", { cls: "memo", rows: "1", id: id, placeholder: "확인한 내용 (전화번호, 금액, 결정 사항)", "aria-label": p.t + " 확인 메모" });
+      ta.value = c.a;
+      kids.push(h("div", { cls: "chkrow" }, [ta, h("button", { cls: "btn solid chkbtn", type: "button", text: "확인", onclick: function (e) { saveCheck(p, ta.value.trim(), true, e.currentTarget); } })]));
+    } else if (c.a) kids.push(h("span", { cls: "d", text: "메모: " + c.a }));
+    return h("li", { cls: "item" + (c.ok ? " done" : "") }, [h("span", { cls: "chkmark", "aria-hidden": "true", text: c.ok ? "✔" : "○" }), h("div", { cls: "body" }, kids)]);
+  }
+
   /* ---------- 준비 ---------- */
   var prepFilter = "all";
-  function prepPct() { var d = S.prep.filter(function (p) { return p.done; }).length; return S.prep.length ? Math.round(d / S.prep.length * 100) : 0; }
+  function prepPct() { var d = S.prep.filter(function (p) { return chk(p).ok; }).length; return S.prep.length ? Math.round(d / S.prep.length * 100) : 0; }
   function renderPrep() {
     var v = document.getElementById("v-prep"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
-    var done = S.prep.filter(function (p) { return p.done; }).length;
+    var done = S.prep.filter(function (p) { return chk(p).ok; }).length;
     w.appendChild(h("h2", { text: "여행 전 점검표" }));
     w.appendChild(h("div", { cls: "card progress" }, [
       h("div", { cls: "pstats" }, [h("b", { cls: "num", text: prepPct() + "%" }), h("span", { cls: "muted num", text: done + " / " + S.prep.length + "개 완료" })]),
       h("div", { cls: "bar" }, [h("i", { style: "width:" + prepPct() + "%" })]),
-      h("p", { cls: "muted", text: canWrite ? "항목을 누르면 완료로 바뀌고, 확인한 내용은 메모 칸에 적어 두면 저장됩니다." : "보기 전용 화면입니다." })
+      h("p", { cls: "muted", text: canCheck() ? "확인한 내용을 적고 '확인'을 누르면 완료로 정리되어 맨 아래 '확인 완료 정리'에 모입니다. 누가 적어도 모두에게 바로 보입니다." : "보기 전용 화면입니다. 확인 메모는 가이드북 원본(claude.ai)에서 적을 수 있어요." })
     ]));
-    var open = S.prep.filter(function (p) { return p.c && !p.done; });
+    var open = S.prep.filter(function (p) { return p.c && !chk(p).ok; });
     if (open.length) w.appendChild(h("div", { cls: "alert" }, [
       h("h3", { text: "일정표·공지 대조 결과, 먼저 확인할 것 " + open.length + "건" }),
-      h("ul", null, open.map(function (p) { return h("li", { text: p.t }); }))
+      h("p", { cls: "muted", text: "답을 적고 '확인'을 누르면 일정·명단에 바로 반영됩니다." }),
+      h("ul", { cls: "items" }, open.map(function (p) { return checkRow(p, "a-"); }))
     ]));
     var chips = h("div", { cls: "chips", role: "group", "aria-label": "보기 선택" });
     [["all", "전체"], ["open", "남은 것"], ["r", "검토 추가"]].concat(GROUPS).forEach(function (g) {
@@ -1064,7 +1128,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       var gd = S.prep.filter(function (p) { return p.g === g[0]; });
       var grp = h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: g[1] }), h("span", { cls: "num", text: gd.filter(function (p) { return p.done; }).length + "/" + gd.length })])]);
       var ul = h("ul", { cls: "items" });
-      list.forEach(function (p) { ul.appendChild(prepItem(p)); });
+      list.forEach(function (p) { if (!(p.c && !chk(p).ok)) ul.appendChild(checkRow(p, "pi-")); });
       if (canWrite && (prepFilter === "all" || prepFilter === g[0])) {
         var inp = h("input", { type: "text", placeholder: "항목 추가", id: "add-" + g[0], "aria-label": g[1] + " 항목 추가" });
         var add = function () { var t = inp.value.trim(); if (!t) return; S.prep.push({ id: uid("p"), g: g[0], t: t, d: "", done: false, m: "", r: 0, c: 0 }); changed(); renderPrep(); };
@@ -1084,6 +1148,11 @@ a.instbtn { color: inherit; text-decoration: none; }
       return li;
     }));
     w.appendChild(h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: "내 준비물" }), h("span", { text: "이 휴대폰에만 저장" })]), mul]));
+    var fin = S.prep.filter(function (p) { return chk(p).ok; }).sort(function (a, b) { return (chk(b).at || "").localeCompare(chk(a).at || ""); });
+    w.appendChild(h("div", { cls: "card glass summary" }, [h("h3", { text: "확인 완료 정리 · " + fin.length + "건" }),
+      fin.length ? h("ul", { cls: "sumlist" }, fin.map(function (p) { var c = chk(p);
+        return h("li", null, [h("b", { text: p.t }), h("span", { text: c.a || "확인 완료" }), c.at ? h("small", { cls: "muted num", text: fmtWhen(c.at) }) : null]); }))
+        : h("p", { cls: "muted", text: "아직 확인된 항목이 없습니다." })]));
     v.appendChild(w);
   }
   function prepItem(p) {
@@ -1110,6 +1179,11 @@ a.instbtn { color: inherit; text-decoration: none; }
     var d = DAYS.filter(function (x) { return x.ymd === k; })[0];
     return d ? d.key : "d1";
   }
+  function stopNote(key) {
+    var out = [];
+    Object.keys(STOPNOTE).forEach(function (id) { if (STOPNOTE[id] === key) { var c = chkById(id); if (c.ok && c.a) out.push(c.a); } });
+    return out.length ? h("span", { cls: "stopnote", text: "✔ 확인: " + out.join(" / ") }) : null;
+  }
   function renderSched() {
     var v = document.getElementById("v-sched"); v.textContent = "";
     if (!dayKey) dayKey = todayKey();
@@ -1117,7 +1191,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(h("div", { cls: "card glass" }, [h("h2", { text: "여행 중 일정" }), h("p", { cls: "muted", text: "현지 사정에 따라 순서가 바뀔 수 있습니다. 장소마다 전화·주소 복사·카카오내비·티맵·네이버지도 버튼이 있습니다." })]));
     w.appendChild(h("div", { cls: "flights" }, [
       h("div", { cls: "flight glass card" }, [h("span", { cls: "muted", text: "가는 날 · 11/2 (월)" }), h("span", { cls: "code", text: "ZE201" }), h("span", { cls: "route", text: "김포 → 제주" }),
-        h("span", { cls: "times num", text: "집결 05:30 · 출발 06:45 · 도착 07:20" }), h("span", { cls: "warnline", text: "도착 시각 여행사 재확인 중" })]),
+        h("span", { cls: "times num", text: "집결 05:30 · 출발 06:45 · 도착 " + (S.arr1 || "07:20") }), S.arr1 ? null : h("span", { cls: "warnline", text: "도착 시각 여행사 재확인 중" })]),
       h("div", { cls: "flight glass card" }, [h("span", { cls: "muted", text: "오는 날 · 11/4 (수)" }), h("span", { cls: "code", text: "ZE252" }), h("span", { cls: "route", text: "제주 → 김포" }),
         h("span", { cls: "times num", text: "집결 14:00 · 출발 15:15 · 도착 16:30" })])
     ]));
@@ -1132,7 +1206,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     day.stops.forEach(function (s, si) {
       if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: "🚌 " + s[6] })]));
       var what = h("div", { cls: "what" }, [h("b", { text: s[1] }), s[2] ? h("small", { text: s[2] }) : null,
-        placeBox(day.key + "-" + si, s[1])]);
+        stopNote(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "확정" : "예상" })]);
       items.push(h("li", { cls: "stop glass" }, [when, what, h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] })]));
@@ -1177,6 +1251,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   // 정답은 페이지에 넣지 않고, 소유자만 읽을 수 있는 db 문서(secret/quiz)에서 불러온다
   var ANS = null, ansState = "wait";
   function loadAnswers(dbNs) {
+    if (dbNs) watchChecks(dbNs);
     if (!dbNs) { ansState = "none"; if (cur === "host") renderHost(); return; }
     dbNs.doc("secret/quiz").get().then(function (snap) {
       var d = snap.exists ? snap.data() : null;

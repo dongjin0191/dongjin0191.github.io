@@ -20,7 +20,7 @@ jobs:
           python-version: '3.12'
       - run: pip install gdown pillow pillow-heif
       - name: 드라이브 폴더 내려받기
-        run: gdown --folder "https://drive.google.com/drive/folders/1SEcLwN5OF8Q0FdEePYLkwIaJ-pfIVs4h" -O /tmp/drive --remaining-ok
+        run: gdown --folder "https://drive.google.com/drive/folders/1SEcLwN5OF8Q0FdEePYLkwIaJ-pfIVs4h" -O /tmp/drive/
       - name: 사진 줄이기
         run: |
           python - <<'PY'
