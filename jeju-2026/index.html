@@ -102,6 +102,11 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .btn.solid { background: var(--sky); color: #fff; }
 .btn.mag { background: var(--magenta); color: #fff; }
 .btn:disabled { opacity: .5; cursor: default; }
+.staff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.staff-list li { display: grid; grid-template-columns: 64px 1fr 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
+.staff-role { justify-self: start; padding: 3px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 12.5px; font-weight: 800; }
+.staff-name { display: grid; min-width: 0; } .staff-name b { font-size: 15.5px; } .staff-name small { color: var(--muted); font-size: 12.5px; }
+.staff-tel { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #fff; text-decoration: none; font-size: 18px; box-shadow: 0 1px 4px rgba(20,33,61,.15); }
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .sponsors li { background: var(--tangerine-soft); border-radius: 10px; padding: 7px 10px; display: grid; min-width: 0; }
 .sponsors li b { font-size: 14px; overflow-wrap: anywhere; }
@@ -1015,7 +1020,21 @@ a.instbtn { color: inherit; text-decoration: none; }
       h("button", { cls: "inv-more", type: "button", "aria-expanded": String(open), text: open ? "접기 ▲" : "전체 읽기 ▼", onclick: function () { letterOpen[i] = !open; renderHome(); } })
     ]);
   }
-  function inviteCard() { return h("div", { cls: "letters" }, LETTERS.map(letterCard)); }
+  // 교육친교부 임원 소개 (초대의 글 아래)
+  var STAFF = [["총무", "이동진", "목사"], ["부총무", "김선민", "목사"], ["서기", "김창룡", "장로"], ["회계", "안상천", "목사"]];
+  function staffCard() {
+    return h("section", { cls: "card staff" }, [
+      h("h3", { text: "교육친교부 임원 소개" }),
+      h("ul", { cls: "staff-list" }, STAFF.map(function (s) {
+        var p = (S.people || []).filter(function (x) { return x.name === s[1]; })[0];
+        var tel = p && p.phone ? p.phone.replace(/[^\d]/g, "") : "";
+        return h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
+          h("span", { cls: "staff-name" }, [h("b", { text: s[1] + " " + s[2] }), p && p.church ? h("small", { text: p.church.split(" · ")[0] + "교회" }) : null]),
+          tel ? h("a", { cls: "staff-tel", href: "tel:" + tel, "aria-label": s[1] + " " + s[2] + " 전화" , text: "📞" }) : h("span")]);
+      }))
+    ]);
+  }
+  function inviteCard() { return h("div", { cls: "letters" }, LETTERS.map(letterCard).concat([staffCard()])); }
   /* 사진 띠: 한 화면 4장, 좌우로 흐름 */
   var stripTimer = null;
   function shrinkImage(file, cb) {
