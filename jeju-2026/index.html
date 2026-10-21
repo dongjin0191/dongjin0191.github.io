@@ -102,6 +102,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .btn.solid { background: var(--sky); color: #fff; }
 .btn.mag { background: var(--magenta); color: #fff; }
 .btn:disabled { opacity: .5; cursor: default; }
+.editgo { display: grid; gap: 3px; margin: 0 0 14px; padding: 14px 16px; border-radius: 16px; background: var(--magenta); color: #fff; text-decoration: none; box-shadow: 0 4px 14px rgba(200,30,110,.25); }
+.editgo b { font-size: 17px; } .editgo small { font-size: 12.5px; opacity: .92; line-height: 1.5; }
+.editgo-s { justify-self: start; margin-top: 4px; font-size: 13px; font-weight: 800; color: var(--magenta); }
 .staff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .staff-list li { display: grid; grid-template-columns: 64px 1fr 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
 .staff-role { justify-self: start; padding: 3px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 12.5px; font-weight: 800; }
@@ -1202,6 +1205,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   var PERSONFIX = { p61: "박양수", p62: "박영수", p63: "김영돈", p64: "장명국", p72: "이주은" };
   function watchChecks(dbNs) {
     DBNS = dbNs;
+    if (!canWrite && !HOSTED && saveEl.textContent === "보기 전용") setSave("확인란 편집 가능");
     dbNs.collection("checks").onSnapshot(function (snap) {
       CHK = {}; snap.docs.forEach(function (d) { CHK[d.id] = d.data(); });
       applyChecks();
@@ -1247,6 +1251,10 @@ a.instbtn { color: inherit; text-decoration: none; }
     });
     return out;
   }
+  // 임원 확인 기간(10/22~10/28): 앱 주소에서도 '편집 화면으로' 바로 가게 한다
+  var EDIT_UNTIL = "2026-10-29";
+  function editWindow() { return new Date().toISOString().slice(0, 10) < EDIT_UNTIL; }
+  var EDIT_LINK = GUIDE_URL + "#prep";
   function canCheck() { return !HOSTED && (canWrite || !!DBNS); }
   function saveCheck(p, val, ok, btn) {
     var rec = { a: val, ok: ok, at: new Date().toISOString() };
@@ -1267,7 +1275,10 @@ a.instbtn { color: inherit; text-decoration: none; }
       var ta = h("textarea", { cls: "memo", rows: rows || "1", id: id, placeholder: ph || "확인한 내용 (전화번호, 금액, 결정 사항)", "aria-label": p.t + " 확인 메모" });
       ta.value = c.a;
       kids.push(h("div", { cls: "chkrow" }, [ta, h("button", { cls: "btn solid chkbtn", type: "button", text: "확인", onclick: function (e) { saveCheck(p, ta.value.trim(), true, e.currentTarget); } })]));
-    } else if (c.a) kids.push(h("span", { cls: "d", text: "메모: " + c.a }));
+    } else {
+      if (c.a) kids.push(h("span", { cls: "d", text: "메모: " + c.a }));
+      if (HOSTED && editWindow()) kids.push(h("a", { cls: "editgo-s", href: EDIT_LINK, target: "_blank", rel: "noopener", text: "✏️ 편집 화면에서 답변 적기" }));
+    }
     return h("li", { cls: "item" + (c.ok ? " done" : "") }, [h("span", { cls: "chkmark", "aria-hidden": "true", text: c.ok ? "✔" : "○" }), h("div", { cls: "body" }, kids)]);
   }
 
@@ -1288,8 +1299,12 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(h("div", { cls: "card progress" }, [
       h("div", { cls: "pstats" }, [h("b", { cls: "num", text: prepPct() + "%" }), h("span", { cls: "muted num", text: done + " / " + S.prep.length + "개 완료" })]),
       h("div", { cls: "bar" }, [h("i", { style: "width:" + prepPct() + "%" })]),
-      h("p", { cls: "muted", text: canCheck() ? "확인한 내용을 적고 '확인'을 누르면 완료로 정리되어 맨 아래 '확인 완료 정리'에 모입니다. 누가 적어도 모두에게 바로 보입니다." : "보기 전용 화면입니다. 확인 메모는 가이드북 원본(claude.ai)에서 적을 수 있어요." })
+      h("p", { cls: "muted", text: canCheck() ? "✏️ 편집 가능 · 확인한 내용을 적고 '확인'을 누르면 '처리됨'으로 정리되어 맨 아래 '확인 완료 정리'에 모입니다. 누가 적어도 모두에게 바로 보입니다." : "이 화면에서는 답변을 적을 수 없습니다. 위 '임원 편집 화면 열기'를 눌러 주세요." })
     ]));
+    if (!canCheck() && (!HOSTED || editWindow())) w.insertBefore(h("a", { cls: "editgo", href: EDIT_LINK, target: "_blank", rel: "noopener" }, [
+      h("b", { text: "✏️ 임원 편집 화면 열기" }),
+      h("small", { text: HOSTED ? "10/28까지 임원 확인 기간입니다. 편집 화면(claude.ai)에서 로그인하면 답변란과 확인 버튼이 나옵니다." : "claude.ai에 로그인하면 답변란과 확인 버튼이 나옵니다." })
+    ]), w.children[1]);
     var open = S.prep.filter(function (p) { return p.c && p.g !== "top" && !chk(p).ok; });
     if (open.length) w.appendChild(h("div", { cls: "alert" }, [
       h("h3", { text: "일정표·공지 대조 결과, 먼저 확인할 것 " + open.length + "건" }),
@@ -1797,9 +1812,9 @@ a.instbtn { color: inherit; text-decoration: none; }
     Promise.all([window.claude.use("artifact"), window.claude.use("user")]).then(function (r) {
       artifactNs = r[0];
       var user = r[1];
-      if (!artifactNs) { canWrite = false; setSave("보기 전용"); renderAll(); return; }
+      if (!artifactNs) { canWrite = false; setSave(DBNS ? "확인란 편집 가능" : "보기 전용"); renderAll(); return; }
       (user && user.canEdit ? user.canEdit() : Promise.resolve(true)).then(function (ok) {
-        canWrite = !!ok; setSave(ok ? "편집 가능" : "보기 전용"); renderAll();
+        canWrite = !!ok; setSave(ok ? "편집 가능" : (DBNS ? "확인란 편집 가능" : "보기 전용")); renderAll();
       }, function () { setSave("편집 가능"); });
     }, function () { canWrite = false; setSave("보기 전용"); renderAll(); });
   } else {
