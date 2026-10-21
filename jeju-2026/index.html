@@ -109,7 +109,12 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .gchat { margin: 10px 0 14px; padding: 12px 14px; border-radius: 16px; background: #fffbe0; border: 1px solid #f3e27a; display: grid; gap: 8px; }
 .gchat-t { margin: 0; display: grid; gap: 2px; text-align: center; } .gchat-t b { font-size: 15.5px; color: #3c1e1e; } .gchat-t small { font-size: 12.5px; color: var(--muted); }
 .qrbox summary { cursor: pointer; text-align: center; font-weight: 800; font-size: 13.5px; color: var(--navy); padding: 4px; }
-.qrs { display: grid; justify-items: center; margin-top: 8px; } .qrs figure { width: min(240px, 80%); }
+.gchat-note { margin: 10px 0 12px; padding: 12px 14px; border: 2px solid #e8590c; border-radius: 12px; background: #fff4e6; color: #5c2d00; display: grid; gap: 4px; text-align: center; }
+  .gchat-note b { font-size: 15px; color: #c2410c; }
+  .gchat-fmt { font-size: 19px; font-weight: 800; color: #1e2a78; background: #fff; border-radius: 8px; padding: 6px 4px; margin: 2px 0; }
+  .gchat-ex { font-size: 14px; font-weight: 600; }
+  .gchat-note small { font-size: 13px; }
+  .qrs { display: grid; justify-items: center; margin-top: 8px; } .qrs figure { width: min(240px, 80%); }
 .qrs figure { margin: 0; background: #fff; border-radius: 12px; padding: 8px; text-align: center; }
 .qrs img { width: 100%; image-rendering: pixelated; } .qrs figcaption { font-size: 13px; font-weight: 800; color: var(--navy); }
 .gchat-b { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .gchat-b > *:only-child { grid-column: 1 / -1; }
@@ -1016,7 +1021,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     };
     // 초대: 안드로이드는 카카오톡 '공유 대상(친구·채팅 선택)' 화면으로 바로, 그 밖에는 휴대폰 공유창 → 카카오톡
     var invite = function (e) {
-      var msg = "제19회기 시화산노회 목사·장로 부부수양회(11/2~4 제주) 단톡방에 초대합니다.\n아래 링크를 누르면 바로 들어오실 수 있어요.\n" + gl;
+      var msg = "제19회기 시화산노회 목사·장로 부부수양회(11/2~4 제주) 단톡방에 초대합니다.\n아래 링크를 누르면 바로 들어오실 수 있어요.\n※ 프로필 이름은 성함+직분+(교회이름)으로 적어 주세요. 예) 홍길동 목사(○○교회)\n" + gl;
       var ua = navigator.userAgent || "";
       if (/Android/i.test(ua) && !IN_KAKAO) { location.href = "intent:#Intent;action=android.intent.action.SEND;type=text/plain;package=com.kakao.talk;S.android.intent.extra.TEXT=" + encodeURIComponent(msg) + ";end"; return; }
       if (navigator.share) { navigator.share({ title: name + " 단톡방 초대", text: msg }).catch(function () {}); return; }
@@ -1024,6 +1029,12 @@ a.instbtn { color: inherit; text-decoration: none; }
     };
     var box = h("div", { cls: "gchat" }, [
       h("p", { cls: "gchat-t" }, [h("b", { text: "💬 " + name + " 단톡방" }), h("small", { text: gl ? "누르면 바로 입장합니다" : "카카오톡을 열어 채팅 목록에서 이 방을 찾아 주세요" })]),
+      h("div", { cls: "gchat-note" }, [
+        h("b", { text: "📢 입장 시 프로필 이름은 꼭 이렇게!" }),
+        h("span", { cls: "gchat-fmt", text: "성함 + 직분 + (교회이름)" }),
+        h("span", { cls: "gchat-ex", text: "예) 홍길동 목사(○○교회)" }),
+        h("small", { text: "적어 주시면 대단히 감사하겠습니다 🙏" })
+      ]),
       h("div", { cls: "gchat-b" }, [
         h("a", { cls: "vbtn kk", href: gl || "kakaotalk://launch", target: "_blank", rel: "noopener", onclick: open, text: gl ? "단톡 입장" : "카카오톡 열기" }),
         gl ? h("button", { cls: "vbtn kk2", type: "button", text: "친구 초대", onclick: invite }) : null,
