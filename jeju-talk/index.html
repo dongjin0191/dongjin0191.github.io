@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수양회 단톡</title>
+<meta name="theme-color" content="#FEE500">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="수양회 단톡">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>
+  // 홈 화면 아이콘으로 열었을 때는 곧바로 단톡방으로 넘어갑니다.
+  var CHAT = "https://open.kakao.com/o/gqvWzxTi";
+  var standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (standalone || /[?&]go=1/.test(location.search)) location.replace(CHAT);
+</script>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background: #FEE500; color: #3A1D1D; }
+  main { max-width: 420px; margin: 0 auto; padding: 28px 16px 40px; text-align: center; }
+  img.ic { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 6px 18px rgba(58,29,29,.25); }
+  h1 { font-size: 22px; margin: 18px 0 6px; }
+  p { word-break: keep-all; margin: 6px 0; line-height: 1.5; text-wrap: balance; }
+  .btn { display: block; width: 100%; box-sizing: border-box; margin: 12px 0 0; padding: 15px; border: 0; border-radius: 14px; font: inherit; font-size: 17px; font-weight: 800; text-decoration: none; cursor: pointer; }
+  .b1 { background: #3A1D1D; color: #FEE500; }
+  .b2 { background: #fff; color: #3A1D1D; }
+  .st { margin-top: 10px; font-weight: 700; color: #c2410c; min-height: 1.5em; }
+  .tip { margin-top: 22px; padding: 14px; background: rgba(255,255,255,.75); border-radius: 14px; text-align: left; font-size: 14px; }
+  .tip b { display: block; margin-bottom: 4px; }
+  .tip ol { margin: 4px 0 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <img class="ic" src="icon-512.png" alt="">
+  <h1>수양회 단톡방 바로가기</h1>
+  <p>아래 버튼을 누르고 <b>설치</b>만 누르면 홈 화면에 단톡방 아이콘이 생깁니다.</p>
+  <button class="btn b1" id="inst" type="button">📲 홈 화면에 단톡방 아이콘 만들기</button>
+  <a class="btn b2" href="https://open.kakao.com/o/gqvWzxTi">지금 단톡방 입장</a>
+  <p class="st" id="st"></p>
+  <div class="tip" id="manual" hidden>
+    <b>버튼이 안 되면 이렇게 해 주세요</b>
+    <ol id="steps"></ol>
+  </div>
+</main>
+<script>
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function () {});
+  var ua = navigator.userAgent, st = document.getElementById("st"), dp = null;
+  var ios = /iPhone|iPad|iPod/i.test(ua), kakao = /KAKAOTALK/i.test(ua), samsung = /SamsungBrowser/i.test(ua);
+  var steps = document.getElementById("steps");
+  var S = ios ? ["사파리(Safari)로 이 페이지를 엽니다", "아래 가운데 공유 버튼(□↑)을 누릅니다", "<b>홈 화면에 추가</b>를 누릅니다"]
+    : kakao ? ["오른쪽 아래(또는 위) ⋮ 메뉴 → <b>다른 브라우저로 열기</b>", "크롬에서 위 노란 버튼을 다시 누릅니다"]
+    : ["오른쪽 위 ⋮ 메뉴를 누릅니다", "<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다"];
+  steps.innerHTML = S.map(function (s) { return "<li>" + s + "</li>"; }).join("");
+  addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; st.textContent = ""; });
+  addEventListener("appinstalled", function () { st.textContent = "✅ 홈 화면에 아이콘이 생겼습니다. (어플방에만 보이면 길게 눌러 홈에 추가)"; });
+  function fallback() {
+    // 안드로이드인데 지금 화면이 크롬 본 창이 아니면(앱 안 창 등) 크롬으로 다시 열어 설치 창을 띄웁니다.
+    if (/Android/i.test(ua) && !samsung && !/[?&]chrome=1/.test(location.search)) {
+      location.href = "intent://" + location.host + location.pathname + "?chrome=1#Intent;scheme=https;package=com.android.chrome;end"; return;
+    }
+    st.textContent = "아래 안내대로 메뉴에서 '홈 화면에 추가'를 눌러 주세요 👇"; document.getElementById("manual").hidden = false;
+  }
+  document.getElementById("inst").onclick = function () {
+    if (kakao && /Android/i.test(ua)) { location.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; return; }
+    var ask = function () { dp.prompt(); dp.userChoice.then(function (r) { if (r.outcome !== "accepted") st.textContent = "취소되었습니다. 다시 누르셔도 됩니다."; dp = null; }); };
+    if (dp) return ask();
+    // 크롬 설치 창 준비가 조금 늦게 오는 경우 잠시 기다립니다.
+    st.textContent = "설치 창을 여는 중…";
+    var t = 0, iv = setInterval(function () {
+      if (dp) { clearInterval(iv); st.textContent = ""; return ask(); }
+      if (++t > 30) { clearInterval(iv); fallback(); }
+    }, 100);
+    document.getElementById("manual").scrollIntoView({ behavior: "smooth" });
+  };
+</script>
+</body>
+</html>
