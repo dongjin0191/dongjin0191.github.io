@@ -1062,6 +1062,18 @@ a.instbtn { color: inherit; text-decoration: none; }
       if (JSON.stringify(nd) !== JSON.stringify(DAYPICS)) { DAYPICS = nd; if (cur === "home") renderHome(); }
     }).catch(function () {});
   }
+  // 노회 채널에 올라온 수양회 영상(videos.json, 매시간 자동 수집)을 영상 칸에 더한다
+  function loadVideos() {
+    if (!HOSTED) return;
+    fetch("videos.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
+      if (!list || !list.length) return;
+      S.videos = S.videos || [];
+      var idOf = function (u) { var m = /(?:youtu\.be\/|[?&]v=|\/shorts\/)([\w-]{11})/.exec(u || ""); return m ? m[1] : u; };
+      var have = S.videos.map(function (v) { return idOf(v.u); }), add = false;
+      list.forEach(function (v) { if (have.indexOf(idOf(v.u)) < 0) { S.videos.push({ t: v.t, u: v.u, d: v.d || "", th: v.th }); add = true; } });
+      if (add && cur === "home") renderHome();
+    }).catch(function () {});
+  }
   function daysBox() {
     var src = S.days || DAYPICS, wrap = h("div", { cls: "days" });
     [["d1", "1일차", "11/2(월)"], ["d2", "2일차", "11/3(화)"], ["d3", "3일차", "11/4(수)"]].forEach(function (x) {
@@ -1742,7 +1754,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (HOSTED) { setSave("보기 전용");
       if (!(S.photos && S.photos.length)) fetch("photos/photos.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
         if (list && list.length) { S.photos = list.map(function (p) { return { src: "photos/" + p.src, cap: p.cap || "" }; }); renderAll(); }
-      }).catch(function () {}); loadDays(); document.addEventListener("visibilitychange", function () { if (!document.hidden) loadDays(); }); setInterval(function () { if (!document.hidden) loadDays(); }, 300000);
+      }).catch(function () {}); loadDays(); loadVideos(); document.addEventListener("visibilitychange", function () { if (!document.hidden) { loadDays(); loadVideos(); } }); setInterval(function () { if (!document.hidden) { loadDays(); loadVideos(); } }, 300000);
       if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(function (r) { r.update(); }).catch(function () {}); renderAll(); return; }
     try { var saved = JSON.parse(lsGet(LS + "-state") || "null"); if (saved && saved.prep) { S = saved; renderAll(); } } catch (e) {}
   }
