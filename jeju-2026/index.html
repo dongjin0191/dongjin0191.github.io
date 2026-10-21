@@ -345,7 +345,17 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .strip-title { margin: 0 0 8px; font-weight: 900; color: var(--navy); }
 .strip { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 24px) / 4); gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
 .strip::-webkit-scrollbar { display: none; }
-.shot { position: relative; margin: 0; scroll-snap-align: start; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: var(--sky-soft); }
+.album-hero { position: relative; margin: 0 0 8px; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #0d1b2a; cursor: zoom-in; }
+.album-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.album-hero figcaption { position: absolute; right: 8px; bottom: 8px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #fff; background: rgba(0,0,0,.5); }
+.shot.on { outline: 3px solid var(--magenta); outline-offset: -3px; }
+.lb-in { display: grid; justify-items: center; gap: 8px; max-width: 100%; }
+.lb-bar { display: flex; gap: 10px; align-items: baseline; color: #fff; }
+.lb-n { font-weight: 800; color: #fff; }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 64px; border: 0; border-radius: 12px; background: rgba(255,255,255,.18); color: #fff; font-size: 34px; line-height: 1; }
+.lb-nav.prev { left: 6px; } .lb-nav.next { right: 6px; }
+.lb-del { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); border: 0; border-radius: 999px; padding: 8px 16px; background: rgba(255,80,80,.85); color: #fff; font: inherit; font-weight: 800; }
+.shot { position: relative; margin: 0; scroll-snap-align: start; aspect-ratio: 16 / 11; cursor: pointer; border-radius: 12px; overflow: hidden; background: var(--sky-soft); }
 .shot img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
 .shot figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: 11px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
 .shot.empty { display: grid; place-items: center; border: 1px dashed var(--line); color: var(--muted); font-size: 12px; }
@@ -696,7 +706,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     S.links = S.links || {};
     var lk = h("div", { cls: "links" }, [
       S.links.youtube ? h("a", { cls: "linkbtn yt", href: S.links.youtube, target: "_blank", rel: "noopener" }, [h("span", { text: "▶ 유튜브" }), h("small", { text: "시화산노회 채널" })]) : h("span", { cls: "linkbtn off", text: "유튜브 준비 중" }),
-      S.links.photo ? h("a", { cls: "linkbtn ph", href: S.links.photo, target: "_blank", rel: "noopener" }, [h("span", { text: "사진 앨범" }), h("small", { text: "함께 찍은 사진 보기·올리기" })]) : h("span", { cls: "linkbtn off" }, [h("span", { text: "사진 앨범" }), h("small", { text: "링크 준비 중" })]),
+      S.links.photo ? h("a", { cls: "linkbtn ph", href: S.links.photo, target: "_blank", rel: "noopener" }, [h("span", { text: "사진 앨범" }), h("small", { text: "함께 찍은 사진 보기·올리기" })]) : null,
       S.links.survey ? h("a", { cls: "linkbtn sv", href: S.links.survey, target: "_blank", rel: "noopener" }, [h("span", { text: "📷 사전답사사진" }), h("small", { text: "교육친교부 답사 사진 (구글 드라이브)" })]) : h("span", { cls: "linkbtn off sv" }, [h("span", { text: "📷 사전답사사진" }), h("small", { text: "구글 드라이브에 올리는 중" })])
     ]);
     var lc = h("div", { cls: "card" }, [h("h3", { text: "사진 · 영상" }), photoStrip(), lk]);
@@ -856,6 +866,15 @@ a.instbtn { color: inherit; text-decoration: none; }
     inst.addEventListener("click", function () {
       if (isKakao) toBrowser();
       else if (deferred) { deferred.prompt(); deferred.userChoice.then(function () { deferred = null; }); }
+      else if (isAndroid) {
+        // 크롬이 설치 준비를 마칠 때까지 잠깐 기다렸다가 바로 설치 창을 띄운다
+        help.innerHTML = "설치 준비 중이에요… 잠시만요"; help.hidden = false;
+        var waited = 0, iv = setInterval(function () {
+          waited += 250;
+          if (deferred) { clearInterval(iv); help.hidden = true; tryPrompt(); }
+          else if (waited >= 4000) { clearInterval(iv); help.innerHTML = andHelp; }
+        }, 250);
+      }
       else if (isIOS) showHelp("<ol style=\"margin:0;padding-left:20px\">" + iosGuide().steps + "</ol>");
       else if (isAndroid) showHelp(andHelp);
       else showHelp("휴대폰에서 이 주소를 열면 홈 화면에 바로가기를 추가할 수 있어요.");
@@ -892,10 +911,17 @@ a.instbtn { color: inherit; text-decoration: none; }
     // claude.ai 화면: 설치되는 앱 주소로 보낸다 (카톡이면 바깥 브라우저로)
     var ua = navigator.userAgent || "", target = APP_URL + "?install=1";
     var href = IN_KAKAO ? (/Android/i.test(ua) ? "intent://" + target.replace(/^https:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent("kakaotalk://web/openExternal?url=" + encodeURIComponent(target)) + ";end" : "kakaotalk://web/openExternal?url=" + encodeURIComponent(target)) : target;
+    var openApp = function (e) {
+      // claude.ai 화면 안에서는 링크가 막힐 수 있어 새 창 열기를 한 번 더 시도한다
+      try { var w = window.open(href, "_blank", "noopener"); if (w) e.preventDefault(); } catch (err) {}
+    };
     return h("div", { cls: "install", id: "install" }, [
-      h("a", { cls: "instbtn", href: href, target: "_blank", rel: "noopener" }, [h("img", { src: ICON, alt: "" }),
-        h("span", null, [h("b", { text: "홈 화면에 바로가기 추가" }), h("small", { text: "누르면 설치 화면이 열려요 · 앱처럼 한 번에" })]), h("i", { text: "＋" })]),
-      h("div", { cls: "copyrow", style: "padding:10px 14px" }, [h("code", { text: APP_URL }), h("button", { cls: "btn", type: "button", text: "주소 복사", onclick: function (e) { copy(APP_URL, e.currentTarget); } })])
+      h("a", { cls: "instbtn", href: href, target: "_blank", rel: "noopener", onclick: openApp }, [h("img", { src: ICON, alt: "" }),
+        h("span", null, [h("b", { text: "홈 화면에 바로가기 추가" }), h("small", { text: "누르면 앱 설치 화면이 열려요" })]), h("i", { text: "＋" })]),
+      h("div", { cls: "instbody" }, [
+        h("p", { cls: "muted", text: "이 화면(claude.ai)은 바로가기를 직접 만들 수 없어서, 앱 주소에서 설치합니다. 위 버튼이 안 열리면 아래 주소를 복사해 크롬(아이폰은 사파리) 주소창에 붙여넣으세요." }),
+        h("div", { cls: "copyrow" }, [h("code", { text: APP_URL }), h("button", { cls: "btn solid", type: "button", text: "앱 주소 복사", onclick: function (e) { copy(APP_URL, e.currentTarget); } })])
+      ])
     ]);
   }
   function installCardOld() {
@@ -972,28 +998,56 @@ a.instbtn { color: inherit; text-decoration: none; }
     };
     fr.readAsDataURL(file);
   }
-  function openPhoto(src, cap) {
-    var ov = h("div", { cls: "lightbox", role: "dialog", "aria-label": "사진 크게 보기", onclick: function () { ov.remove(); } }, [
-      h("img", { src: src, alt: cap || "답사 사진" }), cap ? h("p", { text: cap }) : null, h("button", { type: "button", cls: "lb-x", "aria-label": "닫기", text: "×" })]);
-    document.body.appendChild(ov);
+  // 사진 크게 보기: 좌우 넘기기(버튼·스와이프), 총무는 여기서 삭제
+  function openPhoto(i) {
+    var list = S.photos, n = list.length, x0 = null;
+    var img = h("img", { alt: "" }), cap = h("p"), cnt = h("span", { cls: "lb-n num" });
+    var show = function () { var p = list[i]; img.src = p.src; img.alt = p.cap || "답사 사진"; cap.textContent = p.cap || ""; cnt.textContent = (i + 1) + " / " + n; };
+    var go = function (d) { i = (i + d + n) % n; show(); };
+    var ov = h("div", { cls: "lightbox", role: "dialog", "aria-label": "사진 크게 보기" }, [
+      h("div", { cls: "lb-in" }, [img, h("div", { cls: "lb-bar" }, [cnt, cap])]),
+      n > 1 ? h("button", { type: "button", cls: "lb-nav prev", "aria-label": "이전 사진", text: "‹", onclick: function (e) { e.stopPropagation(); go(-1); } }) : null,
+      n > 1 ? h("button", { type: "button", cls: "lb-nav next", "aria-label": "다음 사진", text: "›", onclick: function (e) { e.stopPropagation(); go(1); } }) : null,
+      h("button", { type: "button", cls: "lb-x", "aria-label": "닫기", text: "×", onclick: function () { close(); } }),
+      canWrite ? h("button", { type: "button", cls: "lb-del", text: "이 사진 삭제", onclick: function (e) { e.stopPropagation(); list.splice(i, 1); changed(); close(); renderHome(); } }) : null
+    ]);
+    var key = function (e) { if (e.key === "Escape") close(); else if (e.key === "ArrowLeft") go(-1); else if (e.key === "ArrowRight") go(1); };
+    var close = function () { ov.remove(); document.removeEventListener("keydown", key); };
+    ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
+    ov.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    ov.addEventListener("touchend", function (e) { if (x0 == null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); });
+    document.addEventListener("keydown", key);
+    show(); document.body.appendChild(ov);
   }
+  // 앨범: 위에 큰 사진(자동으로 넘어감) + 아래 작은 사진 4장씩 좌우 스크롤
+  var albumIdx = 0, pausedUntil = 0;
   function photoStrip() {
     S.photos = S.photos || [];
-    var box = h("div", { cls: "strip-wrap" }, [h("p", { cls: "strip-title", text: "📷 사전답사사진" })]);
+    var n = S.photos.length;
+    var box = h("div", { cls: "strip-wrap" }, [h("p", { cls: "strip-title" }, ["📷 사전답사사진", n ? h("small", { cls: "muted num", text: " " + n + "장 · 누르면 크게" }) : null])]);
     var track = h("div", { cls: "strip", tabindex: "0", "aria-label": "사전답사사진, 좌우로 넘겨 보기" });
-    if (S.photos.length) {
-      S.photos.forEach(function (p, i) {
-        var fig = h("figure", { cls: "shot" }, [
-          h("img", { src: p.src, alt: p.cap || ("답사 사진 " + (i + 1)), loading: "lazy", onclick: function () { openPhoto(p.src, p.cap); } }),
-          p.cap ? h("figcaption", { text: p.cap }) : null,
-          canWrite ? h("button", { cls: "xbtn shot-x", type: "button", "aria-label": "사진 " + (i + 1) + " 삭제", text: "×", onclick: function (e) { e.stopPropagation(); S.photos.splice(i, 1); changed(); renderHome(); } }) : null
-        ]);
-        track.appendChild(fig);
-      });
-    } else {
+    if (!n) {
       for (var k = 0; k < 4; k++) track.appendChild(h("figure", { cls: "shot empty" }, [h("span", { text: k === 0 ? "사진 준비 중" : "" })]));
+      box.appendChild(track);
+    } else {
+      if (albumIdx >= n) albumIdx = 0;
+      var big = h("img", { alt: "", src: S.photos[albumIdx].src });
+      var bigCap = h("span", { cls: "num" });
+      var hero = h("figure", { cls: "album-hero", onclick: function () { openPhoto(albumIdx); } }, [big, h("figcaption", null, [bigCap])]);
+      var thumbs = [];
+      var pick = function (i, scroll) {
+        albumIdx = i; big.src = S.photos[i].src; big.alt = S.photos[i].cap || ("답사 사진 " + (i + 1));
+        bigCap.textContent = (i + 1) + " / " + n;
+        thumbs.forEach(function (f, j) { f.classList.toggle("on", j === i); });
+        if (scroll && thumbs[i]) track.scrollTo({ left: thumbs[i].offsetLeft - track.offsetLeft - 4, behavior: "smooth" });
+      };
+      S.photos.forEach(function (p, i) {
+        var fig = h("figure", { cls: "shot", onclick: function () { pick(i, false); pausedUntil = Date.now() + 8000; } }, [h("img", { src: p.src, alt: p.cap || ("답사 사진 " + (i + 1)), loading: "lazy" })]);
+        thumbs.push(fig); track.appendChild(fig);
+      });
+      box.appendChild(hero); box.appendChild(track);
+      pick(albumIdx, false);
     }
-    box.appendChild(track);
     if (canWrite) {
       var inp = h("input", { type: "file", accept: "image/*", multiple: "multiple", cls: "hide-file", id: "ph-up" });
       var info = h("small", { cls: "muted" });
@@ -1008,16 +1062,13 @@ a.instbtn { color: inherit; text-decoration: none; }
     // 자동으로 흐르기: 2.6초마다 한 칸, 끝나면 처음으로. 손으로 넘기면 잠시 멈춤
     if (stripTimer) clearInterval(stripTimer);
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var pausedUntil = 0;
     ["pointerdown", "touchstart", "wheel", "focus"].forEach(function (ev) { track.addEventListener(ev, function () { pausedUntil = Date.now() + 6000; }, { passive: true }); });
-    if (!reduce && S.photos.length > 4) {
+    if (!reduce && n > 1) {
       stripTimer = setInterval(function () {
         if (!document.body.contains(track)) { clearInterval(stripTimer); return; }
-        if (Date.now() < pausedUntil || document.hidden) return;
-        var step = track.firstChild ? track.firstChild.getBoundingClientRect().width + 8 : 100;
-        if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 4) track.scrollTo({ left: 0, behavior: "smooth" });
-        else track.scrollBy({ left: step, behavior: "smooth" });
-      }, 2600);
+        if (Date.now() < pausedUntil || document.hidden || document.querySelector(".lightbox")) return;
+        pick((albumIdx + 1) % n, true);
+      }, 3200);
     }
     return box;
   }
