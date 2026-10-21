@@ -854,13 +854,13 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(contactCard("문의 · 교육친교부 총무", "이동진 목사", "010-2540-0533", "kakao"));
     w.appendChild(acc);
     // 숙소 소개 (찬조자 소개 앞)
-    var HV = "8-HKe2b4EbA", hvu = "https://youtu.be/" + HV;
+    var HV = "tNXz9stE0KE", hvu = "https://youtu.be/" + HV;
     w.appendChild(h("div", { cls: "card hotel" }, [
       h("h3", { text: "🏨 숙소 소개 · 라마다 제주함덕 호텔" }),
       h("a", { cls: "vthumb", href: hvu, target: "_blank", rel: "noopener", "aria-label": "라마다 함덕 호텔 소개 영상 재생", onclick: function (e) { playInline(e, hvu, "라마다 함덕 호텔 소개 영상"); } }, [
         h("img", { src: HOSTED ? "https://i.ytimg.com/vi/" + HV + "/hqdefault.jpg" : POSTER, alt: "", onerror: function (e) { if (e.target.src !== POSTER) e.target.src = POSTER; } }),
         h("span", { cls: "vplay", "aria-hidden": "true" }, [h("i")]),
-        h("span", { cls: "vcap" }, [h("b", { text: "라마다 함덕 호텔 · 오션뷰 소개 영상 (4K)" }), h("small", { text: "유튜브 '휴&락' 호텔 리뷰" })])
+        h("span", { cls: "vcap" }, [h("b", { text: "라마다 제주함덕 호텔 소개 영상" }), h("small", { text: "누르면 바로 재생" })])
       ]),
       h("ul", { cls: "hotel-pts" }, [
         h("li", { text: "함덕 서우봉 해변 바로 앞 · 오션뷰 객실" }),
