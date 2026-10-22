@@ -242,6 +242,22 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .tile.neg b { color: var(--bad); }
 .tile em { font-style: normal; font-size: 12px; color: var(--muted); }
 .tile.hl em { color: #cfe0ff; }
+.ledger-h { margin-top: 18px; padding-top: 14px; border-top: 2px dashed var(--line); }
+.lgbar { display: grid; gap: 4px; margin-top: 8px; }
+.lgbar .pstats { font-size: 14px; font-weight: 700; }
+.lgall > summary { list-style: none; cursor: pointer; }
+.lgall > summary::-webkit-details-marker { display: none; }
+.lgall[open] > summary span { visibility: hidden; }
+table.ledger td { vertical-align: top; }
+table.ledger td b { display: block; font-weight: 700; }
+table.ledger td small { display: block; color: var(--muted); font-size: 12px; }
+.lgd { display: block; color: var(--muted); font-size: 12px; }
+.lgamt span { display: block; font-weight: 800; white-space: nowrap; }
+.lgin { color: #1a7f37; } .lgout { color: var(--bad); } table.ledger small.lgbal { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.lgall { min-width: 0; }
+tr.lgmon td { background: var(--sky-soft); font-weight: 800; color: var(--navy); }
+tr.lgref td { background: rgba(255, 200, 0, .12); }
+.lgnote ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
 .tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { padding: 9px 10px; border-top: 1px solid var(--line); text-align: left; vertical-align: middle; }
@@ -1691,7 +1707,61 @@ a.instbtn { color: inherit; text-decoration: none; }
     t2.appendChild(h("tfoot", null, [h("tr", null, [h("td", { text: "합계" }), h("td"), h("td"), h("td", { cls: "r", text: won(c.expPlan) }), h("td", { cls: "r", text: won(c.expAct) }), canWrite ? h("td") : null])]));
     w.appendChild(h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: "지출" }), canWrite ? h("button", { cls: "btn", type: "button", text: "+ 지출 추가", onclick: function () { S.expense.push({ id: uid("e"), name: "새 항목", unit: 0, qty: 1, actual: 0 }); changed(); renderMoney(); } }) : null]), h("div", { cls: "tblwrap" }, [t2])]));
     w.appendChild(h("p", { cls: "muted", text: "단가가 0인 항목은 아직 금액이 정해지지 않은 것입니다. 여행 후 영수증 금액을 '실제' 칸에 넣으면 결산이 됩니다." }));
+    ledgerSection(w);
     v.appendChild(w);
+  }
+  /* ---------- 회계장부 (총무 정리본) ---------- */
+  // [날짜, 내역, 수입, 지출, 잔액, 분류, 비고] · 2026-10-12 기준
+  var LEDGER = [["4/17","전월 이월",121200,0,121200,"이월","김창룡 장로"],["4/17","교육친교부 모임",0,68500,52700,"모임·식사","6명"],["4/10","준비모임 소급",0,52700,0,"모임·식사","5명"],["6/2","강명우 부장님",500000,0,500000,"개인 후원","후원금"],["6/3","교육친교부 모임",0,126900,373100,"모임·식사","4명"],["6/19","제주도 준비 모임",0,69000,304100,"모임·식사","4명"],["6/24","교육친교부 공문 발송",0,27520,276580,"행정","노회 간사"],["6/25","시화산노회 지원금",3000000,0,3276580,"기관 지원",""],["6/28","김영돈목사 부부",400000,0,3676580,"회비",""],["6/28","오윤석 목사 개인",200000,0,3876580,"회비",""],["6/28","안상천목사 부부",300000,0,4176580,"회비",""],["6/28","안상천목사 후원금",100000,0,4276580,"개인 후원",""],["7/1","신용화장로 부부",350000,0,4626580,"회비","운평장로교회"],["7/1","강명우 부장님",1000000,0,5626580,"개인 후원","후원금"],["7/1","권병렬목사 찬조금",300000,0,5926580,"개인 후원",""],["7/1","권병렬목사 부부",400000,0,6326580,"회비",""],["7/1","남부시찰 후원금",300000,0,6626580,"기관 지원",""],["7/2","북부시찰 후원금",300000,0,6926580,"기관 지원",""],["7/2","장명국장로 부부",400000,0,7326580,"회비","안산원곡동교회"],["7/2","상록시찰 후원금",300000,0,7626580,"기관 지원",""],["7/3","서용호목사 부부",400000,0,8026580,"회비",""],["7/3","서용호목사 후원금",300000,0,8326580,"개인 후원","수암제일교회"],["7/4","노회 장로회연합회",300000,0,8626580,"기관 지원","후원금"],["7/6","김동석목사 개인",150000,0,8776580,"회비",""],["7/7","이재용목사 부부",400000,0,9176580,"회비",""],["7/7","안산상록교회",500000,0,9676580,"교회 후원","후원금"],["7/7","박흥열목사 부부",400000,0,10076580,"회비",""],["7/7","시흥생수교회",1000000,0,11076580,"교회 후원","후원금"],["7/7","최종 임원 점검",0,166200,10910380,"모임·식사","식사·티타임"],["7/7","문태환목사 부부",350000,0,11260380,"회비",""],["7/7","이동진목사 부부",250000,0,11510380,"회비",""],["7/11","김운갑목사 부부",300000,0,11810380,"회비","시흥은혜교회"],["7/12","반월교회 후원금",1000000,0,12810380,"교회 후원",""],["7/13","남부시찰 지원금",650000,0,13460380,"기관 지원","장정훈목사 회계"],["7/15","김종수목사 회비",200000,0,13660380,"회비",""],["7/15","김종수목사 후원금",500000,0,14160380,"개인 후원","섬기는교회"],["7/16","박재완목사 후원금",300000,0,14460380,"개인 후원","수암권능교회"],["7/18","김지수목사 회비",400000,0,14860380,"회비",""],["7/18","박양수목사 회비",400000,0,15260380,"회비",""],["7/18","박양수목사 후원금",300000,0,15560380,"개인 후원","힘찬교회"],["7/19","신동열목사 회비",400000,0,15960380,"회비",""],["7/19","손병민목사 회비",200000,0,16160380,"회비",""],["7/19","남부시찰 회비 대체",0,100000,16060380,"회비 대체","손병민목사 이체"],["7/20","김충현목사 개인 회비",150000,0,16210380,"회비",""],["7/21","전종호목사 개인 회비",300000,0,16510380,"회비","동탄인랜드교회"],["7/21","김성중목사 부부 회비",400000,0,16910380,"회비",""],["7/21","김완수장로 부부 회비",400000,0,17310380,"회비",""],["7/21","김선민목사 개인 회비",100000,0,17410380,"회비",""],["7/26","박현정목사 부부 회비",250000,0,17660380,"회비",""],["7/27","박현정목사 후원금",200000,0,17860380,"개인 후원","율리교회"],["7/28","정재영장로 개인 회비",200000,0,18060380,"회비",""],["7/28","정재영장로 찬조금",200000,0,18260380,"개인 후원","반월교회"],["7/28","시화산노회 부비",2000000,0,20260380,"기관 지원",""],["7/28","명영석목사 개인 회비",100000,0,20360380,"회비",""],["7/28","유성준목사 개인 회비",100000,0,20460380,"회비",""],["8/7","이스타항공 발권",0,7399560,13060820,"항공","46명×160,860원(왕복)"],["8/7","함덕 라마다호텔",0,5530000,7530820,"숙박","2인1실×24실×2박"],["8/9","김성중목사 찬조금",500000,0,8030820,"개인 후원","한숲우리교회"],["8/11","정재영장로 환불",180000,180000,8030820,"환불(오고 감)","제주도 불참"],["8/13","김완수장로 후원",100000,0,8130820,"개인 후원","섬김의교회"],["8/17","김해수목사 후원",100000,0,8230820,"개인 후원","목자교회"],["8/17","김성훈 장로 후원",100000,0,8330820,"개인 후원","목자교회"],["9/21","제주도 렌트카",0,30000,8300820,"답사","답사"],["9/21","제주도 해장국",0,46000,8254820,"답사","답사"],["9/21","예술 박물관",0,58000,8196820,"답사","답사"],["9/21","성산 탄산사우나",0,57000,8139820,"답사","답사"],["9/21","김선민목사 후원금",300000,0,8439820,"개인 후원","추가 후원금"],["9/22","K5 주유비",0,42000,8397820,"답사","답사"],["9/22","김포 발렛파킹",0,77000,8320820,"답사","답사"],["9/26","강명우목사 후원금",500000,0,8820820,"개인 후원","추가 후원금"],["9/26","안상천목사 후원금",200000,0,9020820,"개인 후원","추가 후원금"],["10/1","김창룡장로 부고",0,100000,8920820,"경조사","장모님 103세"],["10/6","15인승 렌트카",0,169400,8751420,"현지 교통",""],["10/12","동탄인랜드교회",300000,0,9051420,"교회 후원",""]];
+  function ledgerSection(w) {
+    var tin = 0, tout = 0, cin = {}, cout = {}, mon = {}, order = [];
+    LEDGER.forEach(function (r) {
+      tin += r[2]; tout += r[3];
+      if (r[2]) cin[r[5]] = (cin[r[5]] || 0) + r[2];
+      if (r[3]) cout[r[5]] = (cout[r[5]] || 0) + r[3];
+      var m = r[0].split("/")[0] + "월";
+      if (!mon[m]) { mon[m] = [0, 0, 0]; order.push(m); }
+      mon[m][0] += r[2]; mon[m][1] += r[3]; mon[m][2] = r[4];
+    });
+    w.appendChild(h("h2", { cls: "ledger-h", text: "회계장부 · 10/12 기준" }));
+    w.appendChild(h("div", { cls: "tiles" }, [
+      tile("총수입", won(tin), "회비·후원·지원 " + LEDGER.filter(function (r) { return r[2]; }).length + "건"),
+      tile("총지출", won(tout), "항공·숙박·모임 등 " + LEDGER.filter(function (r) { return r[3]; }).length + "건"),
+      tile("현재 잔액", won(tin - tout), "통장 기준 재계산", "hl"),
+      tile("장부 기재 잔액", won(9052420), "1,000원 차이 (6/3 줄 계산 오류)", "neg")
+    ]));
+    var bars = function (title, obj, tot) {
+      var ks = Object.keys(obj).sort(function (a, b) { return obj[b] - obj[a]; });
+      return h("div", { cls: "card" }, [h("h3", { text: title })].concat(ks.map(function (k) {
+        return h("div", { cls: "lgbar" }, [h("div", { cls: "pstats" }, [h("span", { text: k }), h("span", { cls: "num", text: won(obj[k]) + " · " + Math.round(obj[k] / tot * 100) + "%" })]),
+          h("div", { cls: "bar" }, [h("i", { style: "width:" + Math.max(2, Math.round(obj[k] / tot * 100)) + "%" })])]);
+      })));
+    };
+    w.appendChild(bars("수입 분류", cin, tin));
+    w.appendChild(bars("지출 분류", cout, tout));
+    var tm = h("table", null, [h("thead", null, [h("tr", null, [h("th", { text: "월" }), h("th", { cls: "r", text: "수입" }), h("th", { cls: "r", text: "지출" }), h("th", { cls: "r", text: "월말 잔액" })])]),
+      h("tbody", null, order.map(function (m) { return h("tr", null, [h("td", { text: m }), h("td", { cls: "r num", text: mon[m][0] ? won(mon[m][0]) : "–" }), h("td", { cls: "r num", text: mon[m][1] ? won(mon[m][1]) : "–" }), h("td", { cls: "r num", text: won(mon[m][2]) })]); })),
+      h("tfoot", null, [h("tr", null, [h("td", { text: "합계" }), h("td", { cls: "r", text: won(tin) }), h("td", { cls: "r", text: won(tout) }), h("td", { cls: "r", text: won(tin - tout) })])])]);
+    w.appendChild(h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: "월별 수입·지출" })]), h("div", { cls: "tblwrap" }, [tm])]));
+    var tb = h("tbody");
+    var last = "";
+    LEDGER.forEach(function (r) {
+      var m = r[0].split("/")[0] + "월";
+      if (m !== last) { tb.appendChild(h("tr", { cls: "lgmon" }, [h("td", { colspan: "2", text: m })])); last = m; }
+      var amt = r[2] && r[3] ? [h("span", { cls: "lgin", text: "+" + won(r[2]) }), h("span", { cls: "lgout", text: "−" + won(r[3]) })]
+        : r[2] ? [h("span", { cls: "lgin", text: "+" + won(r[2]) })] : [h("span", { cls: "lgout", text: "−" + won(r[3]) })];
+      tb.appendChild(h("tr", { cls: r[5].indexOf("환불") === 0 ? "lgref" : "" }, [
+        h("td", null, [h("span", { cls: "lgd num", text: r[0] }), h("b", { text: r[1] }), h("small", { text: r[5] + (r[6] ? " · " + r[6] : "") })]),
+        h("td", { cls: "r num lgamt" }, amt.concat([h("small", { cls: "lgbal", text: "잔액 " + won(r[4]) })]))]));
+    });
+    var tl = h("table", { cls: "ledger" }, [h("thead", null, [h("tr", null, [h("th", { text: "날짜 · 내역" }), h("th", { cls: "r", text: "금액 · 잔액" })])]), tb,
+      h("tfoot", null, [h("tr", null, [h("td", { text: "합계 " + LEDGER.length + "건" }), h("td", { cls: "r lgamt" }, [h("span", { cls: "lgin", text: "+" + won(tin) }), h("span", { cls: "lgout", text: "−" + won(tout) }), h("small", { cls: "lgbal", text: "잔액 " + won(tin - tout) })])])])]);
+    w.appendChild(h("details", { cls: "group lgall" }, [h("summary", { cls: "ghead" }, [h("h3", { text: "전체 장부 보기 (" + LEDGER.length + "건)" }), h("span", { text: "펼치기 ▾" })]), h("div", { cls: "tblwrap" }, [tl])]));
+    w.appendChild(h("div", { cls: "card lgnote" }, [h("h3", { text: "장부 메모" }), h("ul", null, [
+      h("li", { text: "잔액은 처음부터 다시 더해 계산한 금액입니다. 원장부는 6/3 줄에서 1,000원이 잘못 계산되어 9,052,420원으로 적혀 있습니다." }),
+      h("li", { text: "정재영 장로 환불 180,000원은 들어오고 나간 것을 양쪽에 모두 적어 잔액에는 영향이 없습니다 (제주도 불참)." }),
+      h("li", { text: "현지 식사·입장료·버스 등 수양회 기간 비용은 아직 들어가지 않았습니다. 다녀온 뒤 이어서 적습니다." })
+    ])]));
   }
   function tile(label, val, sub, extra) { return h("div", { cls: "tile " + (extra || "") }, [h("small", { text: label }), h("b", { cls: "num", text: val }), sub ? h("em", { text: sub }) : null]); }
   function moneyInput(r, key, plain) {
