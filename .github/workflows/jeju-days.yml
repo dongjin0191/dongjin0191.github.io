@@ -4,6 +4,8 @@ name: 제주수양회 당일사진 가져오기
 # jeju-2026/days/d1~d3 에 줄여서 저장하고 days.json 을 만듭니다. 앱은 이 목록을 읽어 날짜별 칸에 보여 줍니다.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/20 * * * *'   # 20분마다 드라이브를 다시 확인
   push:
     paths:
       - '.github/workflows/jeju-days.yml'

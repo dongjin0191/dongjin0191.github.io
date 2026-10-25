@@ -3,6 +3,8 @@ name: 제주수양회 답사사진 가져오기
 # 구글 드라이브 '사전답사사진' 공유 폴더의 사진을 받아 jeju-2026/photos 에 줄여서 저장합니다.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'   # 매시 17분에 드라이브를 다시 확인
   push:
     paths:
       - '.github/workflows/jeju-photos.yml'
