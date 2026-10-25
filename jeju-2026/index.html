@@ -927,7 +927,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     var pledged = S.income.reduce(function (a, r) { return a + (r.kind === "찬조" ? r.amt || 0 : 0); }, 0);
     v.appendChild(h("div", { cls: "hero-wrap" }, [h("img", { cls: "poster", src: POSTER, alt: "대한예수교장로회 시화산노회 19회기 26년 부부수양회 제주 · 일시 26년 11월 2일(월)~4일(수) · 장소 라마다 제주함덕" })]));
     var w = h("div", { cls: "wrap sec" });
-    w.appendChild(ownerInviteCard());
+    w.appendChild(inviteCard());
     w.appendChild(h("div", { cls: "dday" }, [
       h("span", { cls: "big num", text: dd.big }),
       h("div", null, [h("p", { cls: "lbl", text: nx ? dd.sub + " · 다음 일정" : dd.sub }),
