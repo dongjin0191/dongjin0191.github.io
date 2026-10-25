@@ -1403,8 +1403,37 @@ a.instbtn { color: inherit; text-decoration: none; }
   function editWindow() { return new Date().toISOString().slice(0, 10) < EDIT_UNTIL; }
   var EDIT_LINK = GUIDE_URL + "#prep";
   function canCheck() { return !HOSTED && (canWrite || !!DBNS); }
+  // 확인 뒤 다시 그려도 화면이 맨 위로 튀지 않게: 다음 질문을 방금 누른 자리에 둔다
+  var DRAFT = {}, PREP_NEXT = null;
+  function prepAnchor() {
+    var lis = [].slice.call(document.querySelectorAll("#v-prep li[data-pid]"));
+    for (var i = 0; i < lis.length; i++) { var t = lis[i].getBoundingClientRect().top; if (t >= 0) return { id: lis[i].getAttribute("data-pid"), top: t }; }
+    return null;
+  }
+  function keepPrepPlace(fn) {
+    var y = window.scrollY, a = PREP_NEXT || prepAnchor(), foc = document.activeElement, fid = null;
+    PREP_NEXT = null;
+    [].slice.call(document.querySelectorAll("#v-prep textarea.memo")).forEach(function (ta) {
+      var li = ta.closest("li[data-pid]"); if (!li) return;
+      var pid = li.getAttribute("data-pid");
+      if (ta.value !== chkById(pid).a) DRAFT[pid] = ta.value; else delete DRAFT[pid];
+      if (ta === foc) fid = pid;
+    });
+    fn();
+    var el = a && document.querySelector('#v-prep li[data-pid="' + a.id + '"]');
+    if (el) window.scrollBy(0, el.getBoundingClientRect().top - a.top); else window.scrollTo(0, y);
+    var nt = document.querySelector('#v-prep li[data-pid="' + (a && a.focus ? a.id : fid) + '"] textarea.memo');
+    if (nt) try { nt.focus({ preventScroll: true }); } catch (e) {}
+  }
   function saveCheck(p, val, ok, btn) {
     var rec = { a: val, ok: ok, at: new Date().toISOString() };
+    if (btn) {
+      var li = btn.closest("li[data-pid]"), lis = [].slice.call(document.querySelectorAll("#v-prep li[data-pid]")), i = lis.indexOf(li), nx = null;
+      for (var k = i + 1; k < lis.length; k++) if (!lis[k].classList.contains("done")) { nx = lis[k]; break; }
+      if (li && nx) PREP_NEXT = { id: nx.getAttribute("data-pid"), top: li.getBoundingClientRect().top };
+      else if (li) PREP_NEXT = { id: p.id, top: li.getBoundingClientRect().top };
+    }
+    delete DRAFT[p.id];
     var done = function () { CHK[p.id] = rec; if (canWrite) { p.m = val; p.done = ok; p.at = rec.at; changed(); } applyChecks(); renderPrep(); };
     if (DBNS) DBNS.collection("checks").doc(p.id).set(rec).then(done, function () {
       if (canWrite) done(); else if (btn) { btn.textContent = "저장 권한 없음"; btn.disabled = true; }
@@ -1420,19 +1449,23 @@ a.instbtn { color: inherit; text-decoration: none; }
         canCheck() ? h("button", { cls: "linkish", type: "button", text: "다시 열기", onclick: function (e) { saveCheck(p, c.a, false, e.currentTarget); } }) : null]));
     } else if (canCheck()) {
       var ta = h("textarea", { cls: "memo", rows: rows || "1", id: id, placeholder: ph || "확인한 내용 (전화번호, 금액, 결정 사항)", "aria-label": p.t + " 확인 메모" });
-      ta.value = c.a;
+      ta.value = DRAFT[p.id] != null ? DRAFT[p.id] : c.a;
       kids.push(h("div", { cls: "chkrow" }, [ta, h("button", { cls: "btn solid chkbtn", type: "button", text: "확인", onclick: function (e) { saveCheck(p, ta.value.trim(), true, e.currentTarget); } })]));
     } else {
       if (c.a) kids.push(h("span", { cls: "d", text: "메모: " + c.a }));
       if (HOSTED && editWindow()) kids.push(h("a", { cls: "editgo-s", href: EDIT_LINK, target: "_blank", rel: "noopener", text: "✏️ 편집 화면에서 답변 적기" }));
     }
-    return h("li", { cls: "item" + (c.ok ? " done" : "") }, [h("span", { cls: "chkmark", "aria-hidden": "true", text: c.ok ? "✔" : "○" }), h("div", { cls: "body" }, kids)]);
+    return h("li", { cls: "item" + (c.ok ? " done" : ""), "data-pid": p.id }, [h("span", { cls: "chkmark", "aria-hidden": "true", text: c.ok ? "✔" : "○" }), h("div", { cls: "body" }, kids)]);
   }
 
   /* ---------- 준비 ---------- */
   var prepFilter = "all";
   function prepPct() { var d = S.prep.filter(function (p) { return chk(p).ok; }).length; return S.prep.length ? Math.round(d / S.prep.length * 100) : 0; }
   function renderPrep() {
+    if (cur === "prep" && document.querySelector("#v-prep li[data-pid]")) return keepPrepPlace(renderPrep0);
+    renderPrep0();
+  }
+  function renderPrep0() {
     var v = document.getElementById("v-prep"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
     var done = S.prep.filter(function (p) { return chk(p).ok; }).length;
