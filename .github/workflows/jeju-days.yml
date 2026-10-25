@@ -14,8 +14,10 @@ permissions:
   contents: write
 
 env:
-  # 드라이브 폴더 ID들(띄어쓰기로 구분). 폴더 이름이나 상위 폴더 이름에 '1일차·2일차·3일차'가 들어가면 그 날 칸에 들어갑니다.
-  DRIVE_FOLDER: '1k65Q-M3WpKGcdbCLZNBCkteCBXVb8FNP 1jWjJUUJHrsGIBvb2UBs3cC65s49y2Uvw'
+  # 1·2·3일차 드라이브 폴더 ID (사용자가 보낸 순서)
+  DAY1: '1k65Q-M3WpKGcdbCLZNBCkteCBXVb8FNP'
+  DAY2: '1jWjJUUJHrsGIBvb2UBs3cC65s49y2Uvw'
+  DAY3: '1YktY8A_5ybxP9Q4eJSWfbI-ebtWLmdZ3'
 
 jobs:
   days:
@@ -28,9 +30,11 @@ jobs:
       - run: pip install gdown pillow pillow-heif
       - name: 드라이브 폴더 내려받기
         run: |
-          ID="${DRIVE_FOLDER:-${{ vars.JEJU_DAYS_FOLDER }}}"
-          if [ -z "$ID" ]; then echo "폴더 ID 없음"; exit 0; fi
-          for F in $ID; do gdown --folder "https://drive.google.com/drive/folders/$F" -O /tmp/drive/ || true; done
+          for N in 1 2 3; do
+            eval F=\$DAY$N
+            mkdir -p "/tmp/drive/${N}일차"
+            gdown --folder "https://drive.google.com/drive/folders/$F" -O "/tmp/drive/${N}일차/" || true
+          done
           find /tmp/drive -maxdepth 3 -type d || true
       - name: 날짜별로 줄이기
         run: |
@@ -45,7 +49,8 @@ jobs:
           ext = ("jpg", "jpeg", "png", "heic", "heif", "webp")
           for root, _, names in os.walk(src):
               rel = os.path.relpath(root, src)
-              day = next((k for k in (1, 2, 3) if f"{k}일차" in rel), None)
+              top = rel.split(os.sep)[0]
+              day = next((k for k in (1, 2, 3) if top == f"{k}일차"), None)
               if not day: continue
               for n in sorted(names):
                   if n.lower().rsplit(".", 1)[-1] not in ext: continue
