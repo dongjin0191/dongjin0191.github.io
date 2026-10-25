@@ -1864,6 +1864,11 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (moneyState !== "ok") { v.appendChild(h("div", { cls: "wrap sec" }, [h("h2", { text: "정산" }), h("p", { cls: "muted", text: moneyState === "wait" ? "불러오는 중입니다…" : "정산은 노회 임원(편집 권한이 있는 분)만 볼 수 있습니다." })])); return; }
     var c = calc(), w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "여행 후 예결산" }));
+    if (IS_OWNER) w.appendChild(h("div", { cls: "card invite-own" }, [h("h3", { text: "🔐 임원 초대 · 총무에게만 보입니다" }),
+      h("p", { text: "정산은 이 가이드북에 '편집' 권한으로 초대된 분에게만 보입니다. 링크만 받은 참석자는 보기 권한이라 정산 탭이 나타나지 않습니다." }),
+      h("ol", null, [h("li", { text: "화면 오른쪽 위 '공유(Share)'를 누릅니다." }), h("li", { text: "임원의 이메일(클로드 계정)을 입력하고 권한을 '편집(Can edit)'으로 고릅니다." }),
+        h("li", { text: "초대를 보내면 임원이 메일·알림으로 받은 링크로 들어와 로그인하면 정산 탭이 보입니다." }), h("li", { text: "가이드북 주소는 그대로이고, 권한은 공유 메뉴에서 언제든 빼거나 바꿀 수 있습니다." })]),
+      h("p", { cls: "muted", text: "추천 대상: " + STAFF.filter(function (s) { return s[1] !== "이동진"; }).map(function (s) { return s[0] + " " + s[1] + " " + s[2]; }).join(", ") + ". 편집 권한은 일정·명단 수정도 함께 열리니 꼭 필요한 분만 초대하세요." })]));
     var bal = c.inPlan - c.expPlan, balAct = c.inGot - c.expAct;
     w.appendChild(h("div", { cls: "tiles" }, [
       tile("총 경비 (예산)", won(c.expPlan), "항공·숙박·식사·입장료 등 항목 합계"),
@@ -1910,6 +1915,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   /* ---------- 회계장부 (총무 정리본) ---------- */
   // [날짜, 내역, 수입, 지출, 잔액, 분류, 비고] · 2026-10-12 기준
   // 장부·지출은 페이지에 넣지 않고 임원(편집 권한)만 읽고 쓰는 db 문서 money/book 에 둔다
+  var IS_OWNER = false;
   var LEDGER = [], MONEY_DB = null, moneyState = "wait", moneyTimer = null;
   function loadMoney(dbNs) {
     if (!dbNs) { moneyState = "none"; syncMoneyTab(); return; }
@@ -2348,6 +2354,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     Promise.all([window.claude.use("artifact"), window.claude.use("user")]).then(function (r) {
       artifactNs = r[0];
       var user = r[1];
+      if (user && user.isOwner) user.isOwner().then(function (o) { IS_OWNER = !!o; if (cur === "money") renderMoney(); }, function () {});
       if (!artifactNs) { canWrite = false; setSave(DBNS ? "확인란 편집 가능" : "보기 전용"); renderAll(); return; }
       (user && user.canEdit ? user.canEdit() : Promise.resolve(true)).then(function (ok) {
         canWrite = !!ok; setSave(ok ? "편집 가능" : (DBNS ? "확인란 편집 가능" : "보기 전용")); renderAll();
