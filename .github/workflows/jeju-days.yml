@@ -14,11 +14,11 @@ permissions:
   contents: write
 
 env:
-  DRIVE_FOLDER: ''   # 26년제주부부수양회 폴더 ID (드라이브 연결 후 채움)
+  # 드라이브 폴더 ID들(띄어쓰기로 구분). 폴더 이름이나 상위 폴더 이름에 '1일차·2일차·3일차'가 들어가면 그 날 칸에 들어갑니다.
+  DRIVE_FOLDER: '1k65Q-M3WpKGcdbCLZNBCkteCBXVb8FNP 1jWjJUUJHrsGIBvb2UBs3cC65s49y2Uvw'
 
 jobs:
   days:
-    if: ${{ vars.JEJU_DAYS_FOLDER != '' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,8 @@ jobs:
         run: |
           ID="${DRIVE_FOLDER:-${{ vars.JEJU_DAYS_FOLDER }}}"
           if [ -z "$ID" ]; then echo "폴더 ID 없음"; exit 0; fi
-          gdown --folder "https://drive.google.com/drive/folders/$ID" -O /tmp/drive/ || true
+          for F in $ID; do gdown --folder "https://drive.google.com/drive/folders/$F" -O /tmp/drive/ || true; done
+          find /tmp/drive -maxdepth 3 -type d || true
       - name: 날짜별로 줄이기
         run: |
           python - <<'PY'
