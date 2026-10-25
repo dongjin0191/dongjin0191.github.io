@@ -32,12 +32,16 @@ jobs:
           register_heif_opener()
           src, out = "/tmp/drive", "jeju-2026/photos"
           os.makedirs(out, exist_ok=True)
+          for old in os.listdir(out):
+              if old.endswith(".jpg"): os.remove(os.path.join(out, old))
           files = []
           for root, _, names in os.walk(src):
               for n in names:
                   if n.lower().rsplit(".", 1)[-1] in ("jpg", "jpeg", "png", "heic", "heif", "webp"):
                       files.append(os.path.join(root, n))
-          files.sort()
+          import re
+          nat = lambda f: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", os.path.relpath(f, src))]
+          files.sort(key=nat)
           items = []
           for i, f in enumerate(files, 1):
               try:
@@ -47,7 +51,10 @@ jobs:
               im.thumbnail((1280, 1280))
               name = "p%03d.jpg" % i
               im.save(os.path.join(out, name), quality=80, optimize=True)
-              items.append({"src": name, "cap": os.path.splitext(os.path.basename(f))[0]})
+              stem = os.path.splitext(os.path.basename(f))[0]
+              m = re.match(r"(\d{4})(\d\d)(\d\d)", stem)
+              cap = ("%d/%d 사전답사" % (int(m.group(2)), int(m.group(3)))) if m else stem
+              items.append({"src": name, "cap": cap})
           json.dump(items, open(os.path.join(out, "photos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
           print(len(items), "photos")
           PY
