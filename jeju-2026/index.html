@@ -127,7 +127,10 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .staff-tel.kk { background: #fee500; }
 .officers .staff-list { grid-template-columns: 1fr 1fr; }
 .officers .staff-list li { grid-template-columns: 1fr; gap: 2px; padding: 8px 10px; min-width: 0; }
-.officers .staff-list li.head { grid-column: 1 / -1; grid-template-columns: auto 1fr; gap: 10px; }
+.officers .staff-list li.head { grid-column: 1 / -1; grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 4px; padding: 12px 10px; }
+.officers .staff-list li.head .staff-role { font-size: 13.5px; padding: 3px 12px; justify-self: center; } .officers .staff-list li.head .staff-name { justify-items: center; }
+.officers .staff-list li.head .staff-name b { font-size: 19px; } .officers .staff-list li.head .staff-name small { font-size: 14px; }
+.rstats.sc4 { grid-template-columns: repeat(4, 1fr); }
 .officers .staff-role { white-space: nowrap; font-size: 11.5px; padding: 2px 8px; }
 .officers .staff-name b { font-size: 14.5px; } .officers .staff-name small { font-size: 12px; }
 .staff-kk { grid-column: 1 / -1; font-size: 13px; }
@@ -212,6 +215,15 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .daytabs button small { font-weight: 500; font-size: 12px; color: var(--muted); }
 .daytabs button[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
 .daytabs button[aria-pressed="true"] small { color: #cfe0ff; }
+.ttab { padding: 12px 14px; gap: 6px; }
+.ttab h3 { margin: 0; }
+.ttab .tday { margin: 6px 0 2px; font-size: 14px; font-weight: 900; padding: 4px 10px; border-radius: 8px; color: #fff; }
+.ttab table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ttab td { padding: 5px 4px; border-top: 1px solid var(--line); vertical-align: top; }
+.ttab td.tt { width: 92px; white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ttab td.tt small { color: var(--muted); font-weight: 600; }
+.ttab td.tw b { font-weight: 700; }
+.ttab td.tw .fx { margin-left: 4px; font-size: 11px; color: #c2185b; font-weight: 800; }
 .rmap { padding: 12px; gap: 8px; }
 .rmap svg { width: 100%; height: auto; display: block; border-radius: 12px; background: #dbeefb; }
 .rmap .rleg { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -323,6 +335,10 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .seat.sp { background: var(--magenta-soft); }
 .seat.el { background: var(--tangerine-soft); }
 .seat.empty { background: var(--bg); color: var(--muted); border-style: dashed; }
+.seat.on { background: #d3f9d8; border-color: #2f9e44; color: #1b5e20; }
+.seat.off { opacity: .55; }
+.boardbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+.boardbar .num { font-weight: 800; color: var(--navy); }
 .seat.hit { outline: 3px solid var(--tangerine); outline-offset: 1px; }
 .seat.sel { outline: 3px solid var(--navy); outline-offset: 1px; }
 .seat span { overflow-wrap: anywhere; text-align: center; }
@@ -697,6 +713,21 @@ a.instbtn { color: inherit; text-decoration: none; }
     s = String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
     return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + an + '" font-size="' + (u * 11.5).toFixed(1) + '" font-weight="700" fill="' + col + '" stroke="#fff" stroke-width="' + (u * 3).toFixed(1) + '" paint-order="stroke" stroke-linejoin="round">' + s + "</text>";
   }
+  // 한눈 시간표: 왼쪽 시각(~끝나는 시각), 오른쪽 일정
+  function dayTable(d) {
+    return h("table", null, [h("tbody", null, d.stops.map(function (s) {
+      return h("tr", null, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null]),
+        h("td", { cls: "tw" }, [h("b", { text: s[1] }), s[7] ? h("span", { cls: "fx", text: "확정" }) : null])]);
+    }))]);
+  }
+  function timeCard(keys) {
+    var c = h("div", { cls: "card glass ttab" }, [h("h3", { text: keys.length > 1 ? "🕘 3일 시간표" : "🕘 " + DAYS.filter(function (d) { return d.key === keys[0]; })[0].label + " 시간표" })]);
+    DAYS.filter(function (d) { return keys.indexOf(d.key) >= 0; }).forEach(function (d) {
+      if (keys.length > 1) c.appendChild(h("p", { cls: "tday", style: "background:" + RCOL[d.key], text: d.label + " · " + d.date }));
+      c.appendChild(dayTable(d));
+    });
+    return c;
+  }
   function routeCard(keys) {
     var one = keys.length === 1, k = keys[0];
     var map = h("div", { html: routeMap(keys) });
@@ -904,6 +935,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       h("div", { cls: "pill blue" }, [h("span", { text: "장소" }), h("span", { text: "라마다 제주함덕호텔 · 46명" })])
     ]));
     w.appendChild(routeCard(["d1", "d2", "d3"]));
+    w.appendChild(timeCard(["d1", "d2", "d3"]));
     w.appendChild(h("div", { cls: "quick" }, [
       qbtn("집결", "11/2 새벽 5:30 김포", "sched"), qbtn("귀가", "11/4 16:30 김포 도착", "sched"),
       qbtn("준비 점검", prepPct() + "% 완료", "prep"), qbtn("참석자·좌석", S.people.length + "명 · 좌석·객실", "people"),
@@ -1716,6 +1748,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       if (day.key === "d1" && si === 4) items.push(rainCard());
     });
     w.appendChild(routeCard([day.key]));
+    w.appendChild(timeCard([day.key]));
     w.appendChild(h("ol", { cls: "timeline" }, items));
     // 숙소
     w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "숙소 · 라마다 제주함덕호텔" }),
@@ -2068,6 +2101,9 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (pv === "seat") { renderSeats(w); v.appendChild(w); return; }
     if (pv === "room") { renderRooms(w); v.appendChild(w); return; }
     w.appendChild(h("h2", { text: "참석자 명단 · " + S.people.length + "명" }));
+    var SC = {"5":"원로","6":"원로","37":"원로","7":"남부","8":"남부","3":"남부","4":"남부","13":"상록","14":"상록","11":"상록","12":"상록","1":"북부","2":"북부","15":"북부","16":"북부","41":"남부","17":"남부","18":"남부","9":"남부","10":"남부","21":"북부","22":"북부","42":"북부","39":"남부","23":"상록","24":"상록","44":"남부","38":"북부","29":"남부","30":"남부","40":"남부","19":"북부","20":"북부","27":"북부","28":"북부","43":"남부","25":"남부","26":"남부","46":"북부","35":"북부","36":"북부","33":"북부","34":"북부","31":"남부","32":"남부","45":"북부"};
+    w.appendChild(h("div", { cls: "rstats sc4" }, ["북부", "남부", "상록", "원로"].map(function (k) {
+      return h("div", null, [h("small", { text: k === "원로" ? "원로(부부)" : k + "시찰" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return SC[p.n] === k; }).length) })]); })));
     var paid = S.people.filter(function (p) { return p.paid; }).length, here = S.people.filter(function (p) { return p.here; }).length;
     w.appendChild(h("div", { cls: "rstats" }, [
       h("div", null, [h("small", { text: "회비 입금" }), h("b", { cls: "num", text: paid + "/" + S.people.length })]),
@@ -2144,13 +2180,19 @@ a.instbtn { color: inherit; text-decoration: none; }
     ]);
   }
   function seatCls(n) { var p = byN(n); if (!p) return "seat empty"; return "seat" + ((p.role === "사모" || p.role === "배우자") ? " sp" : p.role === "장로" ? " el" : ""); }
+  var boardMode = false;
+  function boarded(n) { return !!(S.board && S.board[n]); }
   function seatBtn(arr, i, bus, qq) {
     var n = arr[i], p = byN(n);
     var hit = qq && p && p.name.indexOf(qq) !== -1;
     var sel = selSeat && selSeat.arr === arr && selSeat.i === i;
-    return h("button", { type: "button", cls: seatCls(n) + (hit ? " hit" : "") + (sel ? " sel" : ""), "aria-label": seatName(i, bus) + " " + (p ? p.name : "빈 좌석"),
-      onclick: function () { if (!canWrite) return; selSeat = { arr: arr, i: i, bus: bus }; renderPeople(); } },
-      [h("span", { text: p ? p.name : "빈자리" }), h("small", { text: String(i + 1) })]);
+    var on = p && boarded(n);
+    return h("button", { type: "button", cls: seatCls(n) + (hit ? " hit" : "") + (sel ? " sel" : "") + (boardMode && p ? (on ? " on" : " off") : ""), "aria-label": seatName(i, bus) + " " + (p ? p.name : "빈 좌석") + (boardMode && p ? (on ? " 탑승" : " 미탑승") : ""),
+      onclick: function () {
+        if (!canWrite) return;
+        if (boardMode) { if (!p) return; S.board = S.board || {}; if (S.board[n]) delete S.board[n]; else S.board[n] = 1; changed(); rerender(); return; }
+        selSeat = { arr: arr, i: i, bus: bus }; renderPeople(); } },
+      [h("span", { text: (boardMode && on ? "✓ " : "") + (p ? p.name : "빈자리") }), h("small", { text: String(i + 1) })]);
   }
   function renderSeats(w) {
     var qq = q;
@@ -2161,9 +2203,21 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(s);
     if (qq) { var hits = S.people.filter(function (p) { return p.name.indexOf(qq) !== -1; });
       msg.textContent = hits.length ? hits.map(function (p) { return p.name + ": " + (whereIs(p.n).seat || "미배정"); }).join(" · ") : "찾는 분이 없습니다."; }
+    else if (boardMode) msg.textContent = "";
     else msg.textContent = canWrite ? "좌석을 누르면 사람을 바꿔 앉힐 수 있습니다. 이미 앉은 분을 고르면 두 자리가 서로 바뀝니다." : "앞쪽이 1열입니다. 이름을 입력하면 자리가 표시됩니다.";
     w.appendChild(msg);
-    if (S.seats.draft) w.appendChild(h("div", { cls: "draftnote" }, [h("span", { text: "초안: 노회 서열(정기노회 순서지) 높은 분부터 앞자리, 부부는 나란히 앉혔습니다. 우측 1열은 총무 이동진 목사·백유미 사모." }), canWrite ? h("button", { cls: "btn", type: "button", text: "확정으로 표시", onclick: function () { S.seats.draft = false; changed(); renderPeople(); } }) : null]));
+    var onBus = S.seats.bus.filter(function (n) { return n && boarded(n); }).length, allBus = S.seats.bus.filter(function (n) { return n; }).length;
+    var onVan = S.seats.van.filter(function (n) { return n && boarded(n); }).length, allVan = S.seats.van.filter(function (n) { return n; }).length;
+    var bbar = h("div", { cls: "boardbar" + (boardMode ? " live" : "") }, [
+      h("button", { cls: "btn" + (boardMode ? " mag" : ""), type: "button", "aria-pressed": String(boardMode), text: boardMode ? "탑승 확인 끝내기" : "🚌 차량 탑승 확인", onclick: function () { boardMode = !boardMode; selSeat = null; renderPeople(); } }),
+      h("span", { cls: "num", text: "버스 " + onBus + "/" + allBus + " · 카니발 " + onVan + "/" + allVan })]);
+    w.appendChild(bbar);
+    if (boardMode) {
+      var miss = S.people.filter(function (p) { return (S.seats.bus.indexOf(p.n) >= 0 || S.seats.van.indexOf(p.n) >= 0) && !boarded(p.n); });
+      w.appendChild(h("div", { cls: "draftnote" }, [h("span", { text: canWrite ? (miss.length ? "좌석을 누르면 탑승 ✓, 다시 누르면 해제됩니다. 아직 안 타신 분 " + miss.length + "명: " + miss.map(function (p) { return p.name; }).join(", ") : "모두 탑승했습니다. 출발해도 됩니다.") : "탑승 확인은 총무단 편집 화면에서 체크합니다." }),
+        canWrite && S.board && Object.keys(S.board).length ? h("button", { cls: "btn", type: "button", text: "새로 확인 (모두 해제)", onclick: function () { if (!confirm("탑승 체크를 모두 지우고 새로 확인할까요?")) return; S.board = {}; changed(); renderPeople(); } }) : null]));
+    }
+    if (!boardMode && S.seats.draft) w.appendChild(h("div", { cls: "draftnote" }, [h("span", { text: "초안: 노회 서열(정기노회 순서지) 높은 분부터 앞자리, 부부는 나란히 앉혔습니다. 우측 1열은 총무 이동진 목사·백유미 사모." }), canWrite ? h("button", { cls: "btn", type: "button", text: "확정으로 표시", onclick: function () { S.seats.draft = false; changed(); renderPeople(); } }) : null]));
     var bus = h("div", { cls: "bus" }, [h("div", { cls: "busfront" }, [h("span", { text: "▲ 앞 (운전석·가이드)" }), h("span", { text: "1호차 45인승" })])]);
     for (var r = 0; r < 10; r++) {
       bus.appendChild(h("div", { cls: "brow" }, [seatBtn(S.seats.bus, r * 4, true, qq), seatBtn(S.seats.bus, r * 4 + 1, true, qq), h("span", { cls: "rn num", text: String(r + 1) }), seatBtn(S.seats.bus, r * 4 + 2, true, qq), seatBtn(S.seats.bus, r * 4 + 3, true, qq)]));
