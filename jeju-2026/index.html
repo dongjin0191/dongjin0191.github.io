@@ -510,6 +510,19 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .pbtn.naver { background: #e3f7e8; color: #0b8a3a; }
 .stop .when em { display: block; font-style: normal; font-weight: 700; font-size: 11.5px; color: var(--muted); }
 .stop .when i { display: inline-block; margin-top: 3px; font-style: normal; font-size: 10.5px; font-weight: 900; padding: 1px 6px; border-radius: 999px; }
+.stat { display: inline-block; font-size: 11px; font-weight: 800; line-height: 1; padding: 4px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 2px; white-space: nowrap; font-family: inherit; }
+button.stat { cursor: pointer; }
+.st-ok { background: #1b7f3b; color: #fff; border: 1.5px solid #1b7f3b; }
+.st-alt { background: #f1f3f5; color: #6b7280; border: 1.5px dashed #9aa1ab; }
+.st-tbd { background: #fff4e6; color: #c25e00; border: 1.5px solid #ffa94d; }
+.ttab td.tw .stat { margin: 0 0 0 5px; font-size: 10px; padding: 3px 6px; }
+.stop.s-alt { opacity: .78; border: 1.5px dashed #9aa1ab; }
+.stop.s-alt .what > .stitle b { color: #6b7280; }
+.stop.s-tbd { border: 1.5px solid #ffc078; }
+.ttab tr.r-alt td { color: #868e96; }
+.ttab tr.r-alt td.tw b { font-weight: 600; }
+.stitle { display: block; }
+.stop .what .stitle b { display: inline; }
 .stop .when i.fix { background: var(--ok-soft); color: var(--ok); }
 .stop .when i.est { background: var(--sky-soft); color: var(--sky); }
 .timeline .leg { font-size: 12px; color: var(--muted); padding: 0 0 0 22px; margin: -3px 0; border-left: 2px dashed var(--line, #ccc); margin-left: 28px; }
@@ -757,12 +770,26 @@ a.instbtn { color: inherit; text-decoration: none; }
     return ic + " " + kind + (km ? " · " + km[1] : "") + (mn ? " · " + mn[1] : "");
   }
   // 한눈 시간표: 왼쪽 시각(~끝나는 시각), 오른쪽 일정
+  var STAT_DEF = { "d1-10": "alt", "d1-11": "alt", "d1-6": "tbd", "d2-3": "tbd", "d3-4": "tbd" };
+  var STAT_TXT = { ok: "✔ 확정", alt: "예비", tbd: "확인 중" };
+  function statOf(key) { return (S.stopStat && S.stopStat[key]) || STAT_DEF[key] || "ok"; }
+  function statBadge(key) {
+    var st = statOf(key);
+    var b = h(canWrite ? "button" : "span", { cls: "stat st-" + st, text: STAT_TXT[st] });
+    if (canWrite) {
+      b.type = "button"; b.title = "눌러서 확정 → 예비 → 확인 중 바꾸기";
+      b.onclick = function (e) { e.stopPropagation(); var nx = { ok: "alt", alt: "tbd", tbd: "ok" }[statOf(key)];
+        S.stopStat = S.stopStat || {}; S.stopStat[key] = nx; changed(); renderSched(); if (typeof renderHome === "function") renderHome(); };
+    }
+    return b;
+  }
   function dayTable(d) {
     var rows = [];
-    d.stops.forEach(function (s) {
+    d.stops.forEach(function (s, si) {
+      var st = statOf(d.key + "-" + si);
       if (s[6]) rows.push(h("tr", { cls: "mvrow" }, [h("td", { colspan: "2" }, [h("span", { text: legShort(s) })])]));
-      rows.push(h("tr", null, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null, durText(s) ? h("small", { cls: "dur", text: durText(s) }) : null]),
-        h("td", { cls: "tw" }, [h("b", { text: s[1] }), s[7] ? h("span", { cls: "fx", text: "확정" }) : null])]));
+      rows.push(h("tr", { cls: st !== "ok" ? "r-" + st : null }, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null, durText(s) ? h("small", { cls: "dur", text: durText(s) }) : null]),
+        h("td", { cls: "tw" }, [h("b", { text: s[1] }), h("span", { cls: "stat st-" + st, text: STAT_TXT[st] })])]));
     });
     return h("table", null, [h("tbody", null, rows)]);
   }
@@ -794,7 +821,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     ["14:00", "더마파크 오후 공연 관람 후 노형으로", "오후 일정(노형수퍼마켓 → 늘봄)은 그대로", ""]
   ];
   function rainCard() {
-    return h("li", { cls: "raincard" }, [h("b", { text: "☔ 우천 코스 · 비양도 배가 뜨지 않을 때" }),
+    return h("li", { cls: "raincard" }, [h("b", null, [h("span", { cls: "stat st-alt", text: "예비" }), " ☔ 우천 코스 · 비양도 배가 뜨지 않을 때"]),
       h("ul", null, RAIN.map(function (r) { return h("li", null, [h("span", { cls: "num", text: r[0] }), h("div", null, [h("b", { text: r[1] }), h("small", { text: r[2] }),
         r[3] ? h("a", { cls: "maplink", href: mapUrl(r[3]), target: "_blank", rel: "noopener", text: "지도 ↗" }) : null])]); }))]);
   }
@@ -1817,15 +1844,15 @@ a.instbtn { color: inherit; text-decoration: none; }
     });
     w.appendChild(tabs);
     var day = DAYS.filter(function (d) { return d.key === dayKey; })[0];
-    w.appendChild(h("p", { cls: "schednote" }, [h("b", { text: "확정" }), " 표시는 항공편·배 시각이고, 나머지는 거리와 관람 시간으로 계산한 예상 시각입니다. 버스 이동은 45인승 기준 어림값이에요."]));
+    w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "stat st-ok", text: "✔ 확정" }), "장소·식당 확정 ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
     var items = [];
     day.stops.forEach(function (s, si) {
       if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: legText(s) })]));
-      var what = h("div", { cls: "what" }, [h("b", { text: s[1] }), s[2] ? h("small", { text: s[2] }) : null,
+      var what = h("div", { cls: "what" }, [h("div", { cls: "stitle" }, [statBadge(day.key + "-" + si), h("b", { text: s[1] })]), s[2] ? h("small", { text: s[2] }) : null,
         stopNote(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
-        h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "확정" : "예상" })]);
-      items.push(h("li", { cls: "stop glass" }, [when, what, h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] })]));
+        h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "시각 확정" : "예상 시각" })]);
+      items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) }, [when, what, h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] })]));
       if (day.key === "d1" && si === 5) items.push(rainCard());
     });
     w.appendChild(routeCard([day.key]));
