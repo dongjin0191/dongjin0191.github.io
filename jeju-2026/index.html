@@ -275,6 +275,10 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .orow .oval { font-weight: 700; overflow-wrap: anywhere; line-height: 1.45; }
 .orow .oval.soft { color: #adb5bd; font-weight: 500; }
 p.verse.ro { white-space: pre-line; margin: 0; line-height: 1.6; }
+.orow.car2 { grid-template-columns: 76px 1fr 1fr; gap: 6px; align-items: start; }
+.orow.car2 label { padding-top: 6px; } .orow.car2 .oval { font-size: 13.5px; padding: 6px 8px; border-radius: 10px; background: var(--sky-soft); }
+.orow.car2 textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; font: inherit; font-size: 13.5px; resize: vertical; background: #fff; }
+.orow.chead b { font-size: 13px; color: var(--sky); text-align: center; margin-top: 4px; }
 .orow label { font-weight: 900; color: var(--navy); font-size: 14px; }
 .orow input, .field { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; background: #fff; }
 .orow input[readonly], .field[readonly] { border-color: transparent; background: transparent; padding-left: 0; }
@@ -1910,7 +1914,23 @@ a.instbtn { color: inherit; text-decoration: none; }
       w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: f[1] }), fe]));
     });
     var pr = h("div", { cls: "order" });
-    S.prayers.forEach(function (r, i) { pr.appendChild(orow("pr" + i, r, "기도자")); });
+    // 차량 기도는 버스·쏠라티를 한 줄에 나란히 (k가 "… 🚌 버스" / "… 🚐 쏠라티"인 짝)
+    var vhead = false;
+    S.prayers.forEach(function (r, i) {
+      if (/ 🚐 쏠라티$/.test(r.k)) return;
+      var m = r.k.match(/^(.*) 🚌 버스$/);
+      if (!m) { pr.appendChild(orow("pr" + i, r, "기도자")); return; }
+      var j = -1; S.prayers.forEach(function (x, k) { if (x.k === m[1] + " 🚐 쏠라티") j = k; });
+      if (!vhead) { vhead = true; pr.appendChild(h("div", { cls: "orow car2 chead" }, [h("span"), h("b", { text: "🚌 1호차 버스" }), h("b", { text: "🚐 2호차 쏠라티" })])); }
+      var cell = function (x, id) {
+        if (!x) return h("span");
+        if (!canWrite) return h("span", { cls: "oval" + (x.v ? "" : " soft"), text: x.v || "미정" });
+        var inp = h("textarea", { id: id, rows: "3", placeholder: "기도자", "aria-label": x.k });
+        inp.value = x.v || ""; inp.addEventListener("input", function () { x.v = inp.value; changed(); });
+        return inp;
+      };
+      pr.appendChild(h("div", { cls: "orow car2" }, [h("label", { "for": "pr" + i, text: m[1] }), cell(r, "pr" + i), cell(S.prayers[j], "pr" + j)]));
+    });
     w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "기도 담당" }), pr]));
     w.appendChild(h("div", { cls: "card glass inc" }, [h("h3", { text: "경비 포함 · 불포함" }), h("dl", null, [
       h("div", null, [h("dt", { text: "진행" }), h("dd", { text: "여행사 없이 교육친교부가 직접 진행합니다 (회비·찬조금으로 지출)" })]),
