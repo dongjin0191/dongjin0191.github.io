@@ -263,6 +263,10 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .maplink { font-size: 12px; color: var(--sky); font-weight: 700; text-decoration: none; }
 .order { display: grid; gap: 6px; }
 .orow { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; }
+.gifts { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 6px; }
+.gifts li { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 12px; background: #fff4e6; }
+.gifts li.on { background: #ebfbee; }
+.gifts .gname { display: grid; min-width: 0; } .gifts .gname small { color: var(--muted); font-size: 12px; }
 .orow .oval { font-weight: 700; overflow-wrap: anywhere; line-height: 1.45; }
 .orow .oval.soft { color: #adb5bd; font-weight: 500; }
 p.verse.ro { white-space: pre-line; margin: 0; line-height: 1.6; }
@@ -2293,6 +2297,32 @@ a.instbtn { color: inherit; text-decoration: none; }
     });
     return h("div", { cls: "card" }, [h("h3", { text: "내 좌석 · 객실 찾기" }), inp, res, (S.seats.draft || S.roomsDraft) ? h("p", { cls: "muted", text: "좌석·객실은 아직 초안입니다. 확정되면 이 화면에 바로 반영됩니다." }) : null]);
   }
+  // 선물 대상: 찬조했지만 참석 명단에 없는 분 (1인 5만원 상당). 단체 찬조는 따로 보여 준다
+  var GIFT_AMT = 50000;
+  function giftList() {
+    var names = S.people.map(function (p) { return p.name; }), out = [], groups = [];
+    S.income.forEach(function (r) {
+      if (r.kind !== "찬조") return;
+      var m = /([가-힣]{2,4})\s*(목사|장로|권사|집사|사모)/.exec(r.name);
+      if (!m) { groups.push(r); return; }
+      if (names.indexOf(m[1]) < 0) out.push({ key: m[1], label: r.name, amt: r.amt });
+    });
+    return { who: out, groups: groups };
+  }
+  function giftCard() {
+    var g = giftList(), done = S.giftDone || {};
+    var ul = h("ul", { cls: "gifts" }, g.who.map(function (x, i) {
+      var on = !!done[x.key];
+      return h("li", { cls: on ? "on" : null }, [h("span", { cls: "num", text: String(i + 1) }), h("span", { cls: "gname" }, [h("b", { text: x.label }), h("small", { text: "찬조 " + won(x.amt) })]),
+        h("button", { cls: "btn" + (on ? " mag" : ""), type: "button", disabled: !canWrite, "aria-pressed": String(on), text: on ? "✓ 전달" : "미전달",
+          onclick: function () { S.giftDone = S.giftDone || {}; if (S.giftDone[x.key]) delete S.giftDone[x.key]; else S.giftDone[x.key] = 1; changed(); rerender(); } })]);
+    }));
+    var sent = g.who.filter(function (x) { return done[x.key]; }).length;
+    return h("section", { cls: "card glass giftcard" }, [h("h3", { text: "🎁 선물 대상 · 찬조했지만 불참하시는 분" }),
+      h("p", { cls: "muted", text: g.who.length + "명 × " + won(GIFT_AMT) + " = 선물 예산 " + won(g.who.length * GIFT_AMT) + " · 전달 " + sent + "/" + g.who.length }),
+      ul,
+      g.groups.length ? h("p", { cls: "muted", text: "단체 찬조 (선물 대상 아님, 감사 인사): " + g.groups.map(function (r) { return r.name + " " + won(r.amt); }).join(" · ") }) : null]);
+  }
   function renderPeople() {
     var v = document.getElementById("v-people"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
@@ -2304,6 +2334,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (pv === "seat") { renderSeats(w); v.appendChild(w); return; }
     if (pv === "room") { renderRooms(w); v.appendChild(w); return; }
     w.appendChild(h("h2", { text: "참석자 명단 · " + S.people.length + "명" }));
+    w.appendChild(giftCard());
     var SC = {"5":"원로","6":"원로","37":"원로","7":"남부","8":"남부","3":"남부","4":"남부","13":"상록","14":"상록","11":"상록","12":"상록","1":"북부","2":"북부","15":"북부","16":"북부","41":"남부","17":"남부","18":"남부","9":"남부","10":"남부","21":"북부","22":"북부","42":"북부","39":"남부","23":"상록","24":"상록","44":"남부","38":"북부","29":"남부","30":"남부","40":"남부","19":"북부","20":"북부","27":"북부","28":"북부","43":"남부","25":"남부","26":"남부","46":"북부","35":"북부","36":"북부","33":"북부","34":"북부","31":"남부","32":"남부","45":"북부"};
     w.appendChild(h("div", { cls: "rstats sc4" }, ["북부", "남부", "상록", "원로"].map(function (k) {
       return h("div", null, [h("small", { text: k === "원로" ? "원로(부부)" : k + "시찰" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return SC[p.n] === k; }).length) })]); })));
