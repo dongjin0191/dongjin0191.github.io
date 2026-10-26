@@ -263,6 +263,11 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .maplink { font-size: 12px; color: var(--sky); font-weight: 700; text-decoration: none; }
 .order { display: grid; gap: 6px; }
 .orow { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; }
+.board .tbwrap { overflow-x: auto; margin: 6px 0; } .btable { border-collapse: collapse; width: 100%; font-size: 13px; }
+.btable th, .btable td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; white-space: nowrap; }
+.btable th { color: var(--sky); font-size: 12px; } .btable td.soft { color: #adb5bd; }
+.btable .btn.sx { padding: 2px 8px; font-size: 12px; min-height: 0; }
+.board .copyrow { display: grid; gap: 6px; margin-top: 6px; }
 .roster .rlist { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
 .roster .rlist li { display: grid; grid-template-columns: 28px 1fr 118px; gap: 8px; align-items: center; }
 .roster .rn { color: var(--sky); font-weight: 900; text-align: right; } .roster .rname { font-weight: 700; font-size: 14.5px; }
@@ -1993,15 +1998,16 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (!DBNS || !IS_OWNER || ROSTER) return;
     DBNS.doc("secret/roster").get().then(function (snap) {
       var d = snap.exists ? snap.data() : {};
-      ROSTER = { b: d.b ? JSON.parse(d.b) : {}, drive: d.drive || "" };
+      ROSTER = { b: d.b ? JSON.parse(d.b) : {}, drive: d.drive || "", drive2: d.drive2 || "", sex: d.sex ? JSON.parse(d.sex) : {} };
       if (cur === "host") renderHost();
-    }, function () { ROSTER = { b: {}, drive: "", err: true }; if (cur === "host") renderHost(); });
+    }, function () { ROSTER = { b: {}, drive: "", drive2: "", sex: {}, err: true }; if (cur === "host") renderHost(); });
   }
   function saveRoster(msg) {
     clearTimeout(rosterTimer);
+    if (!DBNS || !ROSTER) return;
     msg.textContent = "저장 중…";
     rosterTimer = setTimeout(function () {
-      DBNS.doc("secret/roster").set({ b: JSON.stringify(ROSTER.b), drive: ROSTER.drive }).then(function () { msg.textContent = "저장됨 (총무 계정만 볼 수 있음)"; },
+      DBNS.doc("secret/roster").set({ b: JSON.stringify(ROSTER.b), drive: ROSTER.drive, drive2: ROSTER.drive2 || "", sex: JSON.stringify(ROSTER.sex || {}) }).then(function () { msg.textContent = "저장됨 (총무 계정만 볼 수 있음)"; },
         function () { msg.textContent = "저장 실패: 총무(소유자) 계정으로 연 화면인지 확인해 주세요."; });
     }, 700);
   }
@@ -2031,12 +2037,51 @@ a.instbtn { color: inherit; text-decoration: none; }
     c.appendChild(msg);
     return c;
   }
+  // 비양도호 승선신고서: 총무만. 생년월일은 secret/roster, 성별은 직분으로 짐작하되 고칠 수 있다
+  function sexOf(p) {
+    if (ROSTER && ROSTER.sex && ROSTER.sex[p.n]) return ROSTER.sex[p.n];
+    return /사모|배우자/.test(p.role || "") ? "여" : "남";
+  }
+  function boardRows() {
+    return S.people.map(function (p, i) {
+      return [String(i + 1), p.name, (ROSTER && ROSTER.b[p.n]) || "", sexOf(p), p.phone || "", p.church ? p.church.split(" · ")[0] + "교회" : ""];
+    });
+  }
+  function boardCard() {
+    var c = h("section", { cls: "card glass board" }, [h("h3", { text: "🛥 비양도호 승선신고서 · 총무만 보기" })]);
+    if (!ROSTER) { loadRoster(); c.appendChild(h("p", { cls: "muted", text: DBNS ? "불러오는 중…" : "이 화면에서는 열 수 없습니다." })); return c; }
+    var msg = h("small", { cls: "muted", text: "" });
+    var miss = S.people.filter(function (p) { return !ROSTER.b[p.n]; }).length;
+    c.appendChild(h("p", { cls: "muted", text: "1일차 11:20 한림항 → 비양도 승선 때 내는 명부입니다. 생년월일은 위 신상정보 칸에서 가져옵니다" + (miss ? " · 아직 " + miss + "명 비어 있음" : " · 46명 모두 채워짐") + ". 성별은 직분으로 넣었으니 다르면 눌러서 바꾸세요." }));
+    var tb = h("tbody", null, S.people.map(function (p, i) {
+      var sx = h("button", { cls: "btn sx", type: "button", text: sexOf(p), onclick: function () {
+        ROSTER.sex = ROSTER.sex || {}; ROSTER.sex[p.n] = sexOf(p) === "남" ? "여" : "남"; sx.textContent = ROSTER.sex[p.n]; saveRoster(msg); } });
+      return h("tr", null, [h("td", { cls: "num", text: String(i + 1) }), h("td", { text: p.name }),
+        h("td", { cls: "num" + (ROSTER.b[p.n] ? "" : " soft"), text: ROSTER.b[p.n] || "미입력" }), h("td", null, [sx]),
+        h("td", { cls: "num", text: p.phone || "" }), h("td", { cls: "soft", text: p.church ? p.church.split(" · ")[0] + "교회" : "" })]);
+    }));
+    c.appendChild(h("div", { cls: "tbwrap" }, [h("table", { cls: "btable" }, [
+      h("thead", null, [h("tr", null, ["순번", "성명", "생년월일", "성별", "전화번호", "비고"].map(function (x) { return h("th", { text: x }); }))]), tb])]));
+    var tsv = function () { return ["순번\t성명\t생년월일\t성별\t전화번호\t비고"].concat(boardRows().map(function (r) { return r.join("\t"); })).join("\n"); };
+    c.appendChild(h("div", { cls: "copyrow" }, [
+      h("button", { cls: "btn solid", type: "button", text: "표 복사 (한글·엑셀에 붙여넣기)", onclick: function (e) { copy(tsv(), e.currentTarget); } }),
+      h("button", { cls: "btn", type: "button", text: "파일로 내려받기 (.csv)", onclick: function () {
+        var csv = "\ufeff" + ["순번,성명,생년월일,성별,전화번호,비고"].concat(boardRows().map(function (r) { return r.map(function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; }).join(","); })).join("\r\n");
+        var a = h("a", { href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })), download: "비양도호_승선신고서.csv" });
+        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); } })]));
+    var du = h("input", { cls: "field", type: "url", inputmode: "url", placeholder: "구글 드라이브 승선신고서 한글 파일 링크", "aria-label": "승선신고서 드라이브 링크" });
+    du.value = ROSTER.drive2 || "";
+    du.addEventListener("input", function () { ROSTER.drive2 = du.value.trim(); saveRoster(msg); });
+    c.appendChild(h("div", { cls: "copyrow" }, [du, /^https:\/\//.test(ROSTER.drive2 || "") ? h("a", { cls: "btn solid", href: ROSTER.drive2, target: "_blank", rel: "noopener", text: "📁 드라이브 승선신고서 열기" }) : null]));
+    c.appendChild(msg);
+    return c;
+  }
   function renderHost() {
     var v = document.getElementById("v-host"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "총무 진행 노트" }));
     w.appendChild(dutyCard());
-    if (IS_OWNER) w.appendChild(rosterCard());
+    if (IS_OWNER) { w.appendChild(rosterCard()); w.appendChild(boardCard()); }
     if (IS_OWNER) {
       w.appendChild(h("div", { cls: "copyrow" }, [h("button", { cls: "btn invite-btn", type: "button", text: inviteOpen ? "🔐 임원 초대 전용 · 닫기" : "🔐 임원 초대 전용", onclick: function () { inviteOpen = !inviteOpen; renderHost(); } }),
         h("span", { cls: "muted", text: "총무에게만 보이는 버튼입니다" })]));
