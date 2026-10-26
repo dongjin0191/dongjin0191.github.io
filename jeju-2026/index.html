@@ -68,6 +68,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .topbar b { font-family: var(--display); font-weight: 400; font-size: 18px; letter-spacing: .01em; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .save { flex: none; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; }
 .save.err { background: var(--bad); }
+.mvrow td { padding: 1px 0 1px 10px !important; font-size: 12px; font-weight: 700; color: #e03131; border: 0 !important; }
+.leg span { color: #e03131; font-weight: 700; }
+.dur { display: block; color: #2f9e44 !important; font-weight: 800; font-style: normal; }
 .save.ro { cursor: pointer; background: #ffd43b; color: #1b2a6b; font-weight: 700; }
 
 /* bottom tabs */
@@ -733,12 +736,33 @@ a.instbtn { color: inherit; text-decoration: none; }
     s = String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
     return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + an + '" font-size="' + (u * 11.5).toFixed(1) + '" font-weight="700" fill="' + col + '" stroke="#fff" stroke-width="' + (u * 3).toFixed(1) + '" paint-order="stroke" stroke-linejoin="round">' + s + "</text>";
   }
+  // 머무는 시간: 시작~끝 시각 차이를 (40분), (1시간 10분)처럼
+  function durText(s) {
+    var a = /^(\d\d):(\d\d)$/.exec(s[0] || ""), b = /^(\d\d):(\d\d)$/.exec(s[5] || "");
+    if (!a || !b) return "";
+    var m = (+b[1] * 60 + +b[2]) - (+a[1] * 60 + +a[2]); if (m <= 0) return "";
+    return "⏱ " + (m >= 60 ? Math.floor(m / 60) + "시간" + (m % 60 ? " " + (m % 60) + "분" : "") : m + "분") + " 머묾";
+  }
+  // 이동: "버스 약 15분 · 4km" → "🚌 이동 15분"
+  function legText(s) {
+    if (!s[6]) return "";
+    var ic = /^⛴|배/.test(s[6]) ? "⛴" : /도보/.test(s[6]) ? "🚶" : "🚌";
+    return ic + " " + s[6].replace(/^⛴\s*/, "");
+  }
+  function legShort(s) {
+    if (!s[6]) return "";
+    var m = /(\d+시간(?:\s*\d+분)?|\d+분)/.exec(s[6]);
+    return legText(s).slice(0, 2).trim() + " " + (m ? "이동 " + m[1] : s[6].replace(/^⛴\s*/, "").split(" · ")[0] + " 이동");
+  }
   // 한눈 시간표: 왼쪽 시각(~끝나는 시각), 오른쪽 일정
   function dayTable(d) {
-    return h("table", null, [h("tbody", null, d.stops.map(function (s) {
-      return h("tr", null, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null]),
-        h("td", { cls: "tw" }, [h("b", { text: s[1] }), s[7] ? h("span", { cls: "fx", text: "확정" }) : null])]);
-    }))]);
+    var rows = [];
+    d.stops.forEach(function (s) {
+      if (s[6]) rows.push(h("tr", { cls: "mvrow" }, [h("td", { colspan: "2", text: legShort(s) })]));
+      rows.push(h("tr", null, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null, durText(s) ? h("small", { cls: "dur", text: durText(s) }) : null]),
+        h("td", { cls: "tw" }, [h("b", { text: s[1] }), s[7] ? h("span", { cls: "fx", text: "확정" }) : null])]));
+    });
+    return h("table", null, [h("tbody", null, rows)]);
   }
   function timeCard(keys) {
     var c = h("div", { cls: "card glass ttab" }, [h("h3", { text: keys.length > 1 ? "🕘 3일 시간표" : "🕘 " + DAYS.filter(function (d) { return d.key === keys[0]; })[0].label + " 시간표" })]);
@@ -1793,10 +1817,10 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(h("p", { cls: "schednote" }, [h("b", { text: "확정" }), " 표시는 항공편·배 시각이고, 나머지는 거리와 관람 시간으로 계산한 예상 시각입니다. 버스 이동은 45인승 기준 어림값이에요."]));
     var items = [];
     day.stops.forEach(function (s, si) {
-      if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: "🚌 " + s[6] })]));
+      if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: legText(s) })]));
       var what = h("div", { cls: "what" }, [h("b", { text: s[1] }), s[2] ? h("small", { text: s[2] }) : null,
         stopNote(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
-      var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null,
+      var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "확정" : "예상" })]);
       items.push(h("li", { cls: "stop glass" }, [when, what, h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] })]));
       if (day.key === "d1" && si === 4) items.push(rainCard());
