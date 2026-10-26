@@ -263,6 +263,11 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .maplink { font-size: 12px; color: var(--sky); font-weight: 700; text-decoration: none; }
 .order { display: grid; gap: 6px; }
 .orow { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; }
+.duties ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.duties li { display: grid; gap: 6px; padding: 8px 10px; border-radius: 12px; background: var(--sky-soft); }
+.duties .dhead { display: flex; align-items: center; gap: 8px; } .duties .dhead b { font-size: 15.5px; }
+.duties textarea { width: 100%; resize: vertical; min-height: 44px; }
+.duties p.duty { margin: 0; white-space: pre-line; font-size: 14px; } .duties p.duty.soft { color: #adb5bd; }
 .gifts { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 6px; }
 .gifts li { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 12px; background: #fff4e6; }
 .gifts li.on { background: #ebfbee; }
@@ -1942,10 +1947,25 @@ a.instbtn { color: inherit; text-decoration: none; }
     ta.addEventListener("input", function () { S[key] = ta.value; changed(); });
     return h("div", { cls: "recbox" }, [h("h3", { text: label }), ta]);
   }
+  // 임원 역할 위임: 직책마다 맡은 임무를 편집 화면에서 적는다 (S.duties)
+  var DUTIES = [["bujang", "교육친교부 부장", "강명우 목사"], ["chongmu", "교육친교부 총무", "이동진 목사"], ["buchong", "부총무", "김선민 목사"], ["seogi", "서기", "김창룡 장로"], ["hoegye", "회계", "안상천 목사"]];
+  function dutyCard() {
+    S.duties = S.duties || {};
+    return h("section", { cls: "card glass duties" }, [h("h3", { text: "🤝 임원 역할 위임" }),
+      h("ul", null, DUTIES.map(function (d) {
+        var val = S.duties[d[0]] || "", box;
+        if (canWrite) {
+          box = h("textarea", { cls: "field", rows: "2", placeholder: "맡은 임무를 적어 주세요", "aria-label": d[1] + " 임무" });
+          box.value = val; box.addEventListener("input", function () { S.duties[d[0]] = box.value; changed(); });
+        } else box = h("p", { cls: "duty" + (val ? "" : " soft"), text: val || "임무 미정" });
+        return h("li", null, [h("div", { cls: "dhead" }, [h("span", { cls: "staff-role", text: d[1] }), h("b", { text: d[2] })]), box]);
+      }))]);
+  }
   function renderHost() {
     var v = document.getElementById("v-host"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "총무 진행 노트" }));
+    w.appendChild(dutyCard());
     if (IS_OWNER) {
       w.appendChild(h("div", { cls: "copyrow" }, [h("button", { cls: "btn invite-btn", type: "button", text: inviteOpen ? "🔐 임원 초대 전용 · 닫기" : "🔐 임원 초대 전용", onclick: function () { inviteOpen = !inviteOpen; renderHost(); } }),
         h("span", { cls: "muted", text: "총무에게만 보이는 버튼입니다" })]));
