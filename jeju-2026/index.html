@@ -265,7 +265,7 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .orow { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; }
 .board .tbwrap { overflow-x: auto; margin: 6px 0; } .btable { border-collapse: collapse; width: 100%; font-size: 13px; }
 .btable th, .btable td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; white-space: nowrap; }
-.btable th { color: var(--sky); font-size: 12px; } .btable td.soft { color: #adb5bd; }
+.btable th { color: var(--sky); font-size: 12px; } .btable tr.f td { background: #ffe3ef; } .btable tr.f .btn.sx { background: #ff8fb8; color: #fff; } .btable td.soft { color: #adb5bd; }
 .btable .btn.sx { padding: 2px 8px; font-size: 12px; min-height: 0; }
 .board .copyrow { display: grid; gap: 6px; margin-top: 6px; }
 .roster .rlist { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
@@ -2042,9 +2042,14 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (ROSTER && ROSTER.sex && ROSTER.sex[p.n]) return ROSTER.sex[p.n];
     return /사모|배우자/.test(p.role || "") ? "여" : "남";
   }
+  // 부부 사모·배우자는 교회 칸이 비어 있어 남편(n-1) 교회를 같은 줄에 따로 적는다
+  function churchOf(p) {
+    var c = p.church || ((S.people.filter(function (x) { return x.n === p.n - 1; })[0] || {}).church) || "";
+    return c ? c.split(" · ")[0] + "교회" : "";
+  }
   function boardRows() {
     return S.people.map(function (p, i) {
-      return [String(i + 1), p.name, (ROSTER && ROSTER.b[p.n]) || "", sexOf(p), p.phone || "", p.church ? p.church.split(" · ")[0] + "교회" : ""];
+      return [String(i + 1), p.name, (ROSTER && ROSTER.b[p.n]) || "", sexOf(p), p.phone || "", churchOf(p)];
     });
   }
   function boardCard() {
@@ -2055,10 +2060,11 @@ a.instbtn { color: inherit; text-decoration: none; }
     c.appendChild(h("p", { cls: "muted", text: "1일차 11:20 한림항 → 비양도 승선 때 내는 명부입니다. 생년월일은 위 신상정보 칸에서 가져옵니다" + (miss ? " · 아직 " + miss + "명 비어 있음" : " · 46명 모두 채워짐") + ". 성별은 직분으로 넣었으니 다르면 눌러서 바꾸세요." }));
     var tb = h("tbody", null, S.people.map(function (p, i) {
       var sx = h("button", { cls: "btn sx", type: "button", text: sexOf(p), onclick: function () {
-        ROSTER.sex = ROSTER.sex || {}; ROSTER.sex[p.n] = sexOf(p) === "남" ? "여" : "남"; sx.textContent = ROSTER.sex[p.n]; saveRoster(msg); } });
-      return h("tr", null, [h("td", { cls: "num", text: String(i + 1) }), h("td", { text: p.name }),
+        ROSTER.sex = ROSTER.sex || {}; ROSTER.sex[p.n] = sexOf(p) === "남" ? "여" : "남"; sx.textContent = ROSTER.sex[p.n]; tr.className = ROSTER.sex[p.n] === "여" ? "f" : ""; saveRoster(msg); } });
+      var tr = h("tr", { cls: sexOf(p) === "여" ? "f" : null }, [h("td", { cls: "num", text: String(i + 1) }), h("td", { text: p.name }),
         h("td", { cls: "num" + (ROSTER.b[p.n] ? "" : " soft"), text: ROSTER.b[p.n] || "미입력" }), h("td", null, [sx]),
-        h("td", { cls: "num", text: p.phone || "" }), h("td", { cls: "soft", text: p.church ? p.church.split(" · ")[0] + "교회" : "" })]);
+        h("td", { cls: "num", text: p.phone || "" }), h("td", { text: churchOf(p) })]);
+      return tr;
     }));
     c.appendChild(h("div", { cls: "tbwrap" }, [h("table", { cls: "btable" }, [
       h("thead", null, [h("tr", null, ["순번", "성명", "생년월일", "성별", "전화번호", "비고"].map(function (x) { return h("th", { text: x }); }))]), tb])]));
