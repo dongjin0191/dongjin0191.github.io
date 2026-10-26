@@ -667,17 +667,21 @@ a.instbtn { color: inherit; text-decoration: none; }
   // [경도, 위도, 이름, 글자 위치(r/l/t/b), 1=본 지도에도 이름 표시, 1=배로 이동하는 구간]
   var ROUTE = {
     d1: [[126.4929, 33.5066, "제주공항 08:00", "r", 0, 0, "", "공항 · 해장국 · 어영공원"], [126.5040, 33.5072, "순풍해장국 (조식)", "r", 0, 0, "", "-"], [126.4990, 33.5165, "어영공원 · 무지개 해안도로", "t", 0, 0, "", "-"],
-      [126.2615, 33.4150, "한림항", "b", 0, 0, "", "-"], [126.2310, 33.4085, "비양도 (보말칼국수·자전거)", "t", 1, 1, "", "비양도 (배 15분)"], [126.2615, 33.4150, "", "b", 0, 1], [126.3110, 33.4630, "애월 한담 (예비)", "t"],
-      [126.4706, 33.4826, "노형수퍼마켓 · 늘봄흑돼지", "l"], [126.6680, 33.5430, "라마다 함덕 (숙소·개회 예배)", "l", 1, 0, "r"]],
+      [126.2615, 33.4150, "한림항", "b", 0, 0, "", "-"], [126.2310, 33.4085, "비양도 (보말칼국수·자전거)", "t", 1, 1, "", "비양도 (배)"], [126.2615, 33.4150, "", "b", 0, 1], [126.3110, 33.4630, "애월 한담 (예비)", "l"],
+      [126.4706, 33.4826, "노형수퍼마켓 · 늘봄흑돼지", "r"], [126.6680, 33.5430, "라마다 함덕 (숙소·개회 예배)", "l", 1, 0, "r"]],
     d2: [[126.6680, 33.5430, "라마다 함덕 출발", "l"], [126.7450, 33.4520, "스카이워터쇼", "l"], [126.7900, 33.4580, "동화마을", "t", 1],
       [126.9300, 33.4260, "섭지코지 · 플로이스트", "l", 1, 0, "t"], [126.7900, 33.4050, "오늘은녹차한잔 (족욕)", "b"], [126.6660, 33.4710, "삼다온 (갈치조림)", "r"], [126.6680, 33.5430, "", "t"]],
     d3: [[126.6680, 33.5430, "라마다 함덕 체크아웃", "l"], [126.5230, 33.4870, "본제주 (쇼핑)", "r"], [126.6640, 33.4520, "돌문화공원", "b", 1],
       [126.4650, 33.5085, "해녀잠수촌 (전복뚝배기)", "b"], [126.4929, 33.5066, "제주공항 15:15 출발", "t"]]
   };
   var RAINPT = [126.2392, 33.3887, "우천 시 더마파크 · 삼대고기국수"];
-  function rproj(p) { return [(p[0] - 126.14) * 0.8355 * 856, (33.58 - p[1]) * 856]; }
+  // 1일차는 장소가 북서 해안을 따라 몰려 선이 겹쳐 보이므로 위아래로 늘려 그린다 (SY배, SC 기준선)
+  var SY = 1, SC = 0;
+  function rproj(p) { var y = (33.58 - p[1]) * 856; return [(p[0] - 126.14) * 0.8355 * 856, SY === 1 ? y : SC + (y - SC) * SY]; }
   function routeMap(keys) {
     var one = keys.length === 1, all = [];
+    SY = 1; SC = 0;
+    if (one && keys[0] === "d1") { var ys = ROUTE.d1.concat([RAINPT]).map(function (p) { return rproj(p)[1]; }); SC = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2; SY = 2.6; }
     keys.forEach(function (k) { ROUTE[k].forEach(function (p) { all.push(rproj(p)); }); });
     if (one && keys[0] === "d1") all.push(rproj(RAINPT));
     var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
@@ -685,11 +689,12 @@ a.instbtn { color: inherit; text-decoration: none; }
     else all.forEach(function (q) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); });
     var pad = one ? 34 : 6; x0 -= one ? 50 : pad; x1 += one ? 50 : pad; y0 -= pad; y1 += pad;
     var W = x1 - x0, H = y1 - y0;
-    if (W < H * 1.5) { var e = (H * 1.5 - W) / 2; x0 -= e; x1 += e; W = H * 1.5; }
+    var AR = SY !== 1 ? 1.15 : 1.5;
+    if (W < H * AR) { var e = (H * AR - W) / 2; x0 -= e; x1 += e; W = H * AR; }
     if (one && H < W / 1.9) { var f = (W / 1.9 - H) / 2; y0 -= f; y1 += f; H = W / 1.9; }
     var u = W / 340; // 화면 1px 에 해당하는 지도 단위 (폰 화면 기준)
     var o = ['<svg viewBox="' + [x0, y0, W, H].map(function (n) { return n.toFixed(1); }).join(" ") + '" role="img" aria-label="' + (one ? ROUTE[keys[0]] && DAYS.filter(function (d) { return d.key === keys[0]; })[0].label : "3일") + ' 동선 지도">',
-      '<path d="' + ISLAND + '" fill="#f4f1e6" stroke="#b9c7b0" stroke-width="' + (u * 1.2).toFixed(2) + '"/>'];
+      '<path d="' + ISLAND + '"' + (SY !== 1 ? ' transform="translate(0 ' + (SC * (1 - SY)).toFixed(1) + ') scale(1 ' + SY + ')" vector-effect="non-scaling-stroke"' : "") + ' fill="#f4f1e6" stroke="#b9c7b0" stroke-width="' + (SY !== 1 ? 1.2 : u * 1.2).toFixed(2) + '"/>'];
     keys.forEach(function (k) {
       var R = ROUTE[k], c = RCOL[k];
       for (var i = 1; i < R.length; i++) {
@@ -719,6 +724,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       o.push(rlabel(rproj([126.45, 33.47]), "제주시 (공항·노형·본제주)", "b", u, "#14213d"));
     }
     o.push("</svg>");
+    SY = 1; SC = 0;
     return o.join("");
   }
   function rlabel(q, s, at, u, col) {
