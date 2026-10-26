@@ -2395,7 +2395,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       ed.appendChild(uu);
       box.appendChild(ed);
     }
-    if (HOSTED && ready && ORD === null) loadOrders(function () { if (cur === "home") renderHome(); });
+    if (HOSTED && ready && ORD === null && orderUrl()) loadOrders(function () { if (cur === "home") renderHome(); });
     return box;
   }
   function orderSheet(m) {
