@@ -349,6 +349,7 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .tog.type[data-v="미조직"] { background: var(--magenta-soft); color: var(--magenta); border-color: #f4b8cf; }
 .tog:disabled { cursor: default; }
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--sky-soft); border-radius: 999px; padding: 4px; gap: 4px; }
+.seg.four { grid-template-columns: repeat(4, 1fr); } .seg.four button { padding: 8px 2px; font-size: 14px; white-space: nowrap; }
 .seg button { border: 0; background: none; border-radius: 999px; padding: 8px 4px; font-weight: 900; color: var(--sky); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--navy); box-shadow: 0 2px 6px rgba(20,33,61,.12); }
 .bus { background: var(--surface); border: 1px solid var(--line); border-radius: 22px 22px 14px 14px; padding: 10px; display: grid; gap: 6px; }
@@ -2346,15 +2347,15 @@ a.instbtn { color: inherit; text-decoration: none; }
   function renderPeople() {
     var v = document.getElementById("v-people"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
-    var seg = h("div", { cls: "seg", role: "group", "aria-label": "명단 보기" });
-    [["list", "명단"], ["seat", "버스 좌석"], ["room", "객실"]].forEach(function (x) {
+    var seg = h("div", { cls: "seg four", role: "group", "aria-label": "명단 보기" });
+    [["list", "명단"], ["seat", "버스 좌석"], ["room", "객실"], ["gift", "선물 대상"]].forEach(function (x) {
       seg.appendChild(h("button", { type: "button", "aria-pressed": String(pv === x[0]), text: x[1], onclick: function () { pv = x[0]; selSeat = null; go("people", true); } }));
     });
     w.appendChild(seg);
     if (pv === "seat") { renderSeats(w); v.appendChild(w); return; }
     if (pv === "room") { renderRooms(w); v.appendChild(w); return; }
+    if (pv === "gift") { w.appendChild(h("h2", { text: "선물 대상" })); w.appendChild(giftCard()); v.appendChild(w); return; }
     w.appendChild(h("h2", { text: "참석자 명단 · " + S.people.length + "명" }));
-    w.appendChild(giftCard());
     var SC = {"5":"원로","6":"원로","37":"원로","7":"남부","8":"남부","3":"남부","4":"남부","13":"상록","14":"상록","11":"상록","12":"상록","1":"북부","2":"북부","15":"북부","16":"북부","41":"남부","17":"남부","18":"남부","9":"남부","10":"남부","21":"북부","22":"북부","42":"북부","39":"남부","23":"상록","24":"상록","44":"남부","38":"북부","29":"남부","30":"남부","40":"남부","19":"북부","20":"북부","27":"북부","28":"북부","43":"남부","25":"남부","26":"남부","46":"북부","35":"북부","36":"북부","33":"북부","34":"북부","31":"남부","32":"남부","45":"북부"};
     w.appendChild(h("div", { cls: "rstats sc4" }, ["북부", "남부", "상록", "원로"].map(function (k) {
       return h("div", null, [h("small", { text: k === "원로" ? "원로(부부)" : k + "시찰" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return SC[p.n] === k; }).length) })]); })));
