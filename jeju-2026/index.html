@@ -472,6 +472,9 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .ordopt[aria-pressed="true"] { border-color: var(--magenta); background: var(--magenta-soft); color: var(--magenta); }
 .ordsend { min-height: 52px; font-size: 17px; margin-top: 8px; }
 .ordmsg { margin: 0; font-weight: 700; color: var(--ok); }
+.ordmsg:has(a) { display: grid; gap: 8px; }
+.ordmsg a.ordsend { display: block; text-align: center; text-decoration: none; }
+.ordmsg small { font-weight: 400; }
 .ordsum { margin-top: 12px; padding: 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 6px; }
 .ordrow { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; } .ordrow small { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
 .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.9); display: grid; place-items: center; padding: 16px; }
@@ -2063,20 +2066,25 @@ a.instbtn { color: inherit; text-decoration: none; }
     return S.menus;
   }
   var ORD = null, ordMe = lsGet(LS + "-me") || "";
+  var ORD_PHONE = "01025400533";  // 간편 방식: 참석자 선택은 총무 문자로, 총무가 편집 화면에서 기록
+  function simpleOrd() { return !orderUrl(); }
+  function ordList() { return simpleOrd() ? (S.orders || []) : (ORD || []); }
+  function myLocal(m) { try { return JSON.parse(lsGet(LS + "-ord-" + m.id) || "null"); } catch (e) { return null; } }
   function loadOrders(cb) {
-    var u = orderUrl(); if (!u) return;
+    var u = orderUrl(); if (!u) { if (cb) cb(); return; }
     fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) { ORD = (d && d.orders) || []; if (cb) cb(); }).catch(function () { if (cb) cb(); });
   }
   function orderCard() {
     var box = h("div", { cls: "card order" }, [h("h3", { text: "🍽 메뉴 고르기" }),
-      h("p", { cls: "muted", text: "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
-    var ready = !!orderUrl();
+      h("p", { cls: "muted", text: simpleOrd() ? "이름과 메뉴를 고르고 '총무에게 문자 보내기'를 누르면 끝입니다. 총무가 모아서 한 번에 주문합니다." : "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
+    var ready = true, OL = simpleOrd() || ORD ? ordList() : null;
     menus().forEach(function (m) {
-      var mine = ORD && ordMe ? ORD.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
-      var cnt = ORD ? ORD.filter(function (o) { return o.place === m.title; }).length : null;
+      var mine = OL && ordMe ? OL.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
+      if (!mine && simpleOrd()) { var lc = myLocal(m); if (lc && lc.name === ordMe) mine = lc; }
+      var cnt = OL ? OL.filter(function (o) { return o.place === m.title; }).length : null;
       var sub = m.optout ? (mine ? "✔ 선지 없음으로 신청함" : (cnt ? "선지 없음 " + cnt + "명 · " : "") + "기본은 선지 넣음 · 빼실 분만 누르기") : mine ? "✔ 내 선택: " + mine.menu + (mine.opt ? " · " + mine.opt : "") : (cnt != null ? cnt + "명 고름 · 눌러서 고르기" : "눌러서 고르기");
-      var go = function (e) { e.preventDefault(); if (HOSTED && ready) orderSheet(m); else if (!HOSTED) window.open(APP_URL + "#home", "_blank", "noopener"); };
-      box.appendChild(h("a", { cls: "ordbtn", href: "#", onclick: go }, [h("span", null, [h("b", { text: m.title }), h("small", { text: (m.when ? m.when + " · " : "") + (HOSTED ? (ready ? sub : "준비 중") : "앱 주소에서 고르기") })]), h("i", { text: "›" })]));
+      var go = function (e) { e.preventDefault(); orderSheet(m); };
+      box.appendChild(h("a", { cls: "ordbtn", href: "#", onclick: go }, [h("span", null, [h("b", { text: m.title }), h("small", { text: (m.when ? m.when + " · " : "") + sub })]), h("i", { text: "›" })]));
     });
     if (canWrite) {
       var ed = h("details", { cls: "vadd" }, [h("summary", { text: "메뉴 편집 (총무)" })]);
@@ -2108,7 +2116,8 @@ a.instbtn { color: inherit; text-decoration: none; }
       body.appendChild(h("div", { cls: "ordtop" }, [h("b", { text: m.title }), h("button", { cls: "lb-x", type: "button", "aria-label": "닫기", text: "×", onclick: function () { ovClose(shut); } })]));
       var sel = h("select", { cls: "field", "aria-label": "내 이름" }, [h("option", { value: "", text: "내 이름 고르기" })].concat(S.people.map(function (p) { return h("option", { value: p.name, text: p.name + " " + p.role + (p.church ? " · " + p.church.split(" · ")[0] : "") }); })));
       sel.value = ordMe;
-      var mine = ORD && ordMe ? ORD.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
+      var OL = ordList(), mine = ordMe ? OL.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
+      if (!mine && simpleOrd()) { var lc = myLocal(m); if (lc && lc.name === ordMe) mine = lc; }
       if (mine && !pick.menu) { pick.menu = mine.menu; pick.opt = mine.opt || ""; }
       if (m.optout && !pick.menu) pick.menu = m.items[0];
       sel.addEventListener("change", function () { ordMe = sel.value; lsSet(LS + "-me", ordMe); pick = { menu: "", opt: "" }; draw(); });
@@ -2124,16 +2133,32 @@ a.instbtn { color: inherit; text-decoration: none; }
         if (!ordMe) { msg.textContent = "먼저 내 이름을 골라 주세요."; return; }
         if (menu && !pick.menu) { msg.textContent = "메뉴를 골라 주세요."; return; }
         if (menu && m.opts && m.opts.length && !pick.opt) { msg.textContent = "선택 사항을 골라 주세요."; return; }
+        if (simpleOrd()) {
+          var rec = { place: m.title, name: ordMe, menu: menu ? pick.menu : "", opt: menu ? pick.opt : "" };
+          if (canWrite) {
+            S.orders = (S.orders || []).filter(function (o) { return !(o.place === rec.place && o.name === rec.name); });
+            if (menu) S.orders.push(rec);
+            changed(); msg.textContent = menu ? "✔ " + ordMe + " 님 주문을 기록했습니다." : "✔ " + ordMe + " 님 주문을 지웠습니다."; draw(); renderHome(); return;
+          }
+          lsSet(LS + "-ord-" + m.id, menu ? JSON.stringify(rec) : "");
+          var txt = "[제주수양회 메뉴] " + m.title + "\n" + ordMe + " : " + (menu ? pick.menu + (pick.opt ? " · " + pick.opt : "") : "주문 취소");
+          var ua = navigator.userAgent || "", smsHref = "sms:" + ORD_PHONE + (/iPhone|iPad|Macintosh/.test(ua) ? "&" : "?") + "body=" + encodeURIComponent(txt);
+          msg.textContent = "";
+          msg.appendChild(h("a", { cls: "btn solid ordsend", href: smsHref, target: "_top", text: "📩 총무에게 문자 보내기" }));
+          msg.appendChild(h("button", { cls: "btn ordsend", type: "button", text: "📋 복사해서 카톡으로 보내기", onclick: function () { copy(txt, this); } }));
+          msg.appendChild(h("small", { cls: "muted", text: "문자 창이 열리면 '전송'만 누르세요. 총무가 받아서 명단에 기록하면 모인 주문에 나옵니다." }));
+          return;
+        }
         msg.textContent = "보내는 중…";
         fetch(orderUrl(), { method: "POST", body: JSON.stringify({ place: m.title, name: ordMe, menu: menu ? pick.menu : "", opt: menu ? pick.opt : "" }) })
           .then(function (r) { return r.json(); }).then(function (d) { if (d && d.orders) ORD = d.orders; msg.textContent = menu ? "✔ 주문이 접수되었습니다. 바꾸려면 다시 고르고 보내면 됩니다." : "주문을 취소했습니다."; draw(); renderHome(); })
           .catch(function () { msg.textContent = "보내지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요."; });
       };
-      body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: m.optout ? (mine ? "다시 보내기" : "선지 없음으로 보내기") : mine ? "바꿔서 보내기" : "보내기", onclick: function () { send(true); } }));
+      body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: simpleOrd() && canWrite ? (mine ? "바꿔서 기록 (총무)" : "기록하기 (총무)") : simpleOrd() ? "고르기 완료" : m.optout ? (mine ? "다시 보내기" : "선지 없음으로 보내기") : mine ? "바꿔서 보내기" : "보내기", onclick: function () { send(true); } }));
       if (mine) body.appendChild(h("button", { cls: "linkish", type: "button", text: m.optout ? "취소 (선지 넣어서 먹기)" : "내 주문 취소", onclick: function () { send(false); } }));
       body.appendChild(msg);
       // 모인 주문
-      var list = (ORD || []).filter(function (o) { return o.place === m.title; });
+      var list = ordList().filter(function (o) { return o.place === m.title; });
       var tally = {}; list.forEach(function (o) { var k = o.menu + (o.opt ? " · " + o.opt : ""); (tally[k] = tally[k] || []).push(o.name); });
       var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: m.optout ? "선지 없음 신청 " + list.length + "명 (나머지는 선지 넣음)" : "모인 주문 " + list.length + " / " + S.people.length + "명" })]);
       Object.keys(tally).sort().forEach(function (k) { sum.appendChild(h("div", { cls: "ordrow" }, [h("b", { text: k }), h("span", { cls: "num", text: tally[k].length + "개" }), h("small", { text: tally[k].join(", ") })])); });
