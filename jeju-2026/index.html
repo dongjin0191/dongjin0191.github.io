@@ -203,6 +203,7 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .rcnone { font-size: 30px; text-align: center; }
 .rcadd { display: block; color: #2b8a3e; font-size: 11.5px; }
 .room .solotag { color: #c2410c; font-weight: 700; font-size: 12.5px; }
+.psp { display: inline-block; justify-self: start; background: #fff3bf; color: #8a5a00; font-weight: 800; font-size: 14px; padding: 3px 10px; border-radius: 99px; border: 1px solid #ffd43b; }
 .sqbox { padding: 12px; }
 .sqbox .search { margin: 0; }
 .sqres { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
@@ -3038,6 +3039,11 @@ a.instbtn { color: inherit; text-decoration: none; }
     i.addEventListener("change", function () { var u = i.value.trim(); if (u && !/^https:\/\/(open\.kakao\.com|qr\.kakao\.com)\//.test(u)) { i.value = ""; return; } p.kakao = u; changed(); rerender(); });
     return i;
   }
+  // 찬조 금액: S.income(찬조)의 이름에 본인 이름이 있으면 합계 (배우자 칸에는 표시 안 함)
+  function sponsorOf(p) {
+    if (isSp(p)) return 0;
+    return S.income.reduce(function (s, r) { return s + (r.kind === "찬조" && new RegExp("(^|\\s)" + p.name + " (목사|장로)").test(r.name) ? r.amt || 0 : 0); }, 0);
+  }
   function spouseOf(p) {
     if (isSp(p)) { var hb = byN(p.n - 1); return hb && !isSp(hb) ? hb : null; }
     var w = byN(p.n + 1); return w && isSp(w) ? w : null;
@@ -3062,6 +3068,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       h("div", { cls: "phead" }, [h("span", { cls: "no num", text: String(p.n) }), h("b", { cls: "pname", text: p.name }), p.role ? h("span", { cls: rc, text: p.role }) : null,
         ch ? h("span", { cls: "ch", text: "(" + ch + ")" }) : null, SCD()[p.n] ? h("span", { cls: "scb", text: SCD()[p.n] === "원로" ? "원로" : SCD()[p.n] + "시찰" }) : null]),
       rel ? h("div", { cls: "prel", text: "💑 " + rel }) : null,
+      sponsorOf(p) ? h("div", { cls: "psp", text: "🎁 찬조 " + man(sponsorOf(p)) + " · 감사합니다" }) : null,
       p.phone ? h("div", { cls: "pline" }, [h("a", { href: "tel:" + tel, text: p.phone }),
         h("button", { cls: "btn", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
         h("a", { cls: "btn callbtn", href: "tel:" + tel, target: "_top", "aria-label": p.name + " 전화걸기", text: "📞 전화" }),
