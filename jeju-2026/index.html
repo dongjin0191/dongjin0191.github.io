@@ -2895,10 +2895,8 @@ a.instbtn { color: inherit; text-decoration: none; }
       if (mine && !pick.menu) { pick.menu = mine.menu; pick.opt = mine.opt || ""; }
       if (m.optout && !pick.menu) pick.menu = m.items[0];
       sel.addEventListener("change", function () { ordMe = sel.value; lsSet(LS + "-me", ordMe); pick = { menu: "", opt: "" }; draw(); });
-      if (MCONTACT[m.id]) body.appendChild(contactBox(MCONTACT[m.id]));
       body.appendChild(h("label", { cls: "ordlbl", text: "1. 내 이름" })); body.appendChild(sel);
       if (m.note) body.appendChild(h("p", { cls: "muted", text: m.note }));
-      if (m.contacts && m.contacts.length) body.appendChild(contactBox(m.contacts));
       body.appendChild(h("p", { cls: "ordlbl", text: m.optout ? "2. 선택" : "2. 메뉴" }));
       body.appendChild(h("div", { cls: "ordgrid" }, m.items.map(function (x) { return h("button", { type: "button", cls: "ordopt", "aria-pressed": String(pick.menu === x), text: x, onclick: function () { pick.menu = x; draw(); } }); })));
       if (m.opts && m.opts.length) {
@@ -2941,6 +2939,9 @@ a.instbtn { color: inherit; text-decoration: none; }
       var none = S.people.filter(function (p) { return !list.some(function (o) { return o.name === p.name; }); });
       if (!m.optout && none.length && list.length) sum.appendChild(h("p", { cls: "muted", text: "아직 안 고른 분: " + none.map(function (p) { return p.name; }).join(", ") }));
       body.appendChild(sum);
+      if (MCONTACT[m.id] || (m.contacts && m.contacts.length)) body.appendChild(h("p", { cls: "ordlbl", text: "📞 주문 연락처" }));
+      if (MCONTACT[m.id]) body.appendChild(contactBox(MCONTACT[m.id]));
+      if (m.contacts && m.contacts.length) body.appendChild(contactBox(m.contacts));
     };
     draw(); document.body.appendChild(ov); ovOpen(shut);
     loadOrders(draw);
