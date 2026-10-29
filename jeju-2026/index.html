@@ -194,6 +194,7 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .rcitem small { color: var(--muted); }
 .rcnone { font-size: 30px; text-align: center; }
 .rcadd { display: block; color: #2b8a3e; font-size: 11.5px; }
+.room .solotag { color: #c2410c; font-weight: 700; font-size: 12.5px; }
 .sqbox { padding: 12px; }
 .sqbox .search { margin: 0; }
 .sqres { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
@@ -3070,9 +3071,9 @@ a.instbtn { color: inherit; text-decoration: none; }
   }
   function roomLine(p) {
     var r = (S.rooms || []).filter(function (x) { return x.a === p.n || x.b === p.n || x.c === p.n; })[0];
-    if (!r || !r.no) return h("div", { cls: "proom soft", text: "🛏 객실 호수 배정 전" });
+    if (!r) return h("div", { cls: "proom soft", text: "🛏 객실 배정 전" });
     var os = [r.a, r.b, r.c].filter(function (x) { return x && x !== p.n && byN(x); }).map(function (x) { return byN(x).name; });
-    return h("div", { cls: "proom", text: "🛏 " + r.no + "호" + (os.length ? " · " + os.join(", ") + " 님과" : "") });
+    return h("div", { cls: "proom", text: "🛏 " + (r.no ? r.no + "호" : "호수는 당일 배부") + (os.length ? " · " + os.join(", ") + " 님과 2인 1실" : " · 독방 (추가 요금)") });
   }
   function seatCls(n) { var p = byN(n); if (!p) return "seat empty"; return "seat" + (isSp(p) ? " sp" : p.role === "장로" ? " el" : ""); }
   var boardMode = false;
@@ -3147,8 +3148,8 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(h("h2", { text: "숙소 방배정표 · 라마다 함덕" }));
     var filled = S.rooms.filter(function (r) { return r.no; }).length;
     w.appendChild(h("p", { cls: "roomcount" }, [h("b", { cls: "num", text: filled + " / " + S.rooms.length }), " 실 호실 번호 기입 · 호실 번호는 당일 현장에서 배부합니다"]));
-    w.appendChild(h("p", { cls: "muted", text: "총 " + S.rooms.length + "실 · 부부 18실 + 2인 1실 3실 + 1인실 2실. " + (canWrite ? "호실 번호를 적고 함께 쓸 분을 고르세요." : "") }));
-    if (S.roomsDraft) w.appendChild(h("div", { cls: "draftnote" }, [h("span", { text: "초안: 부부 18실 + 단독 참석 8명은 2인실 3실·1인실 2실입니다." }), canWrite ? h("button", { cls: "btn", type: "button", text: "확정으로 표시", onclick: function () { S.roomsDraft = false; changed(); renderPeople(); } }) : null]));
+    w.appendChild(h("p", { cls: "muted", text: "총 " + S.rooms.length + "실 예약 · 2인 1실 21실(부부 18실 + 함께 쓰는 방 3실) + 독방 2실(김종수 목사·김충현 목사, 추가 요금). " + (canWrite ? "호실 번호를 적고 함께 쓸 분을 고르세요." : "") }));
+    if (S.roomsDraft) w.appendChild(h("div", { cls: "draftnote" }, [h("span", { text: "초안: 2인 1실 21실 + 독방 2실(김종수·김충현 목사, 추가 요금)입니다." }), canWrite ? h("button", { cls: "btn", type: "button", text: "확정으로 표시", onclick: function () { S.roomsDraft = false; changed(); renderPeople(); } }) : null]));
     var ul = h("ul", { cls: "rooms" });
     S.rooms.forEach(function (r, i) {
       var no = h("input", { id: "room-" + i, placeholder: "호실", readonly: !canWrite, "aria-label": (i + 1) + "번째 객실 호실" }); no.value = r.no || "";
@@ -3160,7 +3161,8 @@ a.instbtn { color: inherit; text-decoration: none; }
         s.addEventListener("change", function () { var n = parseInt(s.value, 10) || 0; S.rooms.forEach(function (o) { if (o !== r) { if (o.a === n) o.a = 0; if (o.b === n) o.b = 0; if (o.c === n) o.c = 0; } }); r[key] = n; changed(); renderPeople(); });
         return s;
       };
-      ul.appendChild(h("li", { cls: "room" + (r.c ? " r3" : "") }, [no, pick("a"), r.b || canWrite ? pick("b") : null, r.c ? pick("c") : null]));
+      var solo = r.a && !r.b && !r.c;
+      ul.appendChild(h("li", { cls: "room" + (r.c ? " r3" : "") + (solo ? " solo" : "") }, [no, pick("a"), r.b || canWrite ? pick("b") : null, r.c ? pick("c") : null, solo ? h("small", { cls: "solotag", text: "독방 · 추가 요금" }) : null]));
     });
     w.appendChild(ul);
     var un = S.people.filter(function (p) { return !S.rooms.some(function (r) { return r.a === p.n || r.b === p.n || r.c === p.n; }); });
