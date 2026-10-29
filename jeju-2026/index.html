@@ -157,7 +157,10 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .tklist li.m b { color: #0b3a8c; } .tklist li.f b { color: #c2185b; }
 .tklist li small { color: #555; font-size: 14px; }
 .tklist { grid-template-columns: 1fr !important; }
-.tklist li { flex-wrap: nowrap; }
+.tklist li { display: grid !important; gap: 4px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.tkrow { display: flex; gap: 6px; align-items: baseline; }
+.tkph { display: flex; gap: 6px; align-items: center; padding-left: 26px; font-size: 15px; }
+.tkph a { color: var(--sky); font-weight: 700; text-decoration: none; }
 .tkb { margin-left: auto; }
 .tkb { font-style: normal; color: #1864ab; font-size: 13.5px; font-weight: 700; }
 .tkres { display: grid; gap: 6px; margin-top: 8px; }
@@ -3284,7 +3287,10 @@ a.instbtn { color: inherit; text-decoration: none; }
       w.appendChild(h("div", { cls: "card tkcard" + (PNRNOTE[k] ? " tkwarn" : "") }, [
         h("div", { cls: "tkhead" }, [h("small", { text: "왕복 예약번호 · " + ps.length + "명" }), k === "미입력" ? h("b", { text: "예약번호 미입력" }) : pnrRow(k, true)]),
         PNRNOTE[k] ? h("p", { cls: "tknote", text: PNRNOTE[k] }) : null,
-        h("ol", { cls: "tklist" }, ps.map(function (p) { return h("li", { cls: isSp(p) ? "f" : "m" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthOf(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]); }))
+        h("ol", { cls: "tklist" }, ps.map(function (p) { var tel = (p.phone || "").replace(/[^\d]/g, "");
+          return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthOf(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]),
+            p.phone ? h("div", { cls: "tkph" }, [h("a", { cls: "num", href: "tel:" + tel, text: p.phone }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
+              /^01/.test(tel) || p.kakao ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
     });
     if (canWrite) w.appendChild(h("p", { cls: "muted", text: "예약번호는 명단 탭 서열순 카드의 '예약번호' 칸에서 고칠 수 있습니다." }));
