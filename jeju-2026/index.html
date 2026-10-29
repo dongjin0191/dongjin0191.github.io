@@ -2185,7 +2185,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (!ROSTER) { loadRoster(); c.appendChild(h("p", { cls: "muted", text: DBNS ? "불러오는 중…" : "이 화면에서는 열 수 없습니다." })); return c; }
     var msg = h("small", { cls: "muted", text: "" });
     var miss = S.people.filter(function (p) { return !ROSTER.b[p.n]; }).length;
-    c.appendChild(h("p", { cls: "muted", text: "1일차 11:20 한림항 → 비양도 승선 때 내는 명부입니다. 생년월일은 위 신상정보 칸에서 가져옵니다" + (miss ? " · 아직 " + miss + "명 비어 있음" : " · 46명 모두 채워짐") + ". 성별은 직분으로 넣었으니 다르면 눌러서 바꾸세요." }));
+    c.appendChild(h("p", { cls: "muted", text: "1일차 11:20 한림항 → 비양도 승선 때 내는 명부입니다. 생년월일은 위 신상정보 칸에서 가져옵니다" + (miss ? " · 아직 " + miss + "명 비어 있음" : " · " + S.people.length + "명 모두 채워짐") + ". 성별은 직분으로 넣었으니 다르면 눌러서 바꾸세요." }));
     var tb = h("tbody", null, S.people.map(function (p, i) {
       var sx = h("button", { cls: "btn sx", type: "button", text: sexOf(p), onclick: function () {
         ROSTER.sex = ROSTER.sex || {}; ROSTER.sex[p.n] = sexOf(p) === "남" ? "여" : "남"; sx.textContent = ROSTER.sex[p.n]; tr.className = ROSTER.sex[p.n] === "여" ? "f" : ""; saveRoster(msg); } });
