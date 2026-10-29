@@ -788,6 +788,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   .ferryft { margin: 0; padding: 6px 8px; font-size: 12px; color: #64748b; text-align: center; background: #f8fafc; }
   li.fellowli { list-style: none; margin: 4px 0 4px 0; }
   li.fellowli .card { margin: 0; border: 2px dashed #a78bfa; }
+  .spnote { margin: 12px 0 6px; padding: 10px 12px; border-radius: 12px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 14px; line-height: 1.5; }
 </style>
 
 <header class="topbar">
@@ -1391,7 +1392,9 @@ a.instbtn { color: inherit; text-decoration: none; }
     var sp = h("ul", { cls: "sponsors" }, S.income.filter(function (r) { return r.kind === "찬조"; }).map(function (r) { return h("li", null, [h("b", { text: r.name }), h("span", { cls: "num", text: man(r.amt) })]); }));
     w.appendChild(h("div", { cls: "card" }, [
       h("h3", { text: "찬조해 주신 분들" }),
-      h("p", { cls: "muted", text: "아름다운 수양회를 위해 후원해 주셔서 감사합니다. 합계 " + man(pledged) + (chkById("p70").ok ? " (최종 확인 " + (chkById("p70").at || "").slice(5, 10).replace("-", "/") + ")" : " (10월 20일 현재)") }), sp]));
+      h("p", { cls: "muted", text: "아름다운 수양회를 위해 후원해 주셔서 감사합니다. 합계 " + man(pledged) + (chkById("p70").ok ? " (최종 확인 " + (chkById("p70").at || "").slice(5, 10).replace("-", "/") + ")" : " (10월 20일 현재)") }), sp,
+      h("p", { cls: "spnote", text: "※ 현지에서 어떤 방법으로든 추가 후원 및 물품, 상품 하실 분들은 총무 이동진 목사에게 미리 알려 주세요." }),
+      contactBox([["총무 이동진 목사", "010-2540-0533"]])]));
     w.appendChild(h("p", { cls: "foot", text: "대한예수교장로회 시화산노회 제19회기 목사·장로 부부 수양회" }));
     v.appendChild(w);
   }
