@@ -789,6 +789,9 @@ a.instbtn { color: inherit; text-decoration: none; }
   li.fellowli { list-style: none; margin: 4px 0 4px 0; }
   li.fellowli .card { margin: 0; border: 2px dashed #a78bfa; }
   .spnote { margin: 12px 0 6px; padding: 10px 12px; border-radius: 12px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 14px; line-height: 1.5; }
+  .kcol { display: grid; gap: 6px; justify-items: center; }
+  a.hostbtn { display: inline-block; background: #dc2626; color: #fff; font-weight: 900; font-size: 12.5px; padding: 5px 9px; border-radius: 999px; text-decoration: none; box-shadow: 0 2px 6px rgba(220,38,38,.3); }
+  .raincard a.hostbtn { margin-left: 6px; vertical-align: middle; }
 </style>
 
 <header class="topbar">
@@ -1050,7 +1053,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     ["12:35", "삼대국수 출발 → 한라수목원", "약 33km · 버스 약 45분 · 13:20 수목원 도착 (원래 14:50보다 1시간 30분 여유 → 수목원·노형 일정 여유 있게)", "한라수목원"]
   ];
   function rainCard() {
-    return h("li", { cls: "raincard" }, [h("b", null, [h("span", { cls: "stat st-alt", text: "예비" }), " ☔ 우천 코스 · 비양도 배가 뜨지 않을 때"]),
+    return h("li", { cls: "raincard" }, [h("b", null, [h("span", { cls: "stat st-alt", text: "예비" }), " ☔ 우천 코스 · 비양도 배가 뜨지 않을 때", hostBtn("c2r")]),
       h("ul", null, RAIN.map(function (r) { return h("li", null, [h("span", { cls: "num", text: r[0] }), h("div", null, [h("b", { text: r[1] }), h("small", { text: r[2] }),
         r[3] ? h("a", { cls: "maplink", href: mapUrl(r[3]), target: "_blank", rel: "noopener", text: "지도 ↗" }) : null])]); }))]);
   }
@@ -2343,6 +2346,15 @@ a.instbtn { color: inherit; text-decoration: none; }
         h("button", { type: "button", "aria-label": "이전 장", text: "▲", onclick: function () { to(-1); } }),
         h("button", { type: "button", "aria-label": "다음 장", text: "▼", onclick: function () { to(1); } })])])]);
   }
+  // 일정 칸 → 총무 탭 코스 멘트
+  var HOSTAT = { "d1-3": "c0", "d1-5": "c1", "d1-6": "c2", "d1-11": "c3", "d1-13": "c4", "d1-15": "c4w", "d1-16": "c4r",
+    "d2-1": "c5", "d2-2": "c6", "d2-4": "c7", "d2-5": "c7f", "d2-7": "c8", "d2-8": "c9", "d2-10": "c9h",
+    "d3-1": "c10", "d3-3": "c11", "d3-7": "c12" };
+  var hostJump = null;
+  function hostBtn(cid) {
+    if (!cid) return null;
+    return h("a", { cls: "hostbtn", href: "#host", "aria-label": "총무 멘트 보기", text: "총무", onclick: function (e) { e.preventDefault(); hostJump = cid; go("host"); } });
+  }
   function fellowCard(f) {
     if (!S[f[0]]) S[f[0]] = [1, 2, 3, 4, 5].map(function (n) { return { k: String(n), v: "" }; });
     var fe = h("div", { cls: "order" });
@@ -2375,7 +2387,7 @@ a.instbtn { color: inherit; text-decoration: none; }
         stopExtra(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "시각 확정" : "예상 시각" })]);
-      items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) + (sjump === day.key + "-" + si ? " jump" : ""), id: "stop-" + day.key + "-" + si }, [when, what, h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] })]));
+      items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) + (sjump === day.key + "-" + si ? " jump" : ""), id: "stop-" + day.key + "-" + si }, [when, what, h("div", { cls: "kcol" }, [h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] }), hostBtn(HOSTAT[day.key + "-" + si])])]));
       if (day.key === "d1" && si === 6) items.push(rainCard());
       // 친교의 시간 2는 플로이스트 뒤, 3은 델문도 뒤
       if (day.key === "d2" && si === 5) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow2", "🤝 친교의 시간 2 · 플로이스트"])]));
@@ -2623,9 +2635,10 @@ a.instbtn { color: inherit; text-decoration: none; }
           c.refs ? h("p", { cls: "refs" }, ["참고: "].concat(c.refs.map(function (r, ri) { return h("a", { href: r[1], target: "_blank", rel: "noopener", text: r[0] + (ri < c.refs.length - 1 ? " · " : "") }); }))) : null,
           c.quiz.length ? h("h3", { text: "퀴즈 " + c.quiz.length }) : null, c.quiz.length ? ql : null])
       ]);
-      if (ci === 0) d.open = true;
+      if (hostJump ? c.id === hostJump : ci === 0) d.open = true;
       w.appendChild(d);
     });
+    if (hostJump) { var hj = hostJump; hostJump = null; setTimeout(function () { var el = document.getElementById("course-" + hj); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 80); }
     w.appendChild(h("p", { cls: "muted", text: "1~7번은 장소·제주 퀴즈, 8~10번은 제주 상식·넌센스, 11~12번은 성경 넌센스입니다. 성경 문제는 개역개정 기준입니다. 관광지 정보는 현장 가이드 안내와 다를 수 있으니 가이드와 한 번 맞춰 보세요." }));
     v.appendChild(w);
   }
