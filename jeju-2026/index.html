@@ -137,6 +137,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .pnr b { font-size: 17px; letter-spacing: .06em; color: #1864ab; }
 .pnrcopy { padding: 3px 10px; font-size: 13px; }
 .pnrwrap { display: grid; gap: 2px; }
+.pnr { flex-wrap: wrap; }
+.pnrlook { background: #d6336c; border-color: #d6336c; color: #fff; }
+.eastar-how { margin: 0 0 8px; padding-left: 20px; font-size: 14px; color: #555; display: grid; gap: 2px; }
 .tkcard { display: grid; gap: 8px; }
 .tkhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .tkhead small { color: var(--muted); font-weight: 700; }
@@ -3175,14 +3178,26 @@ a.instbtn { color: inherit; text-decoration: none; }
     X4B6PI: "⚠ 출발 11/1(주일) 18:30 · 하루 먼저 제주에 들어갑니다"
   };
   var tq = "";
-  function pnrRow(code) {
-    return h("span", { cls: "pnr" }, [h("b", { cls: "num", text: code }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(code, e.currentTarget); } })]);
+  var EASTAR = "https://main.eastarjet.com/my-booking";
+  // 바깥 사이트는 새 창(카톡 안이면 외부 브라우저)으로 열어 이 화면이 그대로 남게 한다
+  function openOut(u) {
+    if (IN_KAKAO) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(u); return; }
+    var nw = window.open(u, "_blank");
+    if (nw) { try { nw.opener = null; } catch (e) {} } else location.href = u;
+  }
+  function pnrRow(code, look) {
+    return h("span", { cls: "pnr" }, [h("b", { cls: "num", text: code }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(code, e.currentTarget); } }),
+      look ? h("button", { cls: "btn pnrcopy pnrlook", type: "button", text: "✈ 조회", onclick: function (e) { copy(code, e.currentTarget); setTimeout(function () { openOut(EASTAR); }, 250); } }) : null]);
   }
   function renderTicket() {
     var v = document.getElementById("v-ticket"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "✈ 항공 티켓 · 예약번호" }));
-    w.appendChild(h("a", { cls: "btn solid eastar", href: "https://main.eastarjet.com/my-booking", target: "_blank", rel: "noopener", text: "✈ 이스타항공 예약 조회 바로가기" }));
+    w.appendChild(h("a", { cls: "btn solid eastar", href: EASTAR, target: "_blank", rel: "noopener", text: "✈ 이스타항공 예약 조회 바로가기", onclick: function (e) { e.preventDefault(); openOut(EASTAR); } }));
+    w.appendChild(h("ol", { cls: "eastar-how" }, [
+      h("li", { text: "아래 내 예약번호 옆 '✈ 조회'를 누르면 번호가 복사되고 이스타 예약 조회가 새 창으로 열립니다." }),
+      h("li", { text: "예약번호 칸에 붙여넣고, 탑승객 영문 성·이름을 넣으면 됩니다." }),
+      h("li", { text: "다 보신 뒤 위쪽 ✕(닫기)나 휴대폰 '뒤로'를 누르면 이 화면으로 돌아옵니다." })]));
     w.appendChild(h("p", { cls: "muted", text: "예약 조회 화면에서 아래 예약번호를 붙여 넣으면 됩니다." }));
     w.appendChild(h("div", { cls: "flights" }, [
       h("div", { cls: "flight glass card" }, [h("span", { cls: "muted", text: "가는 날 · 11/2 (월)" }), h("span", { cls: "code", text: "이스타 ZE201" }), h("span", { cls: "route", text: "김포 06:45 → 제주 08:00" })]),
@@ -3200,7 +3215,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       if (!tq) return;
       var hits = S.people.filter(function (p) { return p.name.replace(/\s/g, "").indexOf(tq.replace(/\s/g, "")) !== -1; });
       if (!hits.length) { res.appendChild(h("p", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
-      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role }), p.pnr ? pnrRow(p.pnr) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
+      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role }), p.pnr ? pnrRow(p.pnr, true) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
     };
     inp.addEventListener("input", function () { tq = inp.value.trim(); fill(); });
     fill();
@@ -3211,7 +3226,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     order.forEach(function (k) {
       var ps = groups[k];
       w.appendChild(h("div", { cls: "card tkcard" + (PNRNOTE[k] ? " tkwarn" : "") }, [
-        h("div", { cls: "tkhead" }, [h("small", { text: "왕복 예약번호 · " + ps.length + "명" }), k === "미입력" ? h("b", { text: "예약번호 미입력" }) : pnrRow(k)]),
+        h("div", { cls: "tkhead" }, [h("small", { text: "왕복 예약번호 · " + ps.length + "명" }), k === "미입력" ? h("b", { text: "예약번호 미입력" }) : pnrRow(k, true)]),
         PNRNOTE[k] ? h("p", { cls: "tknote", text: PNRNOTE[k] }) : null,
         h("ol", { cls: "tklist" }, ps.map(function (p) { return h("li", { cls: isSp(p) ? "f" : "m" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role })]); }))
       ]));
