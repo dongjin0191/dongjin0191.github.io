@@ -218,6 +218,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .pav.big { width: 100%; height: auto; grid-column: 1 / -1; }
 .pav.none { display: inline-grid; place-items: center; font-weight: 800; font-size: 48px; color: #fff; background: #4c6ef5; cursor: default; }
 .pav.none.f { background: #e64980; }
+.pmini small { color: #555; }
+.pmini .ch { color: var(--muted); font-size: 13px; }
+.pmini .agb { margin-left: auto; color: #1864ab; font-weight: 700; }
 .sqbox { padding: 12px; }
 .sqbox .search { margin: 0; }
 .sqres { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
@@ -2995,14 +2998,14 @@ a.instbtn { color: inherit; text-decoration: none; }
     var ord = h("div", { cls: "seg small", role: "group", "aria-label": "정렬" }, [["list", "서열순"], ["age", "연배순"], ["tamna", "탐나전"]].map(function (x) {
       return h("button", { type: "button", "aria-pressed": String(porder === x[0]), text: x[1], onclick: function () { porder = x[0]; renderPeople(); } }); }));
     w.appendChild(ord);
-    if (porder === "age") { loadRoster(); w.appendChild(h("p", { cls: "muted", text: IS_OWNER ? "연배순: 이름과 생년월일만, 나이 많은 순입니다. 생년월일은 총무 계정에서만 보입니다." : "연배순: 이름만 보입니다. 생년월일은 총무 계정에서만 보입니다." })); }
+    if (porder === "age") { loadRoster(); w.appendChild(h("p", { cls: "muted", text: IS_OWNER ? "연배순: 이름·직분·교회·생년월일, 나이 많은 순입니다. 생년월일은 총무 계정에서만 보입니다." : "연배순: 이름·직분·교회를 연배 순서로 보여 드립니다." })); }
     if (porder === "tamna") w.appendChild(h("p", { cls: "muted", text: "탐나전: 탐나는전 신청서 연번 순서입니다. 제주공항에서 지원금을 받을 때 이 순서로 부릅니다." }));
     if (canWrite) w.appendChild(h("p", { cls: "muted", text: "‘입금’을 누르면 구분에 맞는 금액(조직 20만·미조직 15만)으로 입금 처리됩니다. ‘집결’은 당일 공항에서 인원 확인용입니다." }));
     w.appendChild(ul);
     function fill() {
       ul.textContent = "";
       var inF = function (p) { return (!pfil || SCD()[p.n] === pfil) && (!q || [p.name, p.church, p.phone, p.role, String(p.n)].join(" ").indexOf(q) !== -1); };
-      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), birthOf(p) ? h("span", { cls: "num", text: "(" + birthOf(p) + ")" }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
+      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthOf(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
       if (porder === "tamna") { S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
       var LIST = S.people;
       LIST.forEach(function (p, i) {
