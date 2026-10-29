@@ -792,6 +792,13 @@ a.instbtn { color: inherit; text-decoration: none; }
   .kcol { display: grid; gap: 6px; justify-items: center; }
   a.hostbtn { display: inline-block; background: #dc2626; color: #fff; font-weight: 900; font-size: 12.5px; padding: 5px 9px; border-radius: 999px; text-decoration: none; box-shadow: 0 2px 6px rgba(220,38,38,.3); }
   .raincard a.hostbtn { margin-left: 6px; vertical-align: middle; }
+  .prayline { display: grid; gap: 3px; margin: 6px 0; padding: 7px 10px; border-radius: 10px; background: #fdf2f8; border-left: 4px solid #db2777; font-size: 13.5px; }
+  .prayline b { color: #be185d; } .prayline span span { display: block; font-weight: 700; color: #1e293b; } .prayline .soft { color: #94a3b8; font-weight: 500; }
+  .wtable h3 small { font-size: 13px; color: #64748b; font-weight: 700; }
+  .wtable table { width: 100%; border-collapse: collapse; }
+  .wtable th { width: 5.2em; text-align: justify; text-align-last: justify; color: #db2777; font-size: 15.5px; font-weight: 900; padding: 6px 10px 6px 2px; vertical-align: top; white-space: nowrap; }
+  .wtable td { font-size: 15.5px; font-weight: 700; color: #1e293b; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
+  .wtable tr.wt-title th, .wtable tr.wt-title td { color: #dc2626; font-weight: 900; }
 </style>
 
 <header class="topbar">
@@ -1393,6 +1400,8 @@ a.instbtn { color: inherit; text-decoration: none; }
       ])
     ]));
     var sp = h("ul", { cls: "sponsors" }, S.income.filter(function (r) { return r.kind === "찬조"; }).map(function (r) { return h("li", null, [h("b", { text: r.name }), h("span", { cls: "num", text: man(r.amt) })]); }));
+    w.appendChild(worshipTable());
+    w.appendChild(prayerCard());
     w.appendChild(h("div", { cls: "card" }, [
       h("h3", { text: "찬조해 주신 분들" }),
       h("p", { cls: "muted", text: "아름다운 수양회를 위해 후원해 주셔서 감사합니다. 합계 " + man(pledged) + (chkById("p70").ok ? " (최종 확인 " + (chkById("p70").at || "").slice(5, 10).replace("-", "/") + ")" : " (10월 20일 현재)") }), sp,
@@ -2355,6 +2364,46 @@ a.instbtn { color: inherit; text-decoration: none; }
     if (!cid) return null;
     return h("a", { cls: "hostbtn", href: "#host", "aria-label": "총무 멘트 보기", text: "총무", onclick: function (e) { e.preventDefault(); hostJump = cid; go("host"); } });
   }
+  function prayerCard() {
+      var pr = h("div", { cls: "order" });
+      // 차량 기도는 버스·쏠라티를 한 줄에 나란히 (k가 "… 🚌 버스" / "… 🚐 쏠라티"인 짝)
+      var vhead = false;
+      S.prayers.forEach(function (r, i) {
+        if (/ 🚐 쏠라티$/.test(r.k)) return;
+        var m = r.k.match(/^(.*) 🚌 버스$/);
+        if (!m) { pr.appendChild(orow("pr" + i, r, "기도자")); return; }
+        var j = -1; S.prayers.forEach(function (x, k) { if (x.k === m[1] + " 🚐 쏠라티") j = k; });
+        if (!vhead) { vhead = true; pr.appendChild(h("div", { cls: "orow car2 chead" }, [h("span"), h("b", { text: "🚌 1호차 버스" }), h("b", { text: "🚐 2호차 쏠라티" })])); }
+        var cell = function (x, id) {
+          if (!x) return h("span");
+          if (!canWrite) return h("span", { cls: "oval" + (x.v ? "" : " soft"), text: x.v || "미정" });
+          var inp = h("textarea", { id: id, rows: "3", placeholder: "기도자", "aria-label": x.k });
+          inp.value = x.v || ""; inp.addEventListener("input", function () { x.v = inp.value; changed(); });
+          return inp;
+        };
+        pr.appendChild(h("div", { cls: "orow car2" }, [h("label", { "for": "pr" + i, text: m[1] }), cell(r, "pr" + i), cell(S.prayers[j], "pr" + j)]));
+      });
+      return h("div", { cls: "card glass" }, [h("h3", { text: "🙏 기도 담당" }), pr]);
+  }
+  function worshipTable() {
+    var rows = S.worship.map(function (r) {
+      var title = r.k === "설교 제목";
+      return h("tr", { cls: title ? "wt-title" : "" }, [h("th", { text: r.k.replace(/\s/g, "") }), h("td", { text: title ? "“" + r.v.replace(/^[\s"'“”]+|[\s"'“”]+$/g, "") + "”" : r.v })]);
+    });
+    return h("div", { cls: "card wtable" }, [h("h3", null, ["⛪ 개회예배 순서 ", h("small", { text: "1일차 저녁 · 세미나실" })]), h("table", null, [h("tbody", null, rows)])]);
+  }
+  // 일정 칸에 들어가는 기도 순서자 (S.prayers 번호)
+  var PRAYAT = { "d1-3": [1, 2], "d1-7": [3], "d1-13": [4], "d1-17": [5, 6], "d2-0": [7, 8], "d2-3": [9], "d2-8": [10], "d2-11": [11, 12],
+    "d3-0": [13, 14], "d3-3": [15], "d3-5": [16, 17], "d3-7": [18] };
+  function prayLine(key) {
+    var ix = PRAYAT[key]; if (!ix || !S.prayers) return null;
+    var rs = ix.map(function (i) { return S.prayers[i]; }).filter(Boolean); if (!rs.length) return null;
+    var lab = rs[0].k.replace(/ 🚌 버스$| 🚐 쏠라티$/, "").replace(/ 기도$/, "") + " 기도";
+    return h("div", { cls: "prayline" }, [h("b", { text: "🙏 " + lab }), h("span", null, rs.map(function (r) {
+      var car = / 🚌 버스$/.test(r.k) ? "🚌 " : / 🚐 쏠라티$/.test(r.k) ? "🚐 " : "";
+      return h("span", { cls: r.v ? "" : "soft", text: car + (r.v || "미정") });
+    }))]);
+  }
   function fellowCard(f) {
     if (!S[f[0]]) S[f[0]] = [1, 2, 3, 4, 5].map(function (n) { return { k: String(n), v: "" }; });
     var fe = h("div", { cls: "order" });
@@ -2384,7 +2433,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     day.stops.forEach(function (s, si) {
       if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: legText(s).replace(/^🚌 /, "🚌 " + depTxt(day.stops[si - 1], s)) })]));
       var what = h("div", { cls: "what" }, [h("div", { cls: "stitle" }, [statBadge(day.key + "-" + si), h("b", { text: s[1] })]), s[2] ? h("small", { text: s[2] }) : null,
-        stopExtra(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
+        prayLine(day.key + "-" + si), stopExtra(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "시각 확정" : "예상 시각" })]);
       items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) + (sjump === day.key + "-" + si ? " jump" : ""), id: "stop-" + day.key + "-" + si }, [when, what, h("div", { cls: "kcol" }, [h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] }), hostBtn(HOSTAT[day.key + "-" + si])])]));
@@ -2415,25 +2464,6 @@ a.instbtn { color: inherit; text-decoration: none; }
     w.appendChild(pptCard());
     // 친교의 시간 1~3: 순서는 1~5번 빈칸으로 두고 편집 화면에서 채운다
     w.appendChild(fellowCard(["fellow1", "친교의 시간 1 · 자기소개 + 선물 수집"]));
-    var pr = h("div", { cls: "order" });
-    // 차량 기도는 버스·쏠라티를 한 줄에 나란히 (k가 "… 🚌 버스" / "… 🚐 쏠라티"인 짝)
-    var vhead = false;
-    S.prayers.forEach(function (r, i) {
-      if (/ 🚐 쏠라티$/.test(r.k)) return;
-      var m = r.k.match(/^(.*) 🚌 버스$/);
-      if (!m) { pr.appendChild(orow("pr" + i, r, "기도자")); return; }
-      var j = -1; S.prayers.forEach(function (x, k) { if (x.k === m[1] + " 🚐 쏠라티") j = k; });
-      if (!vhead) { vhead = true; pr.appendChild(h("div", { cls: "orow car2 chead" }, [h("span"), h("b", { text: "🚌 1호차 버스" }), h("b", { text: "🚐 2호차 쏠라티" })])); }
-      var cell = function (x, id) {
-        if (!x) return h("span");
-        if (!canWrite) return h("span", { cls: "oval" + (x.v ? "" : " soft"), text: x.v || "미정" });
-        var inp = h("textarea", { id: id, rows: "3", placeholder: "기도자", "aria-label": x.k });
-        inp.value = x.v || ""; inp.addEventListener("input", function () { x.v = inp.value; changed(); });
-        return inp;
-      };
-      pr.appendChild(h("div", { cls: "orow car2" }, [h("label", { "for": "pr" + i, text: m[1] }), cell(r, "pr" + i), cell(S.prayers[j], "pr" + j)]));
-    });
-    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "기도 담당" }), pr]));
     v.appendChild(w);
     if (sjump) { var el = document.getElementById("stop-" + sjump); sjump = null; if (el) setTimeout(function () { el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 50); }
   }
