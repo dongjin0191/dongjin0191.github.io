@@ -774,6 +774,16 @@ a.instbtn { color: inherit; text-decoration: none; }
 .course summary .mv, .course summary .st { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 700; color: #e03131; line-height: 1.4; }
 .course summary .st { margin-top: 1px; color: #2f9e44; }
   .xbtn.ordx { background: #b45309; border-color: #b45309; color: #fff; }
+  .ferry { max-width: 100%; box-sizing: border-box; border-radius: 14px; overflow: hidden; border: 2px solid #1d4ed8; background: #fff; margin: 6px 0; }
+  .ferryhd { background: #1d4ed8; color: #fff; font-weight: 800; text-align: center; padding: 8px; font-size: 17px; letter-spacing: 1px; }
+  .ferry table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .ferry th small { display: block; font-size: 11px; color: #64748b; }
+  .ferry th { text-align: center; background: #e8efff; color: #1d4ed8; font-size: 13px; padding: 6px 4px; border-bottom: 1px solid #c7d6f5; }
+  .ferry td { text-align: center; font-size: 18px; font-weight: 700; padding: 7px 2px; border-top: 1px solid #e5ebf5; color: #334155; font-variant-numeric: tabular-nums; }
+  .ferry td + td, .ferry th + th { border-left: 1px solid #c7d6f5; }
+  .ferry td.ours { color: #fff; background: #dc2626; font-size: 20px; }
+  .ferry td em { display: block; font-style: normal; font-size: 12px; font-weight: 700; }
+  .ferryft { margin: 0; padding: 6px 8px; font-size: 12px; color: #64748b; text-align: center; background: #f8fafc; }
 </style>
 
 <header class="topbar">
@@ -845,7 +855,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       ["08:00", "✈ 제주공항 도착 · 탐나는전 지원금 수령", "08:15 버스 탑승", "move", "제주국제공항", "08:15", "✈ 비행 약 1시간 15분 · 김포→제주 450km", 1],
       ["08:25", "조식 · 제주 순풍해장국 공항본점 · 고사리해장국", "1인 12,000원", "meal", "제주 순풍해장국 본점", "09:10", "버스 약 10분 · 공항→해장국 2km"],
       ["09:25", "무지개 해안도로 산책 · 어영공원", "", "sight", "어영공원", "10:05", "버스 약 15분 · 4km"],
-      ["11:05", "한림항 도착 · ⛴ 들어가는 배 11:20 → 11:35", "신분증 필수 · 비양도해운 장석진 대표 010-8541-0866 · 매표 064-796-7522", "move", "한림항 비양도 도항선", "11:35", "버스 약 1시간 · 어영공원→한림항 30km", 1],
+      ["11:05", "한림항 도착 · ⛴ 들어가는 배 11:20 → 11:35", "신분증 필수", "move", "한림항 비양도 도항선", "11:35", "버스 약 1시간 · 어영공원→한림항 30km", 1],
       ["11:45", "중식 · 비양도 보말이야기 · 보말칼국수", "보말칼국수 12,000원 / 보말죽 15,000원 / 보말보리비빔밥 15,000원", "meal", "비양도 보말이야기", "12:25", "도보 약 10분"],
       ["12:25", "카페 · 제주올레커피숍", "", "rest", "비양도 올레커피숍", "12:50", "도보"],
       ["12:50", "🚲 자전거 둘레길 · 🎤 전국노래자랑 (자유시간) 동시 진행", "13:20 선착장 집결", "sight", "비양도", "13:20", ""],
@@ -1048,11 +1058,11 @@ a.instbtn { color: inherit; text-decoration: none; }
     "d1-3": { q: "제주국제공항", addr: "제주시 공항로 2", tel: "1661-2626", ok: 1 },
     "d1-4": { q: "제주 순풍해장국 본점", addr: "제주시 진군남4길 7-8 1층 (공항본점)", tel: "010-5036-6679" },
     "d1-5": { q: "어영공원" },
-    "d1-6": { q: "한림항 비양도 도항선", tel: "010-8541-0866", ok: 1 },
+    "d1-6": { q: "한림항 비양도 도항선", tel: "064-796-3515", ok: 1 },
     "d1-7": { q: "비양도 보말이야기", addr: "제주시 한림읍 비양도길 27", tel: "064-796-8422" },
     "d1-8": { q: "비양도 올레커피숍", addr: "제주시 한림읍 비양도길 24", tel: "0507-1487-7956" },
     "d1-9": { q: "비양도" },
-    "d1-10": { q: "한림항 비양도 도항선", tel: "010-8541-0866", ok: 1 },
+    "d1-10": { q: "한림항 비양도 도항선", tel: "064-796-3515", ok: 1 },
     "d1-11": { q: "한라수목원", addr: "제주시 수목원길 72" },
     "d1-12": { q: "노형수퍼마켙", addr: "제주시 노형로 89", tel: "064-713-1888", ok: 1 },
     "d1-13": { q: "늘봄흑돼지", addr: "제주시 한라대학로 12", tel: "064-744-9001" },
@@ -2233,7 +2243,9 @@ a.instbtn { color: inherit; text-decoration: none; }
     return d ? d.key : "d1";
   }
   // 장소별 연락처(전화·카톡)와 바로가기 버튼
+  var FERRY_CT = [["비양도해운", "064-796-3515"], ["장석진 대표이사", "010-8541-0866"], ["김미영 영업과장", "010-4406-4022"]];
   var CONTACTS = {
+    "d1-6": FERRY_CT, "d1-10": FERRY_CT,
     "d1-8": [["김미화 (제주올레커피숍)", "010-4162-7898"], ["비양도 이장님", "010-2911-8447"]],
     "d2-5": [["김난희 매니저 (플로이스트)", "010-9490-3056"]],
     "d2-9": [["델문도 매장", "064-702-0007"], ["델문도 담당자 (개인)", "010-7790-1250"], ["델문도 김현 팀장", "010-3281-9284"]],
@@ -2247,8 +2259,20 @@ a.instbtn { color: inherit; text-decoration: none; }
         /^01/.test(num) ? kkBtn("pbtn kakao", c[1], "", c[0] + " 카톡", c[0]) : h("button", { cls: "pbtn", type: "button", text: "번호 복사", onclick: function (e) { copy(c[1], e.currentTarget); } })]);
     }));
   }
+  // 비양도호 시간표: 우리가 탈 배(들어감 11:20, 나옴 13:35) 빨간색
+  function ferryTable() {
+    var go = ["09:20", "11:20", "13:20", "15:20"], back = ["09:35", "11:35", "13:35", "15:35"];
+    var rows = go.map(function (g, i) {
+      return h("tr", null, [h("td", { cls: g === "11:20" ? "ours" : "" }, [g, g === "11:20" ? h("em", { text: "⛴ 들어가는 배" }) : null]),
+        h("td", { cls: back[i] === "13:35" ? "ours" : "" }, [back[i], back[i] === "13:35" ? h("em", { text: "⛴ 나오는 배" }) : null])]);
+    });
+    return h("div", { cls: "ferry" }, [h("div", { cls: "ferryhd", text: "⛴ 비양도호 시간표" }),
+      h("table", null, [h("thead", null, [h("tr", null, [h("th", null, ["한림항 출발", h("small", { text: "들어감" })]), h("th", null, ["비양도 출발", h("small", { text: "나옴" })])])]), h("tbody", null, rows)]),
+      h("p", { cls: "ferryft", text: "배 약 15분 · 사정에 따라 증편 운항 · 신분증 필수" })]);
+  }
   function stopExtra(key) {
     var out = [];
+    if (key === "d1-6" || key === "d1-10") out.push(ferryTable());
     if (CONTACTS[key]) out.push(contactBox(CONTACTS[key]));
     var MK = { "d1-8": "m2", "d2-5": "m3", "d2-9": "m3b", "d3-4": "m4" }[key];
     var mm = MK ? menus().filter(function (m) { return m.id === MK; })[0] : null;
