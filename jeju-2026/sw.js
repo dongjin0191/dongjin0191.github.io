@@ -9,3 +9,11 @@ self.addEventListener('fetch', function (e) {
   var fresh = req.mode === 'navigate' || (url.origin === self.location.origin && /\.(html|txt|json|webmanifest)$|\/$/.test(url.pathname));
   e.respondWith((fresh ? fetch(req.url, { cache: 'no-store', credentials: 'same-origin' }) : fetch(req)).catch(function () { return new Response('오프라인입니다. 인터넷에 연결한 뒤 다시 열어주세요.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }); }));
 });
+// 새 안내 알림을 누르면 앱의 안내 탭을 연다
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window' }).then(function (cs) {
+    for (var i = 0; i < cs.length; i++) if ('focus' in cs[i]) { cs[i].navigate('./#prep'); return cs[i].focus(); }
+    return self.clients.openWindow('./#prep');
+  }));
+});

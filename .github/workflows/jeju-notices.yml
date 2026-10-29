@@ -1,0 +1,37 @@
+name: 제주수양회 안내 모으기
+
+# 총무가 앱·가이드북의 '안내 올리기'로 '[안내] …' 이슈를 만들면
+# jeju-2026/notices.json 을 다시 만들어 앱의 안내 탭 맨 위에 1~2분 안에 보이게 합니다.
+# 이슈를 고치면 고친 내용으로, 닫으면 앱에서 사라집니다.
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: jeju-notices
+  cancel-in-progress: false
+
+jobs:
+  notices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/jeju_notices_sync.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 바뀐 것이 있으면 저장
+        run: |
+          git add jeju-2026/notices.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Sync Jeju retreat notices from issues'
+          for i in 1 2 3; do git pull --rebase -q && git push && exit 0; sleep 3; done; exit 1
