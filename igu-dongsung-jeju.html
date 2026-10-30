@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시화산노회 이구동성 게임</title>
+<style>
+:root{--navy:#17324d;--blue:#246b8f;--gold:#f2b84b;--paper:#fffdf7;--ink:#23313d}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#e9f4f7,#fff6df);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);display:grid;place-items:center;padding:18px}
+main{width:min(900px,100%);background:var(--paper);border:1px solid #e5e0d2;border-radius:28px;box-shadow:0 18px 55px #17324d20;padding:clamp(20px,4vw,42px);text-align:center}
+.kicker{color:var(--blue);font-weight:800;letter-spacing:.12em;font-size:.9rem}
+h1{margin:10px 0 6px;color:var(--navy);font-size:clamp(1.8rem,5vw,3rem)}
+.sub{color:#687985;margin:0 0 22px}
+.meta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.pill{background:#edf4f6;border-radius:999px;padding:8px 14px;font-weight:700;color:#31566a}
+.card{background:linear-gradient(145deg,#17324d,#246b8f);color:white;border-radius:24px;min-height:280px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:25px;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;width:260px;height:260px;border:1px solid #ffffff22;border-radius:50%;right:-100px;top:-120px}
+.num{font-size:1rem;color:#d9eaf1;font-weight:700}
+.word{font-size:clamp(2.8rem,11vw,6.5rem);font-weight:900;letter-spacing:.13em;line-height:1.2;margin:22px 0;word-break:keep-all}
+.hint{color:#d9eaf1;font-size:1rem}
+.answer{font-size:1.25rem;font-weight:800;color:#ffe1a1;min-height:1.7em;margin-top:12px}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0 10px}
+button{border:0;border-radius:14px;padding:14px 22px;font-size:1rem;font-weight:800;cursor:pointer;background:#e8eef1;color:var(--navy)}
+button.primary{background:var(--gold);color:#382a12}
+button.dark{background:var(--navy);color:white}
+button:focus-visible{outline:4px solid #f2b84b;outline-offset:3px}
+.bottom{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+select{border:1px solid #cbd7dc;border-radius:12px;padding:11px 14px;font-size:1rem;background:white;color:var(--ink)}
+.note{font-size:.9rem;color:#71808a;margin-top:22px;line-height:1.6}
+@media(max-width:520px){main{border-radius:20px}.card{min-height:240px}.word{letter-spacing:.08em}button{flex:1 1 40%;padding:13px 10px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">시화산노회 · 제주 여행 특별판</div>
+  <h1>이구동성 게임</h1>
+  <p class="sub">마음 모아 크게 외쳐 보세요!</p>
+  <div class="meta">
+    <span class="pill" id="progress">1 / 50</span>
+    <span class="pill" id="category">전체 문제</span>
+    <span class="pill">네 글자 제시어</span>
+  </div>
+  <section class="card" aria-live="polite">
+    <div class="num" id="number">QUESTION 01</div>
+    <div class="word" id="word">주일예배</div>
+    <div class="hint" id="hint">모두 함께 같은 목소리로!</div>
+    <div class="answer" id="answer"></div>
+  </section>
+  <div class="controls">
+    <button onclick="prev()">← 이전</button>
+    <button class="primary" onclick="next()">다음 문제 →</button>
+    <button class="dark" onclick="shuffle()">섞어서 시작</button>
+  </div>
+  <div class="bottom">
+    <select id="filter" onchange="setFilter()">
+      <option value="all">전체 50문항</option>
+      <option value="faith">신앙·교회</option>
+      <option value="jeju">제주 관련</option>
+    </select>
+    <button onclick="toggleAnswer()">정답/진행 보기</button>
+    <button onclick="toggleFullscreen()">전체 화면</button>
+  </div>
+  <p class="note">진행 방법: 화면의 네 글자 제시어를 보고 사회자의 신호에 맞춰 다 함께 외쳐 보세요.<br>팀별 대항전으로 진행하거나, 제시어와 관련된 추억을 나누어도 좋습니다.</p>
+</main>
+<script>
+const questions = [
+["주일예배","faith"],["새벽기도","faith"],["성경말씀","faith"],["찬양인도","faith"],["십자가길","faith"],
+["예수사랑","faith"],["주님은혜","faith"],["성령충만","faith"],["천국소망","faith"],["믿음생활","faith"],
+["감사기도","faith"],["교회식구","faith"],["사랑실천","faith"],["은혜충만","faith"],["부활절기","faith"],
+["목장모임","faith"],["전도대상","faith"],["선교헌금","faith"],["기도응답","faith"],["찬송가책","faith"],
+["성도의길","faith"],["주님찬양","faith"],["하나님뜻","faith"],["복음전파","faith"],["평안가득","faith"],
+["제주감귤","jeju"],["돌하르방","jeju"],["우도땅콩","jeju"],["성산일출","jeju"],["섭지코지","jeju"],
+["협재해변","jeju"],["함덕해변","jeju"],["정방폭포","jeju"],["제주바다","jeju"],["고기국수","jeju"],
+["갈치조림","jeju"],["한라산길","jeju"],["오름산책","jeju"],["해녀문화","jeju"],["제주여행","jeju"],
+["유채꽃밭","jeju"],["푸른바다","jeju"],["바다풍경","jeju"],["섬마을길","jeju"],["귤향가득","jeju"],
+["억새물결","jeju"],["숲길산책","jeju"],["검은모래","jeju"],["용암동굴","jeju"],["제주올레","jeju"]
+];
+let list=[...questions], index=0, answerShown=false;
+const $=id=>document.getElementById(id);
+function render(){
+ const [word,cat]=list[index];
+ $("word").textContent=word;
+ $("number").textContent=`QUESTION ${String(index+1).padStart(2,"0")}`;
+ $("progress").textContent=`${index+1} / ${list.length}`;
+ $("category").textContent=cat==="faith"?"신앙·교회":"제주 관련";
+ $("answer").textContent=answerShown?(cat==="faith"?"신앙·교회 주제":"제주 관련 주제"):"";
+ $("hint").textContent=answerShown?"제시어를 보고 떠오르는 이야기도 나눠 보세요.":"모두 함께 같은 목소리로!";
+}
+function next(){index=(index+1)%list.length;answerShown=false;render()}
+function prev(){index=(index-1+list.length)%list.length;answerShown=false;render()}
+function shuffle(){list=[...list].sort(()=>Math.random()-.5);index=0;answerShown=false;render()}
+function setFilter(){
+ const f=$("filter").value;
+ list=questions.filter(q=>f==="all"||q[1]===f);
+ index=0;answerShown=false;render();
+}
+function toggleAnswer(){answerShown=!answerShown;render()}
+function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.()}else{document.exitFullscreen?.()}}
+document.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();next()}if(e.key==="ArrowLeft")prev()});
+render();
+</script>
+</body>
+</html>
