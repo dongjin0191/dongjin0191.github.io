@@ -3316,6 +3316,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   function roomLabel() { var f = S.rooms.filter(function (r) { return r.no; }).length; return f ? f + " / " + S.rooms.length + "실 호실 기입" : S.rooms.length + "실 배정 · 호실은 현장 배부"; }
   function renderRooms(w) {
     w.appendChild(h("h2", { text: "숙소 방배정표 · 라마다 함덕" }));
+    w.appendChild(h("p", { cls: "spnote", text: "※ 숙소 배정 시 같은 교회분들은 최대한 가까운 옆방으로 배정해 주세요." }));
     var filled = S.rooms.filter(function (r) { return r.no; }).length;
     w.appendChild(h("p", { cls: "roomcount" }, [h("b", { cls: "num", text: filled + " / " + S.rooms.length }), " 실 호실 번호 기입 · 호실 번호는 당일 현장에서 배부합니다"]));
     w.appendChild(h("p", { cls: "muted", text: "총 " + S.rooms.length + "실 예약 · 2인 1실 21실(부부 18실 + 함께 쓰는 방 3실) + 독방 2실(김종수 목사·김충현 목사, 추가 요금). " + (canWrite ? "호실 번호를 적고 함께 쓸 분을 고르세요." : "") }));
