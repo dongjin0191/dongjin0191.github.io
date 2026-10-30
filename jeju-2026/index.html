@@ -888,6 +888,20 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .fruit-b.on .fruit-top i { color: #15803d; }
 .fwrow { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
 .fwrow.nolab { grid-template-columns: 1fr; }
+.bingo h3 { margin-bottom: 8px; }
+.bgtabs { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 4px; }
+.bgtabs button, .bgmode button { flex: none; border: 2px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 11px; font: inherit; font-size: 13px; font-weight: 800; color: var(--navy); cursor: pointer; }
+.bgtabs button[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+.bgmode { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+.bgmode button[aria-pressed="true"] { background: #e7f5ff; border-color: #1864ab; color: #1864ab; }
+.bggrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.bgc { aspect-ratio: 1; min-width: 0; border: 2px solid #cbd5e1; border-radius: 10px; background: #fff; font: inherit; font-size: 13px; font-weight: 800; line-height: 1.2; color: #1e293b; text-align: center; padding: 3px; resize: none; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+.bggrid.mark .bgc { cursor: pointer; }
+.bgc.on { background: #ffd43b; border-color: #f08c00; }
+.bgc.on.line { background: #ff6b6b; border-color: #c92a2a; color: #fff; }
+.bgcount { text-align: center; font-weight: 800; font-size: 17px; margin: 10px 0 6px; color: var(--navy); } .bgcount b { font-size: 26px; color: #c92a2a; }
+.bgcount.hit { background: #fff5f5; border-radius: 10px; padding: 4px; }
+.bgtools { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .fwq { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; align-items: stretch; } .fwqbtn.src { background: #fff; color: #1864ab; border: 2px solid #1864ab; } .fwqbtn { background: #1864ab; color: #fff; border-color: #1864ab; font-weight: 800; white-space: nowrap; }
 .fwrow.sub { padding-left: 22px; } .fwrow.sub .fwtxt { font-weight: 600; background: #f8f9ff; }
 .fwk { font-weight: 900; color: var(--navy); padding-top: 7px; text-align: center; }
@@ -2626,6 +2640,54 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     if (/몸으로/.test(v || "")) return [BC_URL, BC_URL];
     return null;
   }
+  // 빙고판: 각자 휴대폰에만 저장(localStorage). 5판, 판마다 25칸에 적고 불린 칸을 눌러 색칠
+  var BG_KEY = "jeju-bingo-v1", BG_R = ["1판 숫자", "2판 성경 인물", "3판 참석자 이름", "4판 교회·노회", "5판 별명"], bgRound = 0, bgMode = "w";
+  function bgLoad() { var d = null; try { d = JSON.parse(lsGet(BG_KEY) || "null"); } catch (e) {} if (!d || !d.r) d = { r: [] }; for (var i = 0; i < 5; i++) if (!d.r[i]) d.r[i] = { c: [], m: [] }; return d; }
+  function bgLines(m) {
+    var L = [], n = 0, i, j;
+    for (i = 0; i < 5; i++) { L.push([0, 1, 2, 3, 4].map(function (j) { return i * 5 + j; })); L.push([0, 1, 2, 3, 4].map(function (j) { return j * 5 + i; })); }
+    L.push([0, 6, 12, 18, 24]); L.push([4, 8, 12, 16, 20]);
+    var on = {}; L.forEach(function (l) { if (l.every(function (k) { return m[k]; })) { n++; l.forEach(function (k) { on[k] = 1; }); } });
+    return { n: n, on: on };
+  }
+  function bingoCard() {
+    var D = bgLoad(), box = h("div", { cls: "card glass bingo" });
+    function save() { lsSet(BG_KEY, JSON.stringify(D)); }
+    function draw() {
+      box.textContent = "";
+      var R0 = D.r[bgRound], ln = bgLines(R0.m);
+      box.appendChild(h("h3", { text: "🎯 내 빙고판 · 휴대폰에 저장됩니다" }));
+      box.appendChild(h("div", { cls: "bgtabs" }, BG_R.map(function (lab, i) {
+        return h("button", { type: "button", "aria-pressed": String(i === bgRound), text: lab, onclick: function () { bgRound = i; bgMode = D.r[i].c.filter(Boolean).length < 25 ? "w" : "m"; draw(); } });
+      })));
+      box.appendChild(h("div", { cls: "bgmode" }, [
+        h("button", { type: "button", "aria-pressed": String(bgMode === "w"), text: "✏️ 칸 적기", onclick: function () { bgMode = "w"; draw(); } }),
+        h("button", { type: "button", "aria-pressed": String(bgMode === "m"), text: "✅ 불린 칸 누르기", onclick: function () { bgMode = "m"; draw(); } })
+      ]));
+      var grid = h("div", { cls: "bggrid" + (bgMode === "m" ? " mark" : "") });
+      for (var k = 0; k < 25; k++) (function (k) {
+        var cls = "bgc" + (R0.m[k] ? " on" : "") + (ln.on[k] ? " line" : "");
+        if (bgMode === "w") {
+          var inp = h("textarea", { cls: cls, rows: "2", maxlength: "12", "aria-label": (k + 1) + "번 칸" }); inp.value = R0.c[k] || "";
+          inp.addEventListener("input", function () { R0.c[k] = inp.value; save(); });
+          grid.appendChild(inp);
+        } else grid.appendChild(h("button", { type: "button", cls: cls, text: R0.c[k] || "", onclick: function () { R0.m[k] = !R0.m[k]; save(); draw(); } }));
+      })(k);
+      box.appendChild(grid);
+      box.appendChild(h("p", { cls: "bgcount" + (ln.n ? " hit" : "") }, [ln.n >= 5 ? "🎉 " : "", "빙고 ", h("b", { cls: "num", text: String(ln.n) }), "줄", ln.n >= 5 ? " · 빙고! 손 들어 주세요" : ""]));
+      box.appendChild(h("div", { cls: "bgtools" }, [
+        bgRound === 0 ? h("button", { cls: "btn", type: "button", text: "🔀 1~25 자동 채우기", onclick: function () {
+          var a = []; for (var i = 1; i <= 25; i++) a.push(String(i));
+          for (var j = 24; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), x = a[j]; a[j] = a[r]; a[r] = x; }
+          R0.c = a; R0.m = []; save(); bgMode = "m"; draw(); } }) : null,
+        h("button", { cls: "btn", type: "button", text: "색칠 지우기", onclick: function () { R0.m = []; save(); draw(); } }),
+        h("button", { cls: "btn", type: "button", text: "판 새로 쓰기", onclick: function () { if (!confirm(BG_R[bgRound] + " 판을 모두 지울까요?")) return; R0.c = []; R0.m = []; save(); bgMode = "w"; draw(); } })
+      ]));
+      box.appendChild(h("p", { cls: "muted", text: "① '칸 적기'에서 25칸을 채우고 ② 게임이 시작되면 '불린 칸 누르기'로 바꿔 불린 칸을 누르세요. 가로·세로·대각선 5줄을 먼저 채우면 빙고!" }));
+    }
+    draw();
+    return box;
+  }
   function fellowCard(f) {
     if (!S[f[0]]) S[f[0]] = [1, 2, 3, 4, 5].map(function (n) { return { k: String(n), v: "" }; });
     var fe = h("div", { cls: "order" });
@@ -2677,7 +2739,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       if (day.key === "d1" && si === 6) { items.push(rainCard()); items.push(byEvItem(0)); }
       if (day.key === "d1" && si === 9) { items.push(byEvItem(1)); items.push(byEvItem(2)); items.push(byEvItem(3)); }
       // 친교의 시간 2는 플로이스트 뒤, 3은 델문도 뒤
-      if (day.key === "d2" && si === 5) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow2", "🤝 친교의 시간 2 · 빙고게임 · 플로이스트"])]));
+      if (day.key === "d2" && si === 5) { items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow2", "🤝 친교의 시간 2 · 빙고게임 · 플로이스트"])])); items.push(h("li", { cls: "fellowli" }, [bingoCard()])); }
       if (day.key === "d2" && si === 10) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow3", "🤝 친교의 시간 3 · 호텔 세미나실"])]));
     });
     w.appendChild(routeCard([day.key]));
