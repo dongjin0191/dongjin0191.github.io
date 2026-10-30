@@ -226,11 +226,13 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .pav.none { display: inline-grid; place-items: center; font-weight: 800; font-size: 48px; color: #fff; background: #4c6ef5; cursor: default; }
 .pav.none.f { background: #e64980; }
 .pmini small { color: #555; }
-ul.tri { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; }
+ul.tri { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 4px; }
 ul.tri .pmini { display: flex; flex-wrap: nowrap; align-items: baseline; gap: 3px; padding: 5px 5px; min-width: 0; white-space: nowrap; overflow: hidden; }
 ul.tri .pmini .no { font-size: 11px; min-width: 0; }
-ul.tri .pmini b { font-size: 15px; }
-ul.tri .pmini span:last-child { font-size: 11.5px; color: #555; }
+ul.tri .pmini b { font-size: 14px; }
+ul.tri .pmini span:last-child { font-size: 10.5px; color: #555; }
+ul.tri .pmini { padding: 5px 3px !important; gap: 2px !important; }
+ul.tri .pmini.blank { visibility: hidden; }
 .pmini .ch { color: var(--muted); font-size: 13px; }
 .pmini .agb { margin-left: auto; color: #1864ab; font-weight: 700; }
 .sqbox { padding: 12px; }
@@ -3157,7 +3159,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       ul.textContent = "";
       var inF = function (p) { return (!pfil || SCD()[p.n] === pfil) && (!q || [p.name, p.church, p.phone, p.role, String(p.n)].join(" ").indexOf(q) !== -1); };
       if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthOf(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
-      if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
+      if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role.replace("원로목사", "원로") })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); else { var its = Array.prototype.slice.call(ul.children), rows = Math.ceil(its.length / 4); ul.textContent = ""; for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < 4; cc++) ul.appendChild(its[cc * rows + rr] || h("li", { cls: "pmini blank" })); } return; }
       var LIST = S.people;
       LIST.forEach(function (p, i) {
         if (!inF(p)) return;
