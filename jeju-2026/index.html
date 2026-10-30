@@ -870,6 +870,17 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .evnames { max-height: 300px; overflow-y: auto; padding: 2px; border: 1px solid var(--line); border-radius: 12px; }
 .evnames .ordopt { min-height: 42px; font-size: 14px; }
 .evnames .ordopt.signed small { color: #16a34a; font-size: 12px; }
+.fruit { margin-top: 6px; border: 2px solid #fdba74; border-radius: 12px; background: #fff7ed; padding: 8px; }
+.fruit-h { margin: 0 0 6px; display: flex; justify-content: space-between; align-items: center; color: #c2410c; }
+.fruit-l { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.fruit-b { width: 100%; display: grid; gap: 1px; text-align: left; border: 1px solid #fca5a5; background: #fff; border-radius: 8px; padding: 4px 6px; font: inherit; color: #1e293b; }
+.fruit-b:disabled { opacity: 1; }
+.fruit-top { display: flex; justify-content: space-between; align-items: center; gap: 2px; }
+.fruit-top b { font-size: 13px; color: #9a3412; white-space: nowrap; }
+.fruit-top i { font-style: normal; font-size: 11px; font-weight: 800; color: #b91c1c; white-space: nowrap; }
+.fruit-b small { font-size: 12px; font-weight: 700; letter-spacing: -0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fruit-b.on { border-color: #86efac; background: #dcfce7; }
+.fruit-b.on .fruit-top i { color: #15803d; }
 </style>
 
 <header class="topbar">
@@ -2432,7 +2443,27 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     }
     if (key === "d1-3") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goTamna, text: "📋 탐나순 명단 보기 (신청서 순서 일치)" }));
     if (key === "d1-14" || key === "d1-17" || key === "d2-11") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goRooms, text: "🛏 숙소 배정표 바로가기 (" + roomLabel() + ")" }));
+    if (key === "d1-17" || key === "d2-11") out.push(fruitBox(key.slice(0, 2)));
     return out.length ? h("div", { cls: "sxtra" }, out) : null;
+  }
+  // 과일 봉지 수령: 숙소 배정표(S.rooms)를 그대로 따라 방마다 수령/미수령. 총무 화면에서만 누를 수 있다
+  function fruitBox(day) {
+    if (!S.fruit) S.fruit = {};
+    var F = S.fruit[day] || (S.fruit[day] = {});
+    var rooms = (S.rooms || []).filter(function (r) { return r.a || r.b || r.c; });
+    var got = rooms.filter(function (r) { return F["a" + (r.a || r.b || r.c)]; }).length;
+    var box = h("div", { cls: "fruit" }, [h("p", { cls: "fruit-h" }, [h("b", { text: "🍊 과일 봉지 수령" }), h("span", { cls: "num", text: got + " / " + rooms.length + "실" })])]);
+    var ul = h("ul", { cls: "fruit-l" });
+    rooms.forEach(function (r, i) {
+      var id = "a" + (r.a || r.b || r.c), on = !!F[id];
+      var names = [r.a, r.b, r.c].filter(Boolean).map(function (n) { var p = byN(n); return p ? p.name : ""; }).filter(Boolean).join("·");
+      ul.appendChild(h("li", null, [h("button", { type: "button", cls: "fruit-b" + (on ? " on" : ""), disabled: !canWrite, "aria-pressed": String(on), "aria-label": (r.no ? r.no + "호 " : "") + names + (on ? " 수령" : " 미수령"),
+        onclick: function () { if (F[id]) delete F[id]; else F[id] = 1; changed(); var y = window.scrollY; renderSched(); window.scrollTo(0, y); } },
+        [h("span", { cls: "fruit-top" }, [h("b", { cls: "num", text: r.no ? r.no + "호" : (i + 1) + "번 방" }), h("i", { text: on ? "✔ 수령" : "미수령" })]), h("small", { text: names })])]));
+    });
+    box.appendChild(ul);
+    if (!rooms.some(function (r) { return r.no; })) box.appendChild(h("small", { cls: "muted", text: "호실 번호는 숙소 배정표에 적으면 여기에도 바로 뜹니다." }));
+    return box;
   }
   function stopNote(key) {
     var out = [];
