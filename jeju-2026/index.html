@@ -3356,13 +3356,13 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return ax - ay || tier(x) - tier(y) || x.n - y.n;
     });
   }
-  // 화면용: 520312 → 1952.03.12생 · 만 74세 (총무 계정에서만 값이 있다)
+  // 화면용: 520312 → 1952-03 / 74세 (총무 계정에서만 값이 있다)
   // 나이는 수양회 첫날(2026-11-02) 기준 만 나이
   function birthTxt(p) {
     var b = birthOf(p); if (!b) return "";
     var y = (+b.slice(0, 2) > 30 ? 1900 : 2000) + +b.slice(0, 2), md = b.slice(2, 6);
     var age = 2026 - y - (md > "1102" ? 1 : 0);
-    return y + "." + b.slice(2, 4) + "." + b.slice(4, 6) + "생 · 만 " + age + "세";
+    return y + "-" + b.slice(2, 4) + " / " + age + "세";
   }
   function birthOf(p) {
     if (!IS_OWNER || !ROSTER || !ROSTER.b) return "";
