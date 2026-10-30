@@ -906,6 +906,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .bgc.on.line { background: #ff6b6b; border-color: #c92a2a; color: #fff; }
 .bgcount { text-align: center; font-weight: 800; font-size: 17px; margin: 10px 0 6px; color: var(--navy); } .bgcount b { font-size: 26px; color: #c92a2a; }
 .bgcount.hit { background: #fff5f5; border-radius: 10px; padding: 4px; }
+.bgclr { font-size: 13px !important; opacity: .8; }
 .bgtools { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .fwq { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; align-items: stretch; } .fwqbtn.src { background: #fff; color: #1864ab; border: 2px solid #1864ab; } .fwqbtn { background: #1864ab; color: #fff; border-color: #1864ab; font-weight: 800; white-space: nowrap; }
 .fwrow.sub { padding-left: 22px; } .fwrow.sub .fwtxt { font-weight: 600; background: #f8f9ff; }
@@ -2693,7 +2694,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       })));
       box.appendChild(h("div", { cls: "bgmode" }, [
         h("button", { type: "button", "aria-pressed": String(bgMode === "w"), text: "✏️ 칸 적기", onclick: function () { bgMode = "w"; draw(); } }),
-        h("button", { type: "button", "aria-pressed": String(bgMode === "m"), text: "✅ 불린 칸 누르기", onclick: function () { bgMode = "m"; draw(); } })
+        h("button", { type: "button", "aria-pressed": String(bgMode === "m"), text: "🖍 칸 색칠하기", onclick: function () { bgMode = "m"; draw(); } })
       ]));
       if (bgRound === 5 && IS_OWNER) {
         var nk = h("textarea", { cls: "bgnick", rows: "4", placeholder: "별명을 한 줄에 하나씩 (또는 쉼표로) 적으세요. 예: 웃음천사, 기도용사" });
@@ -2728,7 +2729,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       box.appendChild(h("p", { cls: "bgcount" + (ln.n ? " hit" : "") }, [ln.n >= 5 ? "🎉 " : "", "빙고 ", h("b", { cls: "num", text: String(ln.n) }), "줄", ln.n >= 5 ? " · 빙고! 손 들어 주세요" : ""]));
       box.appendChild(h("div", { cls: "bgtools" }, [
         bgRound === 5 ? null : h("button", { cls: "btn", type: "button", text: "🔀 이 판만 다시 섞기", onclick: function () { D.r[bgRound] = bgDeal(bgRound); save(); bgMode = "m"; draw(); } }),
-        h("button", { cls: "btn", type: "button", text: "색칠 지우기", onclick: function () { R0.m = R0.c.map(function (x) { return x === "⭐보너스"; }); save(); draw(); } })
+        h("button", { cls: "btn bgclr", type: "button", text: "색칠 모두 지우기", onclick: function () { R0.m = R0.c.map(function (x) { return x === "⭐보너스"; }); save(); draw(); } })
       ]));
       box.appendChild(h("p", { cls: "muted", text: "'셋팅하기'를 누르면 6판이 내 휴대폰에서만 무작위로 채워집니다(사람마다 다름). 불린 칸을 누르면 색이 바뀌고, 가로·세로·대각선 5줄을 먼저 채우면 빙고! 직접 고치려면 '칸 적기'를 누르세요." }));
     }
