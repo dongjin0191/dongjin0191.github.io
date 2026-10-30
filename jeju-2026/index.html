@@ -2728,7 +2728,11 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       box.appendChild(grid);
       box.appendChild(h("p", { cls: "bgcount" + (ln.n ? " hit" : "") }, [ln.n >= 5 ? "🎉 " : "", "빙고 ", h("b", { cls: "num", text: String(ln.n) }), "줄", ln.n >= 5 ? " · 빙고! 손 들어 주세요" : ""]));
       box.appendChild(h("div", { cls: "bgtools" }, [
-        bgRound === 5 ? null : h("button", { cls: "btn", type: "button", text: "🔀 이 판만 다시 섞기", onclick: function () { D.r[bgRound] = bgDeal(bgRound); save(); bgMode = "m"; draw(); } }),
+        h("button", { cls: "btn", type: "button", text: "🔀 이 판만 다시 섞기", onclick: function () {
+          // 6판은 지금 적힌 별명(직접 적기든 총무 목록이든) 그대로 자리만 섞는다
+          if (bgRound === 5) { var cc = []; for (var q = 0; q < 25; q++) cc.push(R0.c[q] || ""); cc = bgShuf(cc); D.r[5] = { c: cc, m: cc.map(function (x) { return x === "⭐보너스"; }), nv: R0.nv }; }
+          else D.r[bgRound] = bgDeal(bgRound);
+          save(); bgMode = "m"; draw(); } }),
         h("button", { cls: "btn bgclr", type: "button", text: "색칠 모두 지우기", onclick: function () { R0.m = R0.c.map(function (x) { return x === "⭐보너스"; }); save(); draw(); } })
       ]));
       box.appendChild(h("p", { cls: "muted", text: "'셋팅하기'를 누르면 6판이 내 휴대폰에서만 무작위로 채워집니다(사람마다 다름). 불린 칸을 누르면 색이 바뀌고, 가로·세로·대각선 5줄을 먼저 채우면 빙고! 직접 고치려면 '칸 적기'를 누르세요." }));
