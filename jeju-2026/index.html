@@ -2619,7 +2619,13 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return h("span", { cls: r.v ? "" : "soft", text: car + (r.v || "미정") });
     }))]);
   }
-  var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html";
+  // 게임 칸 → [문제 페이지, 소스 페이지]
+  var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html", BC_URL = "https://dongjin0191.github.io/games/bible-charades/";
+  function gameOf(v) {
+    if (/이구동성|초성/.test(v || "")) return [IGU_URL, IGU_URL];
+    if (/몸으로/.test(v || "")) return [BC_URL, BC_URL];
+    return null;
+  }
   function fellowCard(f) {
     if (!S[f[0]]) S[f[0]] = [1, 2, 3, 4, 5].map(function (n) { return { k: String(n), v: "" }; });
     var fe = h("div", { cls: "order" });
@@ -2636,8 +2642,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       });
       fe.appendChild(h("div", { cls: "fwrow" + (circ || sub ? " nolab" : "") + (sub ? " sub" : "") + (r.k === "※" ? " note" : "") }, [circ || sub ? null : h("span", { cls: "fwk", text: r.k }),
         // 이구동성·곡 초성 문제 페이지는 총무 계정에서만 버튼이 보인다
-        IS_OWNER && /이구동성|초성/.test(r.v || "") ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(IGU_URL); } }),
-          h("button", { cls: "btn fwqbtn src", type: "button", text: "<소스>", onclick: function () { openOut(IGU_URL); } })]) : txt]));
+        IS_OWNER && gameOf(r.v) ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(gameOf(r.v)[0]); } }),
+          h("button", { cls: "btn fwqbtn src", type: "button", text: "<소스>", onclick: function () { openOut(gameOf(r.v)[1]); } })]) : txt]));
     });
     return h("div", { cls: "card glass" }, [h("h3", { text: f[1] }), fe]);
   }
