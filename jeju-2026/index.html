@@ -832,9 +832,14 @@ a.instbtn { color: inherit; text-decoration: none; }
 .wtable tr.wt-verse td { padding: 4px 0 10px; }
 .wtable tr.wt-verse p { margin: 0; padding: 10px 12px; background: #f6f8fc; border-left: 3px solid #c8d6ee; border-radius: 8px; white-space: pre-line; font-size: 14px; line-height: 1.6; color: #333; }
 .order.prlist { gap: 4px; }
-.order.prlist .orow { grid-template-columns: 78px 1fr; gap: 6px; }
+.order.prlist .orow { grid-template-columns: 54px 1fr; gap: 4px; }
+.order.prlist .orow.vanrow { margin-top: -2px; }
+.order.prlist .prval { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.order.prlist .prval > input, .order.prlist .prval > .oval { flex: 1; min-width: 0; }
+.order.prlist .cartag { flex: none; font-size: 11px; font-weight: 800; padding: 3px 4px; letter-spacing: -0.5px; border-radius: 6px; background: #e0ecff; color: #1d4ed8; white-space: nowrap; }
+.order.prlist .cartag.van { background: #fef3c7; color: #b45309; }
 .order.prlist .orow label { font-size: 13.5px; white-space: nowrap; }
-.order.prlist .orow input, .order.prlist .orow .oval { font-size: 14.5px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.3; padding: 6px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order.prlist .orow input, .order.prlist .orow .oval { font-size: 14.5px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.3; padding: 6px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 
 <header class="topbar">
@@ -2400,10 +2405,15 @@ a.instbtn { color: inherit; text-decoration: none; }
   }
   function prayerCard() {
       var pr = h("div", { cls: "order" });
-      // 한 사람당 한 줄 · 글씨 크기 통일 (차량 기도는 🚌/🚐로 나눠 한 줄씩)
+      // 한 사람당 한 줄 · 글씨 크기 통일. 차량 기도는 같은 날·때 아래 🚌 버스 / 🚐 쏠라티 두 줄
       S.prayers.forEach(function (r, i) {
-        var lab = r.k.replace(/ 기도$/, "").replace(/ 🚌 버스$/, " 🚌").replace(/ 🚐 쏠라티$/, " 🚐");
-        pr.appendChild(orow("pr" + i, { k: lab, get v() { return r.v; }, set v(x) { r.v = x; } }, "기도자"));
+        var bus = / 🚌 버스$/.test(r.k), van = / 🚐 쏠라티$/.test(r.k);
+        var lab = van ? "" : r.k.replace(/ 기도$/, "").replace(/ 🚌 버스$/, "");
+        var val;
+        if (canWrite) { val = h("input", { id: "pr" + i, placeholder: "기도자", "aria-label": r.k }); val.value = r.v || ""; val.addEventListener("input", function () { r.v = val.value; changed(); }); }
+        else val = h("span", { cls: "oval" + (r.v ? "" : " soft"), text: r.v || "미정" });
+        pr.appendChild(h("div", { cls: "orow" + (van ? " vanrow" : "") }, [h("label", { "for": "pr" + i, text: lab }),
+          h("div", { cls: "prval" }, [bus || van ? h("span", { cls: "cartag " + (van ? "van" : "bus"), text: van ? "쏠라티" : "버스" }) : null, val])]));
       });
       pr.classList.add("prlist");
       return h("div", { cls: "card glass" }, [h("h3", { text: "🙏 기도 담당" }), pr]);
