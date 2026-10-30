@@ -2635,8 +2635,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         txt.textContent = ""; txt.appendChild(ta); ta.focus();
       });
       fe.appendChild(h("div", { cls: "fwrow" + (circ || sub ? " nolab" : "") + (sub ? " sub" : "") + (r.k === "※" ? " note" : "") }, [circ || sub ? null : h("span", { cls: "fwk", text: r.k }),
-        // 이구동성 문제 페이지는 총무 계정에서만 버튼이 보인다
-        IS_OWNER && /이구동성/.test(r.v || "") ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(IGU_URL); } }),
+        // 이구동성·곡 초성 문제 페이지는 총무 계정에서만 버튼이 보인다
+        IS_OWNER && /이구동성|초성/.test(r.v || "") ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(IGU_URL); } }),
           h("button", { cls: "btn fwqbtn src", type: "button", text: "<소스>", onclick: function () { openOut(IGU_URL); } })]) : txt]));
     });
     return h("div", { cls: "card glass" }, [h("h3", { text: f[1] }), fe]);
