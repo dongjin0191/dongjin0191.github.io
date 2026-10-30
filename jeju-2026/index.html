@@ -3426,13 +3426,12 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         /^01/.test(tel) ? kkBtn("btn kakaobtn", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null
       ])]),
       h("dl", { cls: "pinfo2" }, [
-        h("div", null, [h("dt", { text: "✈ 예약번호" }), h("dd", null, [pnr])]),
         h("div", null, [h("dt", { text: "🚌 좌석" }), h("dd", { cls: wi.seat ? "" : "soft", text: wi.seat || "미배정" })]),
         h("div", null, [h("dt", { text: "🛏 객실" }), h("dd", null, [roomLine(p)])]),
         null
       ]),
       null,
-      h("div", { cls: "pctl" }, [typeBtn])
+      null
     ]);
   }
   function roomLine(p) {
@@ -3636,7 +3635,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
               /^01/.test(tel) ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
     });
-    if (canWrite) w.appendChild(h("p", { cls: "muted", text: "예약번호는 명단 탭 서열순 카드의 '예약번호' 칸에서 고칠 수 있습니다." }));
     v.appendChild(w);
   }
   function rerender() { var y = window.scrollY; renderPeople(); window.scrollTo(0, y); }
