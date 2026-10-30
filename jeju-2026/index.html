@@ -1268,8 +1268,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var json = JSON.stringify(S, noMoney).replace(/</g, "\\u003c");
     var body = SRC.replace(/(<script type="application\/json" id="state">)[\s\S]*?(<\/script>)/, function (_, a, b) { return a + json + b; });
     return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' +
-      (st ? st.textContent : "") + ".btable td.baddr { white-space: normal; min-width: 180px; font-size: 12px; }
-</style></head><body>" + body + "</body></html>";
+      (st ? st.textContent : "") + "</style></head><body>" + body + "</body></html>";
   }
   function changed() {
     if (!canWrite) return;
@@ -2924,8 +2923,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     // 참가비
     w.appendChild(h("div", { cls: "card" }, [h("h3", { text: "회비 입금" }),
       h("div", { cls: "pstats" }, [h("b", { cls: "num", text: man(c.feeGot) }), h("span", { cls: "muted num", text: "예정 " + man(c.feePlan) + " · 입금 " + S.people.filter(function (p) { return p.paid; }).length + "/" + S.people.length + "명" })]),
-      h("div", { cls: "bar" }, [h("i", { style: "width:" + (c.feePlan ? Math.min(100, Math.round(c.feeGot / c.feePlan * 100)) : 0) + "%" })]),
-      h("a", { cls: "maplink", href: "#people", onclick: function (e) { e.preventDefault(); go("people"); }, text: "명단에서 입금 체크하기 →" })]));
+      h("div", { cls: "bar" }, [h("i", { style: "width:" + (c.feePlan ? Math.min(100, Math.round(c.feeGot / c.feePlan * 100)) : 0) + "%" })])]));
 
     // 찬조금
     var t1 = h("table", null, [h("thead", null, [h("tr", null, [h("th", { text: "찬조" }), h("th", { cls: "r", text: "금액" }), h("th", { cls: "r", text: "입금" })])])]);
@@ -3288,12 +3286,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return h("button", { type: "button", "aria-pressed": String(pfil === k), onclick: function () { pfil = pfil === k ? "" : k; renderPeople(); } },
         [h("small", { text: k === "원로" ? "원로(부부)" : k + "시찰" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return SCD()[p.n] === k; }).length) })]); })));
     if (pfil) w.appendChild(h("p", { cls: "scnow" }, [h("b", { text: (pfil === "원로" ? "원로" : pfil + "시찰") + " " + S.people.filter(function (p) { return SCD()[p.n] === pfil; }).length + "명만 보는 중" }), h("button", { cls: "btn", type: "button", text: "전체 보기", onclick: function () { pfil = ""; renderPeople(); } })]));
-    var paid = S.people.filter(function (p) { return p.paid; }).length, here = S.people.filter(function (p) { return p.here; }).length;
-    w.appendChild(h("div", { cls: "rstats" }, [
-      h("div", null, [h("small", { text: "회비 입금" }), h("b", { cls: "num", text: paid + "/" + S.people.length })]),
-      h("div", null, [h("small", { text: "집결 확인" }), h("b", { cls: "num", text: here + "/" + S.people.length })]),
-      h("div", null, [h("small", { text: "확인 필요" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return p.flag; }).length) })])
-    ]));
     var cnt = function (f) { return S.people.filter(f).length; };
     w.appendChild(h("div", { cls: "rstats" }, [
       h("div", null, [h("small", { text: "목사" }), h("b", { cls: "num", text: String(cnt(function (p) { return /목사/.test(p.role); })) })]),
@@ -3315,7 +3307,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(ord);
     if (porder === "age") { loadRoster(); w.appendChild(h("p", { cls: "muted", text: IS_OWNER ? "연배순: 이름·직분·교회·생년월일, 나이 많은 순입니다. 생년월일은 총무 계정에서만 보입니다." : "연배순: 이름·직분·교회를 연배 순서로 보여 드립니다." })); }
     if (porder === "tamna") w.appendChild(h("p", { cls: "muted", text: "탐나전: 탐나는전 신청서 연번 순서입니다. 제주공항에서 지원금을 받을 때 이 순서로 부릅니다." }));
-    if (canWrite) w.appendChild(h("p", { cls: "muted", text: "‘입금’을 누르면 구분에 맞는 금액(조직 20만·미조직 15만)으로 입금 처리됩니다. ‘집결’은 당일 공항에서 인원 확인용입니다." }));
     w.appendChild(ul);
     function fill() {
       ul.textContent = "";
@@ -3440,8 +3431,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         h("div", null, [h("dt", { text: "🛏 객실" }), h("dd", null, [roomLine(p)])]),
         null
       ]),
-      p.flag ? h("div", { cls: "pflag", text: "확인: " + p.flag }) : null,
-      h("div", { cls: "pctl" }, [typeBtn, payBtn, hereBtn])
+      null,
+      h("div", { cls: "pctl" }, [typeBtn])
     ]);
   }
   function roomLine(p) {
