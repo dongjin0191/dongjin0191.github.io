@@ -3610,7 +3610,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function pnrRow(code, look) {
     var row = h("span", { cls: "pnr" + (pnrDone === code ? " copied" : ""), "data-pnr": code }, [h("b", { cls: "num", text: code }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(code, e.currentTarget); pnrMark(code); } })]);
     if (!look) return row;
-    return h("span", { cls: "pnrbox" }, [row, h("button", { cls: "btn pnrlook", type: "button", text: "✈ 이스타 예약조회 (번호 복사 후 열기)", onclick: function (e) { copy(code, e.currentTarget); pnrMark(code); setTimeout(function () { openOut(EASTAR); }, 250); } })]);
+    return h("span", { cls: "pnrbox" }, [row, h("button", { cls: "btn pnrlook", type: "button", text: "✈ 이스타 예약 조회 (자동 예약번호 복사 후 이스타 홈페이지로 이동)", onclick: function (e) { copy(code, e.currentTarget); pnrMark(code); setTimeout(function () { openOut(EASTAR); }, 250); } })]);
   }
   function renderTicket() {
     var v = document.getElementById("v-ticket"); v.textContent = "";
@@ -3619,7 +3619,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(h("h2", { text: "✈ 항공 티켓 · 예약번호" }));
     w.appendChild(h("a", { cls: "btn solid eastar", href: EASTAR, target: "_blank", rel: "noopener", text: "✈ 이스타항공 예약 조회 바로가기", onclick: function (e) { e.preventDefault(); openOut(EASTAR); } }));
     w.appendChild(h("ol", { cls: "eastar-how" }, [
-      h("li", { text: "아래 내 예약번호 옆 '✈ 조회'를 누르면 번호가 복사되고 이스타 예약 조회가 새 창으로 열립니다." }),
+      h("li", { text: "아래 내 예약번호 옆 '✈ 이스타 예약 조회'를 누르면 번호가 복사되고 이스타 예약 조회가 새 창으로 열립니다." }),
       h("li", { text: "예약번호 칸에 붙여넣고, 탑승객 영문 성·이름을 넣으면 됩니다." }),
       h("li", { text: "다 보신 뒤 위쪽 ✕(닫기)나 휴대폰 '뒤로'를 누르면 이 화면으로 돌아옵니다." })]));
     w.appendChild(h("p", { cls: "muted", text: "예약 조회 화면에서 아래 예약번호를 붙여 넣으면 됩니다." }));
