@@ -853,6 +853,23 @@ a.instbtn { color: inherit; text-decoration: none; }
 .prrow.two .prc:nth-child(3) { background: #fffbeb; border-color: #fde68a; }
 .prc.edit { cursor: text; }
 .prc input { width: 100%; border: 0; padding: 0; font-size: 14.5px; font-weight: 700; background: transparent; outline: none; }
+li.evli { display: block !important; grid-template-columns: none !important; }
+.evhead { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: start; margin-bottom: 8px; }
+.evgrid { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; align-items: stretch; }
+.bythumb.big { width: 100%; }
+.bythumb.big span { width: 24px; height: 24px; font-size: 14px; }
+.evside { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.evside .evinfo { margin: 0; font-size: 13px; color: #57534e; line-height: 1.5; }
+.evsign { padding: 8px 4px; font-size: 15px; display: grid; gap: 0; }
+.evsign small { font-size: 11.5px; font-weight: 700; opacity: .9; }
+.evlist { list-style: none; margin: 0; padding: 6px; flex: 1; min-height: 0; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid #fed7aa; border-radius: 10px; display: grid; align-content: start; gap: 4px; }
+.evlist li { display: grid; font-size: 13px; line-height: 1.3; min-width: 0; }
+.evlist li b { color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; }
+.evlist li small { color: #c2410c; font-size: 11.5px; overflow-wrap: anywhere; }
+.evlist li.soft { color: #a8a29e; font-size: 12px; }
+.evnames { max-height: 300px; overflow-y: auto; padding: 2px; border: 1px solid var(--line); border-radius: 12px; }
+.evnames .ordopt { min-height: 42px; font-size: 14px; }
+.evnames .ordopt.signed small { color: #16a34a; font-size: 12px; }
 </style>
 
 <header class="topbar">
@@ -2335,11 +2352,73 @@ a.instbtn { color: inherit; text-decoration: none; }
     ["12:50", "🏁 이벤트 2 · 시화산의 엄복동을 찾아라", "해안길 한 바퀴 스피드 대결 · 남자 1명·여자 1명 선물", "d1-9"],
     ["12:50", "🎤 이벤트 3 · 전국노래자랑 시화산편", "비양도 특설무대 · 최우수상·우수상·인기상 · 미리 신청", "d1-9"]
   ];
+  // 이벤트 칸: 왼쪽 2/3 포스터 크게, 오른쪽 1/3 신청 버튼 + 신청자 목록 (번호 0=안내, 1~3=이벤트)
+  var EVF = { 2: { k: "t", lab: "기록 (몇 분 몇 초)", ph: "예: 3분 25초", host: true }, 3: { k: "song", lab: "부를 노래 제목", ph: "예: 만남 (노사연)" } };
+  function evSigns(i) { if (!S.evsign) S.evsign = {}; return S.evsign[i] || (S.evsign[i] = []); }
   function byEvItem(i) {
     var e = BYEV[i], list = BYIMG.map(function (s, k) { return { src: s, cap: BYEV[k][1] }; });
-    return h("li", { cls: "evli" }, [h("span", { cls: "when num", text: e[0] }),
-      h("div", { cls: "evbody" }, [h("b", { text: e[1] }), h("small", { text: e[2] })]),
-      h("button", { type: "button", cls: "bythumb", "aria-label": e[1] + " 포스터 크게 보기", onclick: function () { openPhoto(i, list); } }, [h("img", { src: BYIMG[i], alt: e[1] }), h("span", { text: String(i + 1) })])]);
+    var poster = h("button", { type: "button", cls: "bythumb big", "aria-label": e[1] + " 포스터 크게 보기", onclick: function () { openPhoto(i, list); } }, [h("img", { src: BYIMG[i], alt: e[1] }), h("span", { text: String(i) })]);
+    var side;
+    if (i === 0) side = h("div", { cls: "evside" }, [h("p", { cls: "evinfo", text: e[2] }), h("small", { cls: "muted", text: "포스터를 누르면 크게 봅니다" })]);
+    else {
+      var L = evSigns(i), f = EVF[i];
+      side = h("div", { cls: "evside" }, [
+        h("button", { type: "button", cls: "btn solid evsign", onclick: function () { evSheet(i); } }, ["✋ 신청", h("small", { text: L.length ? L.length + "명" : "" })]),
+        h("ol", { cls: "evlist" }, L.length ? L.map(function (r, k) { return h("li", null, [h("b", { text: (k + 1) + ". " + r.name }), f && r[f.k] ? h("small", { text: (f.k === "song" ? "🎵 " : "⏱ ") + r[f.k] }) : null]); })
+          : [h("li", { cls: "soft", text: "아직 신청자가 없습니다" })])
+      ]);
+    }
+    return h("li", { cls: "evli" }, [h("div", { cls: "evhead" }, [h("span", { cls: "when num", text: e[0] }), h("div", { cls: "evbody" }, [h("b", { text: e[1] }), i ? h("small", { text: e[2] }) : null])]),
+      h("div", { cls: "evgrid" }, [poster, side])]);
+  }
+  // 신청서: 이름은 목록에서 스크롤해 누르기. 총무 화면은 바로 기록, 참석자는 총무에게 문자
+  function evSheet(i) {
+    var e = BYEV[i], f = EVF[i];
+    var ov = h("div", { cls: "ordsheet", role: "dialog", "aria-label": e[1] + " 신청" });
+    var shut = function () { ov.remove(); if (cur === "sched") { var y = window.scrollY; renderSched(); window.scrollTo(0, y); } };
+    var body = h("div", { cls: "ordin" }); ov.appendChild(body);
+    var me = ordMe, val = "", msg = h("p", { cls: "ordmsg" });
+    var draw = function () {
+      body.textContent = "";
+      var L = evSigns(i), mine = me ? L.filter(function (r) { return r.name === me; })[0] : null;
+      if (mine && f && !val) val = mine[f.k] || "";
+      body.appendChild(h("div", { cls: "ordtop" }, [h("b", { text: e[1] }), h("button", { cls: "lb-x", type: "button", "aria-label": "닫기", text: "×", onclick: function () { ovClose(shut); } })]));
+      body.appendChild(h("p", { cls: "ordlbl", text: "1. 내 이름 누르기" + (me ? " · " + me : "") }));
+      body.appendChild(h("div", { cls: "ordgrid evnames" }, S.people.map(function (p) {
+        var on = L.some(function (r) { return r.name === p.name; });
+        return h("button", { type: "button", cls: "ordopt" + (on ? " signed" : ""), "aria-pressed": String(me === p.name), onclick: function () { me = p.name; ordMe = me; lsSet(LS + "-me", me); val = ""; msg.textContent = ""; draw(); } }, [p.name + " " + (p.role === "배우자" ? "사모" : p.role), on ? h("small", { text: " ✔신청" }) : null]);
+      })));
+      var inp = null;
+      if (f && (!f.host || canWrite)) {
+        body.appendChild(h("p", { cls: "ordlbl", text: "2. " + f.lab + (f.host ? " (진행자 기록)" : "") }));
+        inp = h("input", { cls: "field", placeholder: f.ph, "aria-label": f.lab }); inp.value = val;
+        inp.addEventListener("input", function () { val = inp.value; });
+        body.appendChild(inp);
+      }
+      var send = function (on) {
+        if (!me) { msg.textContent = "먼저 이름을 눌러 주세요."; return; }
+        var v = inp ? inp.value.trim() : "";
+        if (canWrite) {
+          var arr = evSigns(i), k = -1; arr.forEach(function (r, x) { if (r.name === me) k = x; });
+          if (!on) { if (k >= 0) arr.splice(k, 1); }
+          else { var rec = k >= 0 ? arr[k] : { name: me }; if (f && inp) rec[f.k] = v; if (k < 0) arr.push(rec); }
+          changed(); val = ""; draw(); msg.textContent = on ? "✔ " + me + " 님 신청을 기록했습니다." : "✔ " + me + " 님 신청을 지웠습니다."; return;
+        }
+        var txt = "[제주수양회 " + e[1].replace(/^\S+\s/, "") + "]\n" + me + " : " + (on ? "신청" + (v ? " · " + (f ? f.lab.replace(/ \(.*/, "") + ": " : "") + v : "") : "신청 취소");
+        var ua = navigator.userAgent || "", smsHref = "sms:" + ORD_PHONE + (/iPhone|iPad|Macintosh/.test(ua) ? "&" : "?") + "body=" + encodeURIComponent(txt);
+        msg.textContent = "";
+        msg.appendChild(h("a", { cls: "btn solid ordsend", href: smsHref, target: "_top", text: "📩 총무에게 문자로 신청 보내기" }));
+        msg.appendChild(h("small", { cls: "muted", text: "문자 창이 열리면 '전송'만 누르세요. 총무가 기록하면 신청자 목록에 번호와 함께 올라갑니다." }));
+      };
+      body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: canWrite ? (mine ? "바꿔서 기록 (총무)" : "신청 기록 (총무)") : "신청하기", onclick: function () { send(true); } }));
+      if (mine || (!canWrite && me)) body.appendChild(h("button", { cls: "linkish", type: "button", text: canWrite ? "이 분 신청 지우기" : "신청 취소 보내기", onclick: function () { send(false); } }));
+      body.appendChild(msg);
+      var Ls = evSigns(i);
+      var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: "신청자 " + Ls.length + "명" })]);
+      Ls.forEach(function (r, k) { sum.appendChild(h("div", { cls: "ordrow" }, [h("b", { text: (k + 1) + ". " + r.name }), h("span", { cls: "num", text: f && r[f.k] ? r[f.k] : "" })])); });
+      body.appendChild(sum);
+    };
+    draw(); document.body.appendChild(ov); ovOpen(shut);
   }
   function stopExtra(key) {
     var out = [];
