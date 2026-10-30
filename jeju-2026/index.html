@@ -2646,14 +2646,14 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     return null;
   }
   // 빙고판: 각자 휴대폰에만 저장(localStorage). 5판, 판마다 25칸에 적고 불린 칸을 눌러 색칠
-  var BG_KEY = "jeju-bingo-v2", BG_R = ["1판 숫자", "2판 성경 인물", "3판 참석자", "4판 참석 교회", "5판 노회 교회", "6판 별명"], bgRound = 0, bgMode = "m";
+  var BG_KEY = "jeju-bingo-v3", BG_R = ["1판 숫자", "2판 성경 인물", "3판 참석자", "4판 참석 교회", "5판 노회 교회", "6판 별명"], bgRound = 0, bgMode = "m";
   var BG_BIBLE = "아담 하와 가인 아벨 노아 아브라함 사라 이삭 리브가 야곱 라헬 레아 요셉 모세 아론 미리암 여호수아 갈렙 기드온 삼손 드보라 룻 나오미 보아스 한나 사무엘 사울 다윗 요나단 솔로몬 엘리야 엘리사 이사야 예레미야 에스겔 다니엘 요나 에스더 느헤미야 에스라 욥 마리아 요셉(목수) 세례요한 베드로 안드레 야고보 요한 빌립 도마 마태 삭개오 니고데모 나사로 마르다 바울 바나바 디모데 실라 브리스길라 아굴라 스데반 루디아 누가 마가".split(" ");
   // 6판 별명은 총무가 현장에서 적은 목록(S.nicks)으로만 섞는다
   function bgNicks() { return bgUniq(String(S.nicks || "").split(/[\n,]+/).map(function (x) { return x.trim(); })); }
   var BG_PRES = "나눔의 노진 동탄영광 동탄인랜드 목자 반석 반월 새날선교 새누리 새생명 새솔제일 새힘 서신영광 서안문호 섬기는 섬김의 성산 수암새권능 수암제일 시흥생수 시흥은혜 아름다운숲 안산상록 안산샬롬 안산원곡동 연수 예전 운평장로 율리 은광 주말씀 주품에 참된빛 한숲우리 행복한 힘찬".split(" ").map(function (c) { return c + "교회"; });
   function bgShuf(a) { a = a.slice(); for (var j = a.length - 1; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), x = a[j]; a[j] = a[r]; a[r] = x; } return a; }
   function bgUniq(a) { var o = []; a.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
-  // 판별 후보 → 25칸 (모자라면 ⭐ 자유 칸을 섞어 미리 색칠)
+  // 판별 후보 → 25칸 (모자라면 ⭐보너스 별 칸을 사람마다 다른 자리에 섞어 미리 색칠)
   function bgDeal(i) {
     var pool;
     if (i === 0) { pool = []; for (var n = 1; n <= 25; n++) pool.push(String(n)); }
@@ -2664,8 +2664,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     else { pool = bgNicks(); if (!pool.length) return { c: [], m: [], nv: "" }; }
     if (i === 3 || i === 4) pool = pool.map(function (x) { return x.replace(/교회$/, ""); });  // 칸이 좁아 '교회'는 뺀다
     var c = bgShuf(pool).slice(0, 25), m = [];
-    while (c.length < 25) c.push("⭐");
-    c = bgShuf(c); c.forEach(function (x, k) { if (x === "⭐") m[k] = true; });
+    while (c.length < 25) c.push("⭐보너스");
+    c = bgShuf(c); c.forEach(function (x, k) { if (x === "⭐보너스") m[k] = true; });
     return { c: c, m: m, nv: i === 5 ? bgNicks().join(",") : undefined };
   }
   function bgLoad() { var d = null; try { d = JSON.parse(lsGet(BG_KEY) || "null"); } catch (e) {} if (!d || !d.r) d = { r: [] }; for (var i = 0; i < 6; i++) if (!d.r[i]) d.r[i] = { c: [], m: [] }; return d; }
@@ -2700,7 +2700,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         nk.value = S.nicks || "";
         nk.addEventListener("change", function () { S.nicks = nk.value; changed(); D.r[5] = bgDeal(5); save(); draw(); });
         box.appendChild(h("div", { cls: "bgnickbox" }, [h("b", { text: "🔒 총무 전용 · 별명 입력 (" + bgNicks().length + "개)" }), nk,
-          h("small", { text: "적고 칸 밖을 누르면 저장됩니다. 참석자 앱에는 '앱 갱신' 후 반영되고, 각자 6판이 이 목록으로 섞입니다. 25개보다 적으면 남는 칸은 ⭐ 자유 칸." })]));
+          h("small", { text: "적고 칸 밖을 누르면 저장됩니다. 참석자 앱에는 '앱 갱신' 후 반영되고, 각자 6판이 이 목록으로 섞입니다. 25개보다 적으면 남는 칸은 ⭐보너스 별." })]));
       }
       if (bgRound === 5) box.appendChild(h("div", { cls: "bgway" }, [
         h("button", { type: "button", "aria-pressed": String(R0.nv === "own"), text: "방법1 · 직접 적기", onclick: function () {
@@ -2728,7 +2728,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       box.appendChild(h("p", { cls: "bgcount" + (ln.n ? " hit" : "") }, [ln.n >= 5 ? "🎉 " : "", "빙고 ", h("b", { cls: "num", text: String(ln.n) }), "줄", ln.n >= 5 ? " · 빙고! 손 들어 주세요" : ""]));
       box.appendChild(h("div", { cls: "bgtools" }, [
         bgRound === 5 ? null : h("button", { cls: "btn", type: "button", text: "🔀 이 판만 다시 섞기", onclick: function () { D.r[bgRound] = bgDeal(bgRound); save(); bgMode = "m"; draw(); } }),
-        h("button", { cls: "btn", type: "button", text: "색칠 지우기", onclick: function () { R0.m = R0.c.map(function (x) { return x === "⭐"; }); save(); draw(); } })
+        h("button", { cls: "btn", type: "button", text: "색칠 지우기", onclick: function () { R0.m = R0.c.map(function (x) { return x === "⭐보너스"; }); save(); draw(); } })
       ]));
       box.appendChild(h("p", { cls: "muted", text: "'셋팅하기'를 누르면 6판이 내 휴대폰에서만 무작위로 채워집니다(사람마다 다름). 불린 칸을 누르면 색이 바뀌고, 가로·세로·대각선 5줄을 먼저 채우면 빙고! 직접 고치려면 '칸 적기'를 누르세요." }));
     }
