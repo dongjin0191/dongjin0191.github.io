@@ -37,9 +37,9 @@ select{border:1px solid #cbd7dc;border-radius:12px;padding:11px 14px;font-size:1
   <h1>이구동성 게임</h1>
   <p class="sub">마음 모아 크게 외쳐 보세요!</p>
   <div class="meta">
-    <span class="pill" id="progress">1 / 50</span>
+    <span class="pill" id="progress">1 / 81</span>
     <span class="pill" id="category">전체 문제</span>
-    <span class="pill">네 글자 제시어</span>
+    <span class="pill">네 글자 제시어 · 총 81문항</span>
   </div>
   <section class="card" aria-live="polite">
     <div class="num" id="number">QUESTION 01</div>
@@ -54,14 +54,18 @@ select{border:1px solid #cbd7dc;border-radius:12px;padding:11px 14px;font-size:1
   </div>
   <div class="bottom">
     <select id="filter" onchange="setFilter()">
-      <option value="all">전체 50문항</option>
+      <option value="all">전체 81문항</option>
+      <option value="faith">신앙·교회 25</option>
+      <option value="jeju">제주 관련 25</option>
+      <option value="fun">웃음 보너스 10</option>
+      <option value="church">시화산노회 교회 이름 21</option>
       <option value="faith">신앙·교회</option>
       <option value="jeju">제주 관련</option>
     </select>
     <button onclick="toggleAnswer()">정답/진행 보기</button>
     <button onclick="toggleFullscreen()">전체 화면</button>
   </div>
-  <p class="note">진행 방법: 화면의 네 글자 제시어를 보고 사회자의 신호에 맞춰 다 함께 외쳐 보세요.<br>팀별 대항전으로 진행하거나, 제시어와 관련된 추억을 나누어도 좋습니다.</p>
+  <p class="note">진행 방법: 화면의 네 글자 제시어를 보고 사회자의 신호에 맞춰 다 함께 외쳐 보세요.<br>팀별 대항전으로 진행하거나, 제시어와 관련된 추억을 나누어도 좋습니다. 교회 이름은 네 글자에 맞춰 일부 줄여 표기했습니다.</p>
 </main>
 <script>
 const questions = [
@@ -74,7 +78,8 @@ const questions = [
 ["협재해변","jeju"],["함덕해변","jeju"],["정방폭포","jeju"],["제주바다","jeju"],["고기국수","jeju"],
 ["갈치조림","jeju"],["한라산길","jeju"],["오름산책","jeju"],["해녀문화","jeju"],["제주여행","jeju"],
 ["유채꽃밭","jeju"],["푸른바다","jeju"],["바다풍경","jeju"],["섬마을길","jeju"],["귤향가득","jeju"],
-["억새물결","jeju"],["숲길산책","jeju"],["검은모래","jeju"],["용암동굴","jeju"],["제주올레","jeju"]
+["억새물결","jeju"],["숲길산책","jeju"],["검은모래","jeju"],["용암동굴","jeju"],["제주올레","jeju"],["간식사수","fun"],["고기앞에","fun"],["밥이최고","fun"],["낮잠천국","fun"],["춤신강림","fun"],["박수폭탄","fun"],["웃음폭발","fun"],["길치인증","fun"],["사진백장","fun"],["배꼽주의","fun"],
+["나눔교회","church"],["노진교회","church"],["동탄영광","church"],["동탄인랜","church"],["반석교회","church"],["반월교회","church"],["섬기는집","church"],["섬김교회","church"],["성산교회","church"],["수암제일","church"],["시흥생수","church"],["시흥은혜","church"],["안산상록","church"],["안산원곡","church"],["운평장로","church"],["율리교회","church"],["주품교회","church"],["참빛교회","church"],["한숲우리","church"],["행복교회","church"],["힘찬교회","church"]
 ];
 let list=[...questions], index=0, answerShown=false;
 const $=id=>document.getElementById(id);
