@@ -892,6 +892,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .verseblk { display: grid; gap: 4px; padding: 8px 10px; background: #f6f8fc; border-left: 3px solid #c8d6ee; border-radius: 8px; }
 .verseblk label { font-weight: 900; color: var(--navy); font-size: 14px; }
 .verseblk textarea.verse { overflow: hidden; resize: none; line-height: 1.6; }
+.rednote { margin: 0; padding: 8px 10px; border-radius: 10px; background: #fef2f2; border: 2px solid #ef4444; color: #b91c1c; font-weight: 800; font-size: 14px; line-height: 1.5; }
 </style>
 
 <header class="topbar">
@@ -2455,6 +2456,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     if (key === "d1-3") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goTamna, text: "📋 탐나순 명단 보기 (신청서 순서 일치)" }));
     if (key === "d1-14" || key === "d1-17" || key === "d2-11") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goRooms, text: "🛏 숙소 배정표 바로가기 (" + roomLabel() + ")" }));
     if (key === "d1-17" || key === "d2-11") out.push(fruitBox(key.slice(0, 2)));
+    if (key === "d1-14") out.push(h("p", { cls: "rednote", text: "※ 숙소 키를 받고 올라가서 짐을 풀 때~ 준비해 오신 선물을 가지고 내려오세요. 환복 없이 그대로 오세요. (10분 정도 여유가 있습니다)" }));
     return out.length ? h("div", { cls: "sxtra" }, out) : null;
   }
   // 과일 봉지 수령: 숙소 배정표(S.rooms)를 그대로 따라 방마다 수령/미수령. 총무 화면에서만 누를 수 있다
