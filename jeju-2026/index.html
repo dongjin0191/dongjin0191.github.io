@@ -2727,7 +2727,13 @@ a.instbtn { color: inherit; text-decoration: none; }
   var inviteOpen = false;
   function renderMoney() {
     var v = document.getElementById("v-money"); v.textContent = "";
-    if (moneyState !== "ok") { v.appendChild(h("div", { cls: "wrap sec" }, [h("h2", { text: "정산" }), h("p", { cls: "muted", text: moneyState === "wait" ? "불러오는 중입니다…" : "정산은 노회 임원(편집 권한이 있는 분)만 볼 수 있습니다." })])); return; }
+    if (moneyState !== "ok") {
+      v.appendChild(h("div", { cls: "wrap sec" }, [h("h2", { text: "🔒 정산 (임원 전용)" }),
+        h("div", { cls: "card glass" }, [h("p", { text: moneyState === "wait" ? "불러오는 중입니다…" : "정산은 비공개입니다. 총무와 편집 권한으로 공유받은 임원만 볼 수 있습니다." }),
+          moneyState === "wait" ? null : h("p", { cls: "muted", text: "임원은 아래 버튼으로 가이드북 대시보드를 열고, 공유받은 구글 계정으로 claude.ai에 로그인하면 정산 탭에서 보고 고칠 수 있습니다." }),
+          moneyState === "wait" ? null : h("a", { cls: "btn solid", href: GUIDE_URL, target: "_blank", rel: "noopener", text: "🔐 임원용 대시보드에서 정산 열기", onclick: function (e) { e.preventDefault(); openOut(GUIDE_URL); } })])]));
+      return;
+    }
     var c = calc(), w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "여행 후 예결산" }));
     if (IS_OWNER && MONEY_PRIVATE) w.appendChild(ownerInviteCard());
@@ -2845,7 +2851,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   }
   function syncMoneyTab() {
     var a = document.querySelector('.tabs a[data-tab="money"]');
-    if (a) a.hidden = moneyState !== "ok";
+    if (a) a.hidden = false;  // 탭은 늘 보이고, 내용은 편집 권한(임원)일 때만 열린다
     if (cur === "money" && moneyState === "none") renderMoney();
   }
   function ledgerSection(w) {
