@@ -499,6 +499,7 @@ td input[readonly] { border-color: transparent; background: transparent; }
 .pinfo2 { margin: 0; display: grid; gap: 3px; font-size: 13.5px; }
 .pinfo2 > div { display: grid; grid-template-columns: 86px 1fr; gap: 6px; align-items: baseline; }
 .pinfo2 dt { color: var(--muted); font-weight: 700; }
+.ptxt .pinfo2 { margin-top: 6px; } .ptxt .pinfo2 > div { grid-template-columns: 1fr; gap: 0; } .ptxt .pinfo2 dt { font-size: 12px; }
 .pinfo2 dd { margin: 0; min-width: 0; }
 .pinfo2 .soft, .pinfo2 .proom.soft { color: #adb5bd; font-weight: 500; }
 .pinfo2 .proom { margin: 0; font-size: 13.5px; }
@@ -898,6 +899,14 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .dlg-h b { font-size: 12.5px; color: var(--sky); text-align: center; }
 .dlg-n { font-weight: 900; color: var(--navy); }
 .dlg-row input, .dlg-v { min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; background: #fff; font-weight: 700; min-height: 36px; }
+.rolecnt { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 8px 0; }
+.rolecnt button { grid-column: span 2; background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; display: grid; text-align: left; font: inherit; cursor: pointer; position: relative; }
+.rolecnt button.w3 { grid-column: span 3; } .rolecnt button.w6 { grid-column: span 6; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 8px; }
+.rolecnt button::after { content: "▸ 눌러 보기"; position: absolute; right: 8px; top: 7px; font-size: 10.5px; color: #94a3b8; font-weight: 700; }
+.rolecnt button[aria-pressed="true"] { border-color: var(--navy); background: #e7f5ff; } .rolecnt button[aria-pressed="true"]::after { content: "▾ 닫기"; color: var(--navy); }
+.rolecnt small { font-size: 12px; color: var(--muted); font-weight: 700; } .rolecnt b { font-size: 20px; font-family: var(--display); font-weight: 400; color: var(--navy); }
+.rolelist { margin: 0 0 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 12px 10px 34px; columns: 2; column-gap: 16px; font-weight: 700; line-height: 1.8; }
+.rolelist small { color: #94a3b8; font-weight: 600; }
 .chlist { margin: 8px 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .chlist summary { padding: 10px 12px; font-weight: 800; color: var(--navy); cursor: pointer; }
 .chlist summary b { color: var(--magenta); font-size: 17px; } .chlist summary small { color: #94a3b8; font-weight: 600; }
@@ -3286,12 +3295,18 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return h("button", { type: "button", "aria-pressed": String(pfil === k), onclick: function () { pfil = pfil === k ? "" : k; renderPeople(); } },
         [h("small", { text: k === "원로" ? "원로(부부)" : k + "시찰" }), h("b", { cls: "num", text: String(S.people.filter(function (p) { return SCD()[p.n] === k; }).length) })]); })));
     if (pfil) w.appendChild(h("p", { cls: "scnow" }, [h("b", { text: (pfil === "원로" ? "원로" : pfil + "시찰") + " " + S.people.filter(function (p) { return SCD()[p.n] === pfil; }).length + "명만 보는 중" }), h("button", { cls: "btn", type: "button", text: "전체 보기", onclick: function () { pfil = ""; renderPeople(); } })]));
-    var cnt = function (f) { return S.people.filter(f).length; };
-    w.appendChild(h("div", { cls: "rstats" }, [
-      h("div", null, [h("small", { text: "목사" }), h("b", { cls: "num", text: String(cnt(function (p) { return /목사/.test(p.role); })) })]),
-      h("div", null, [h("small", { text: "장로" }), h("b", { cls: "num", text: String(cnt(function (p) { return p.role === "장로"; })) })]),
-      h("div", null, [h("small", { text: "사모·권사·집사" }), h("b", { cls: "num", text: String(cnt(isSp)) })])
-    ]));
+    // 직분별 인원: 칸을 누르면 그 사람들 이름이 아래에 펼쳐진다
+    var RG = [["all", "👥 참석자 전체", "w6", function () { return true; }],
+      ["pas", "목사", "w3", function (p) { return /목사/.test(p.role); }], ["sam", "사모", "w3", function (p) { return p.role === "사모" || p.role === "배우자"; }],
+      ["eld", "장로", "", function (p) { return p.role === "장로"; }], ["kw", "권사", "", function (p) { return p.role === "권사"; }], ["js", "집사", "", function (p) { return p.role === "집사"; }]];
+    w.appendChild(h("div", { cls: "rolecnt" }, RG.map(function (g) {
+      return h("button", { type: "button", cls: g[2], "aria-pressed": String(rsel === g[0]), onclick: function () { rsel = rsel === g[0] ? "" : g[0]; renderPeople(); } },
+        [h("small", { text: g[1] }), h("b", { cls: "num", text: S.people.filter(g[3]).length + "명" })]);
+    })));
+    RG.forEach(function (g) {
+      if (rsel !== g[0]) return;
+      w.appendChild(h("ol", { cls: "rolelist" }, S.people.filter(g[3]).map(function (p) { return h("li", null, [p.name + " ", h("small", { text: (g[0] === "all" ? p.role + " · " : "") + (churchOf(p) || "") })]); })));
+    });
     // 참석 교회: 배우자는 목사·장로 교회로 묶어 몇 곳인지 세고, 누르면 교회 이름만
     var chs = []; S.people.forEach(function (p) { var c = churchOf(p); if (c && chs.indexOf(c) < 0) chs.push(c); });
     chs.sort(function (a, b) { return a.localeCompare(b, "ko"); });
@@ -3311,7 +3326,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     function fill() {
       ul.textContent = "";
       var inF = function (p) { return (!pfil || SCD()[p.n] === pfil) && (!q || [p.name, p.church, p.phone, p.role, String(p.n)].join(" ").indexOf(q) !== -1); };
-      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthOf(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
+      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthTxt(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
       if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") + (TAMNA_LATE.indexOf(p.name) >= 0 ? " late" : "") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role.replace("원로목사", "원로") })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); else { var its = Array.prototype.slice.call(ul.children), rows = Math.ceil(its.length / 4); ul.textContent = ""; for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < 4; cc++) ul.appendChild(its[cc * rows + rr] || h("li", { cls: "pmini blank" }));
         var late = S.people.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p, i) { return { p: p, no: i + 1 }; }).filter(function (x) { return TAMNA_LATE.indexOf(x.p.name) >= 0; });
         if (late.length) ul.appendChild(h("li", { cls: "latenote" }, [h("b", { text: "⏰ 늦게 도착 · 2026.11.02(월) 17:00" }), h("span", { text: late.map(function (x) { return x.no + ". " + x.p.name + " " + x.p.role; }).join(" · ") })])); } return; }
@@ -3327,7 +3342,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     fill();
     v.appendChild(w);
   }
-  var porder = "list", pfil = "";
+  var porder = "list", pfil = "", rsel = "";
   var SC0 = null;
   function SCD() { return SC0 || (SC0 = {"5":"원로","6":"원로","37":"원로","7":"남부","8":"남부","3":"남부","4":"남부","13":"상록","14":"상록","11":"상록","12":"상록","1":"북부","2":"북부","15":"북부","16":"북부","41":"남부","17":"남부","18":"남부","9":"남부","10":"남부","21":"북부","22":"북부","42":"북부","39":"남부","23":"상록","24":"상록","44":"남부","38":"북부","29":"남부","30":"남부","40":"남부","19":"북부","20":"북부","27":"북부","28":"북부","43":"남부","25":"남부","26":"남부","46":"북부","35":"북부","36":"북부","33":"북부","34":"북부","31":"남부","32":"남부","45":"북부"}); }
   function isSp(x) { return !!x && /^(사모|배우자|권사|집사)$/.test(x.role || ""); }
@@ -3341,9 +3356,18 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return ax - ay || tier(x) - tier(y) || x.n - y.n;
     });
   }
+  // 화면용: 520312 → 1952.03.12생 · 만 74세 (총무 계정에서만 값이 있다)
+  // 나이는 수양회 첫날(2026-11-02) 기준 만 나이
+  function birthTxt(p) {
+    var b = birthOf(p); if (!b) return "";
+    var y = (+b.slice(0, 2) > 30 ? 1900 : 2000) + +b.slice(0, 2), md = b.slice(2, 6);
+    var age = 2026 - y - (md > "1102" ? 1 : 0);
+    return y + "." + b.slice(2, 4) + "." + b.slice(4, 6) + "생 · 만 " + age + "세";
+  }
   function birthOf(p) {
     if (!IS_OWNER || !ROSTER || !ROSTER.b) return "";
     var b = String(ROSTER.b[p.n] || ROSTER.b[String(p.n)] || "").replace(/[^\d]/g, "");
+    if (b.length >= 8 && /^(19|20)/.test(b)) b = b.slice(2);  // 19520312 처럼 네 자리 연도로 적힌 것도 YYMMDD로 맞춘다
     return b.length >= 6 ? b.slice(0, 6) : "";
   }
   // 생년월일을 알면 나이 많은 순, 모르면 기존 연배 순서(부부 묶음)
@@ -3423,15 +3447,12 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       p.phone ? h("div", { cls: "pline" }, [h("a", { href: "tel:" + tel, text: p.phone }),
         h("button", { cls: "btn", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
         h("a", { cls: "btn callbtn", href: "tel:" + tel, target: "_top", "aria-label": p.name + " 전화걸기", text: "📞 전화" }),
-        /^01/.test(tel) ? kkBtn("btn kakaobtn", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null
-      ])]),
+        /^01/.test(tel) ? kkBtn("btn kakaobtn", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null,
       h("dl", { cls: "pinfo2" }, [
         h("div", null, [h("dt", { text: "🚌 좌석" }), h("dd", { cls: wi.seat ? "" : "soft", text: wi.seat || "미배정" })]),
-        h("div", null, [h("dt", { text: "🛏 객실" }), h("dd", null, [roomLine(p)])]),
-        null
-      ]),
-      null,
-      null
+        h("div", null, [h("dt", { text: "🛏 객실" }), h("dd", null, [roomLine(p)])])
+      ])
+      ])])
     ]);
   }
   function roomLine(p) {
@@ -3615,7 +3636,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       if (!tq) return;
       var hits = S.people.filter(function (p) { return p.name.replace(/\s/g, "").indexOf(tq.replace(/\s/g, "")) !== -1; });
       if (!hits.length) { res.appendChild(h("p", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
-      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role + (birthOf(p) ? " · " + birthOf(p) : "") }), p.pnr ? pnrRow(p.pnr, true) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
+      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role + (birthOf(p) ? " · " + birthTxt(p) : "") }), p.pnr ? pnrRow(p.pnr, true) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
     };
     inp.addEventListener("input", function () { tq = inp.value.trim(); fill(); });
     fill();
@@ -3630,7 +3651,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         k === "미입력" ? null : flightBox(k),
         PNRNOTE[k] ? h("p", { cls: "tknote", text: PNRNOTE[k] }) : null,
         h("ol", { cls: "tklist" }, ps.map(function (p) { var tel = (p.phone || "").replace(/[^\d]/g, "");
-          return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthOf(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]),
+          return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthTxt(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]),
             p.phone ? h("div", { cls: "tkph" }, [h("a", { cls: "num", href: "tel:" + tel, text: p.phone }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
               /^01/.test(tel) ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
