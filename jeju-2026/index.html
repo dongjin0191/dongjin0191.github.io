@@ -163,7 +163,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .tklist li span { color: var(--muted); font-size: 13px; min-width: 20px; }
 .tklist li.m b { color: #0b3a8c; } .tklist li.f b { color: #c2185b; }
 .tklist li small { color: #555; font-size: 14px; }
-.tklist { grid-template-columns: 1fr !important; }
+.tklist { grid-template-columns: 1fr 1fr !important; column-gap: 10px !important; }
+.tklist li.blank { border-bottom-color: transparent; }
+.tklist .tkph { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 14px; padding-left: 0; }
 .tklist li { display: grid !important; gap: 4px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .tkrow { display: flex; gap: 6px; align-items: baseline; }
 .tkph { display: flex; gap: 6px; align-items: center; padding-left: 26px; font-size: 15px; }
@@ -3639,7 +3641,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       if (!tq) return;
       var hits = S.people.filter(function (p) { return p.name.replace(/\s/g, "").indexOf(tq.replace(/\s/g, "")) !== -1; });
       if (!hits.length) { res.appendChild(h("p", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
-      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role + (birthOf(p) ? " · " + birthTxt(p) : "") }), p.pnr ? pnrRow(p.pnr, true) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
+      hits.forEach(function (p) { res.appendChild(h("div", { cls: "tkhit" }, [h("b", { text: p.name + " " + p.role }), p.pnr ? pnrRow(p.pnr, true) : h("span", { cls: "muted", text: "예약번호 미입력" }), PNRNOTE[p.pnr] ? h("small", { text: PNRNOTE[p.pnr] }) : null])); });
     };
     inp.addEventListener("input", function () { tq = inp.value.trim(); fill(); });
     fill();
@@ -3653,13 +3655,24 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         h("div", { cls: "tkhead" }, [h("small", { text: "왕복 예약번호 · " + ps.length + "명" }), k === "미입력" ? h("b", { text: "예약번호 미입력" }) : pnrRow(k, true)]),
         k === "미입력" ? null : flightBox(k),
         PNRNOTE[k] ? h("p", { cls: "tknote", text: PNRNOTE[k] }) : null,
-        h("ol", { cls: "tklist" }, ps.map(function (p) { var tel = (p.phone || "").replace(/[^\d]/g, "");
-          return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthTxt(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]),
+        h("ol", { cls: "tklist" }, pairUp(ps).map(function (p) { if (!p) return h("li", { cls: "blank" }); var tel = (p.phone || "").replace(/[^\d]/g, "");
+          return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }),]),
             p.phone ? h("div", { cls: "tkph" }, [h("a", { cls: "num", href: "tel:" + tel, text: p.phone }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
               /^01/.test(tel) ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
     });
     v.appendChild(w);
+  }
+  // 부부는 한 줄에 남편 왼쪽·아내 오른쪽, 혼자 오신 분은 왼쪽 한 칸
+  function pairUp(ps) {
+    var out = [], used = {};
+    ps.forEach(function (p) {
+      if (used[p.n]) return; used[p.n] = 1;
+      var sp = spouseOf(p);
+      if (sp && ps.indexOf(sp) >= 0 && !used[sp.n]) { used[sp.n] = 1; out.push(isSp(p) ? sp : p, isSp(p) ? p : sp); }
+      else out.push(p, null);
+    });
+    return out;
   }
   function rerender() { var y = window.scrollY; renderPeople(); window.scrollTo(0, y); }
 
