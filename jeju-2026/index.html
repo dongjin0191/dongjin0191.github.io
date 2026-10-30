@@ -2455,7 +2455,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     }
     if (key === "d1-3") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goTamna, text: "📋 탐나순 명단 보기 (신청서 순서 일치)" }));
     if (key === "d1-14" || key === "d1-17" || key === "d2-11") out.push(h("a", { cls: "btn solid xbtn", href: "#people", onclick: goRooms, text: "🛏 숙소 배정표 바로가기 (" + roomLabel() + ")" }));
-    if (key === "d1-17" || key === "d2-11") out.push(fruitBox(key.slice(0, 2)));
     if (key === "d1-14") out.push(h("p", { cls: "rednote", text: "※ 숙소 키를 받고 올라가서 짐을 풀 때~ 준비해 오신 선물을 가지고 내려오세요. 환복 없이 그대로 오세요. (10분 정도 여유가 있습니다)" }));
     return out.length ? h("div", { cls: "sxtra" }, out) : null;
   }
@@ -2673,6 +2672,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(pptCard());
     // 친교의 시간 1~3: 순서는 1~5번 빈칸으로 두고 편집 화면에서 채운다
     w.appendChild(fellowCard(["fellow1", "친교의 시간 1 · 자기소개 + 선물 수집"]));
+    // 과일 봉지 수령표: 그날(1·2일차) 맨 마지막 칸
+    var fd = dayKey === "d1" || dayKey === "d2" ? dayKey : null;
+    if (fd) w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "🍊 과일 봉지 수령 · " + fd.slice(1) + "일차 숙소로" }), fruitBox(fd)]));
     v.appendChild(w);
     if (sjump) { var el = document.getElementById("stop-" + sjump); sjump = null; if (el) setTimeout(function () { el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 50); }
   }
