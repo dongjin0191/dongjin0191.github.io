@@ -893,6 +893,11 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .verseblk label { font-weight: 900; color: var(--navy); font-size: 14px; }
 .verseblk textarea.verse { overflow: hidden; resize: none; line-height: 1.6; }
 .rednote { margin: 0; padding: 8px 10px; border-radius: 10px; background: #fef2f2; border: 2px solid #ef4444; color: #b91c1c; font-weight: 800; font-size: 14px; line-height: 1.5; }
+.dlg { display: grid; gap: 5px; }
+.dlg-row { display: grid; grid-template-columns: 22px 0.8fr 1.4fr; gap: 6px; align-items: center; }
+.dlg-h b { font-size: 12.5px; color: var(--sky); text-align: center; }
+.dlg-n { font-weight: 900; color: var(--navy); }
+.dlg-row input, .dlg-v { min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; background: #fff; font-weight: 700; min-height: 36px; }
 </style>
 
 <header class="topbar">
@@ -2834,12 +2839,19 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "총무 진행 노트" }));
     w.appendChild(dutyCard());
-    // 총무 광고 멘트 (10/26 회의): 환영·감사·찬조, 4번은 빈칸
-    if (!S.ads) S.ads = [{ k: "환영", v: "" }, { k: "감사", v: "" }, { k: "찬조", v: "" }, { k: "4", v: "" }];
-    var ad = h("div", { cls: "order" });
-    S.ads.forEach(function (r, i) { ad.appendChild(orow("ad" + i, r, r.k === "4" ? "추가 광고" : r.k + " 멘트")); });
-    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "📢 총무 광고 멘트" }), ad]));
-    if (IS_OWNER) { w.appendChild(rosterCard()); w.appendChild(boardCard()); }
+    // 총무가 위임 가능한 대상 및 업무 (1~7번): 이름 칸 + 업무 칸, 편집 화면에서 적는다
+    if (!S.delegate) S.delegate = [1, 2, 3, 4, 5, 6, 7].map(function () { return { who: "", job: "" }; });
+    var dl = h("div", { cls: "dlg" }, [h("div", { cls: "dlg-row dlg-h" }, [h("span", { text: "" }), h("b", { text: "이름" }), h("b", { text: "위임 업무" })])]);
+    S.delegate.forEach(function (r, i) {
+      var cell = function (k, ph) {
+        if (!canWrite) return h("span", { cls: "dlg-v" + (r[k] ? "" : " soft"), text: r[k] || "" });
+        var inp = h("input", { placeholder: ph, "aria-label": (i + 1) + "번 " + ph }); inp.value = r[k] || "";
+        inp.addEventListener("input", function () { r[k] = inp.value; changed(); });
+        return inp;
+      };
+      dl.appendChild(h("div", { cls: "dlg-row" }, [h("span", { cls: "dlg-n num", text: (i + 1) + "." }), cell("who", "이름"), cell("job", "업무")]));
+    });
+    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "🤝 총무가 위임 가능한 대상 및 업무" }), dl]));
     if (IS_OWNER) {
       w.appendChild(h("div", { cls: "copyrow" }, [h("button", { cls: "btn invite-btn", type: "button", text: inviteOpen ? "🔐 임원 초대 전용 · 닫기" : "🔐 임원 초대 전용", onclick: function () { inviteOpen = !inviteOpen; renderHost(); } }),
         h("span", { cls: "muted", text: "총무에게만 보이는 버튼입니다" })]));
@@ -2853,10 +2865,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(h("p", { cls: "muted", text: "코스마다 버스에서 읽을 소개 멘트와 퀴즈 12문제입니다. 8~10번은 제주 상식·넌센스, 11~12번은 잘 안 알려진 성경 넌센스입니다. 코스 이름을 누르면 펼쳐지고, '정답'을 누르면 답이 보입니다." }));
     if (ANS) w.appendChild(h("div", { cls: "copyrow" }, [h("button", { cls: "btn", type: "button", text: showAll ? "정답 모두 숨기기" : "정답 모두 보기", onclick: function () { showAll = !showAll; renderHost(); } }), h("span", { cls: "muted", text: "🔒 총무 계정에서만 보입니다" })]));
     else w.appendChild(h("p", { cls: "lockmsg", text: ansState === "wait" ? "🔒 정답 확인 중…" : "🔒 정답은 총무 계정으로 로그인한 기기에서만 보입니다." }));
-    if (EV) w.appendChild(h("div", { cls: "card glass evcard" }, [h("h3", { text: "🎂 이벤트 대상자 (총무만 보임)" }),
-      h("p", { text: EV.none + ". 참석자 리스트 생년월일(양력 기준) 확인 결과입니다." }),
-      h("ul", null, EV.near.map(function (x) { return h("li", null, [h("b", { text: x[0] }), " " + x[1] + (x[2] ? " · " + x[2] : "")]); })),
-      h("p", { cls: "muted", text: "권병렬 목사님은 수양회 직후 생신이라 마지막 밤 '친교의 시간 3'에 미리 축하하면 좋습니다. 결혼기념일 자료는 없습니다." })]));
     var today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
     GUIDE.forEach(function (c, ci) {
       var ql = h("ol", { cls: "quiz" }, c.quiz.map(function (qa, qi) {
@@ -2881,6 +2889,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     });
     if (hostJump) { var hj = hostJump; hostJump = null; setTimeout(function () { var el = document.getElementById("course-" + hj); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 80); }
     w.appendChild(h("p", { cls: "muted", text: "1~7번은 장소·제주 퀴즈, 8~10번은 제주 상식·넌센스, 11~12번은 성경 넌센스입니다. 성경 문제는 개역개정 기준입니다. 관광지 정보는 현장 가이드 안내와 다를 수 있으니 가이드와 한 번 맞춰 보세요." }));
+    // 신상정보·승선신고서는 총무 탭 맨 뒤
+    if (IS_OWNER) { w.appendChild(rosterCard()); w.appendChild(boardCard()); }
     v.appendChild(w);
   }
 
