@@ -888,6 +888,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .fruit-b.on .fruit-top i { color: #15803d; }
 .fwrow { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
 .fwrow.nolab { grid-template-columns: 1fr; }
+.fwq { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: stretch; } .fwsrc { grid-column: 1 / -1; font-size: 12.5px; color: #1864ab; font-weight: 700; overflow-wrap: anywhere; } .fwqbtn { background: #1864ab; color: #fff; border-color: #1864ab; font-weight: 800; white-space: nowrap; }
 .fwrow.sub { padding-left: 22px; } .fwrow.sub .fwtxt { font-weight: 600; background: #f8f9ff; }
 .fwk { font-weight: 900; color: var(--navy); padding-top: 7px; text-align: center; }
 .fwtxt { border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; background: #fff; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere;  white-space: pre-wrap; }
@@ -2618,6 +2619,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       return h("span", { cls: r.v ? "" : "soft", text: car + (r.v || "미정") });
     }))]);
   }
+  var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html";
   function fellowCard(f) {
     if (!S[f[0]]) S[f[0]] = [1, 2, 3, 4, 5].map(function (n) { return { k: String(n), v: "" }; });
     var fe = h("div", { cls: "order" });
@@ -2632,7 +2634,10 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         ta.addEventListener("blur", function () { txt.textContent = r.v || "눌러서 적기"; txt.classList.toggle("soft", !r.v); });
         txt.textContent = ""; txt.appendChild(ta); ta.focus();
       });
-      fe.appendChild(h("div", { cls: "fwrow" + (circ || sub ? " nolab" : "") + (sub ? " sub" : "") + (r.k === "※" ? " note" : "") }, [circ || sub ? null : h("span", { cls: "fwk", text: r.k }), txt]));
+      fe.appendChild(h("div", { cls: "fwrow" + (circ || sub ? " nolab" : "") + (sub ? " sub" : "") + (r.k === "※" ? " note" : "") }, [circ || sub ? null : h("span", { cls: "fwk", text: r.k }),
+        // 이구동성 문제 페이지는 총무 계정에서만 버튼이 보인다
+        IS_OWNER && /이구동성/.test(r.v || "") ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(IGU_URL); } }),
+          h("a", { cls: "fwsrc", href: IGU_URL, target: "_blank", rel: "noopener", text: "<소스> " + IGU_URL.replace(/^https:\/\//, ""), onclick: function (e) { e.preventDefault(); openOut(IGU_URL); } })]) : txt]));
     });
     return h("div", { cls: "card glass" }, [h("h3", { text: f[1] }), fe]);
   }
@@ -3735,7 +3740,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     Promise.all([window.claude.use("artifact"), window.claude.use("user")]).then(function (r) {
       artifactNs = r[0];
       var user = r[1];
-      if (user && user.isOwner) user.isOwner().then(function (o) { IS_OWNER = !!o; if (cur === "money") renderMoney(); if (cur === "host") renderHost(); }, function () {});
+      if (user && user.isOwner) user.isOwner().then(function (o) { IS_OWNER = !!o; if (cur === "money") renderMoney(); if (cur === "host") renderHost(); if (cur === "sched" && o) renderSched(); }, function () {});
       if (!artifactNs) { canWrite = false; setSave(DBNS ? "확인란 편집 가능" : "보기 전용"); renderAll(); return; }
       (user && user.canEdit ? user.canEdit() : Promise.resolve(true)).then(function (ok) {
         canWrite = !!ok; setSave(ok ? "편집 가능" : (DBNS ? "확인란 편집 가능" : "보기 전용")); renderAll();
