@@ -2667,7 +2667,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     });
     var p2 = h("input", { cls: "field", id: "part2", placeholder: "2부 순서 (예: 레크, 나눔)", readonly: !canWrite });
     p2.value = S.part2 || ""; p2.addEventListener("input", function () { S.part2 = p2.value; changed(); });
-    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "개회 예배 순서 · 1일차 저녁 세미나실" }), ttl && ttl.v ? h("p", { cls: "sermon", text: "“" + ttl.v.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "") + "”" }) : null, ord, h("div", { cls: "orow" }, [h("label", { "for": "part2", text: "2부" }), p2])]));
+    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "개회 예배 순서 · 1일차 저녁 세미나실" }), ttl && ttl.v ? h("p", { cls: "sermon", text: "“" + ttl.v.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "") + "”" }) : null, ord]));
     w.appendChild(pptCard());
     // 친교의 시간 1~3: 순서는 1~5번 빈칸으로 두고 편집 화면에서 채운다
     w.appendChild(fellowCard(["fellow1", "친교의 시간 1 · 자기소개 + 선물 수집"]));
