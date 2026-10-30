@@ -805,6 +805,9 @@ a.instbtn { color: inherit; text-decoration: none; }
   .bythumb { position: relative; padding: 0; border: 0; border-radius: 10px; overflow: hidden; background: none; aspect-ratio: 941 / 1672; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
   .bythumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .bythumb span { position: absolute; top: 4px; left: 4px; background: #dc2626; color: #fff; font-weight: 900; font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
+  li.evli { list-style: none; display: grid; grid-template-columns: 58px 1fr 64px; gap: 10px; align-items: center; padding: 10px 12px; margin: 6px 0; border-radius: 14px; background: #fff7ed; border: 2px solid #fb923c; }
+  li.evli .when { color: #c2410c; font-weight: 900; }
+  li.evli .evbody { display: grid; gap: 3px; } li.evli .evbody b { color: #9a3412; font-size: 15px; } li.evli .evbody small { color: #57534e; font-size: 12.5px; }
 </style>
 
 <header class="topbar">
@@ -2304,10 +2307,22 @@ a.instbtn { color: inherit; text-decoration: none; }
       return h("button", { type: "button", cls: "bythumb", "aria-label": p.cap, onclick: function () { openPhoto(i, list); } }, [h("img", { src: p.src, alt: p.cap }), h("span", { text: String(i + 1) })]);
     }))]);
   }
+  // 비양도 이벤트: 일정 사이에 따로 끼우는 칸 (포스터 누르면 크게)
+  var BYEV = [
+    ["11:35", "🎉 비양도 이벤트 안내", "보말 점심 · 커피숍 티타임 · 이벤트 3가지", "d1-6"],
+    ["12:50", "🚲 이벤트 1 · 자전거 둘레길 '부부 기자단'", "부부가 자전거로 4개 명소 사진 찍어 단톡방에 올리기 · 선물 · 둘레 약 1.3km", "d1-9"],
+    ["12:50", "🏁 이벤트 2 · 시화산의 엄복동을 찾아라", "해안길 한 바퀴 스피드 대결 · 남자 1명·여자 1명 선물", "d1-9"],
+    ["12:50", "🎤 이벤트 3 · 전국노래자랑 시화산편", "비양도 특설무대 · 최우수상·우수상·인기상 · 미리 신청", "d1-9"]
+  ];
+  function byEvItem(i) {
+    var e = BYEV[i], list = BYIMG.map(function (s, k) { return { src: s, cap: BYEV[k][1] }; });
+    return h("li", { cls: "evli" }, [h("span", { cls: "when num", text: e[0] }),
+      h("div", { cls: "evbody" }, [h("b", { text: e[1] }), h("small", { text: e[2] })]),
+      h("button", { type: "button", cls: "bythumb", "aria-label": e[1] + " 포스터 크게 보기", onclick: function () { openPhoto(i, list); } }, [h("img", { src: BYIMG[i], alt: e[1] }), h("span", { text: String(i + 1) })])]);
+  }
   function stopExtra(key) {
     var out = [];
     if (key === "d1-6" || key === "d1-10") out.push(ferryTable());
-    if (key === "d1-9") out.push(byEvents());
     if (CONTACTS[key]) out.push(contactBox(CONTACTS[key]));
     var MK = { "d1-8": "m2", "d2-5": "m3", "d2-9": "m3b", "d3-4": "m4" }[key];
     var mm = MK ? menus().filter(function (m) { return m.id === MK; })[0] : null;
@@ -2453,7 +2468,8 @@ a.instbtn { color: inherit; text-decoration: none; }
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "시각 확정" : "예상 시각" })]);
       items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) + (sjump === day.key + "-" + si ? " jump" : ""), id: "stop-" + day.key + "-" + si }, [when, what, h("div", { cls: "kcol" }, [h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] }), hostBtn(HOSTAT[day.key + "-" + si])])]));
-      if (day.key === "d1" && si === 6) items.push(rainCard());
+      if (day.key === "d1" && si === 6) { items.push(rainCard()); items.push(byEvItem(0)); }
+      if (day.key === "d1" && si === 9) { items.push(byEvItem(1)); items.push(byEvItem(2)); items.push(byEvItem(3)); }
       // 친교의 시간 2는 플로이스트 뒤, 3은 델문도 뒤
       if (day.key === "d2" && si === 5) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow2", "🤝 친교의 시간 2 · 플로이스트"])]));
       if (day.key === "d2" && si === 10) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow3", "🤝 친교의 시간 3 · 델문도 후 호텔 세미나실"])]));
