@@ -840,6 +840,19 @@ a.instbtn { color: inherit; text-decoration: none; }
 .order.prlist .cartag.van { background: #fef3c7; color: #b45309; }
 .order.prlist .orow label { font-size: 13.5px; white-space: nowrap; }
 .order.prlist .orow input, .order.prlist .orow .oval { font-size: 14.5px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.3; padding: 6px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order.prlist { gap: 4px; }
+.prrow { display: grid; grid-template-columns: 56px 1fr 1fr; gap: 4px; align-items: center; }
+.prrow.one .prc { grid-column: 2 / 4; }
+.prrow label { font-weight: 900; color: var(--navy); font-size: 13.5px; white-space: nowrap; }
+.prrow.phead b { font-size: 12px; text-align: center; border-radius: 6px; padding: 2px 0; background: #e0ecff; color: #1d4ed8; }
+.prrow.phead b.van { background: #fef3c7; color: #b45309; }
+.prc { min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 5px 6px; background: #fff; line-height: 1.3; }
+.prc b { display: block; font-size: 14.5px; font-weight: 700; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #1e293b; }
+.prc b.soft { color: #adb5bd; font-weight: 500; }
+.prc small { display: block; font-size: 12px; color: #64748b; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prrow.two .prc:nth-child(3) { background: #fffbeb; border-color: #fde68a; }
+.prc.edit { cursor: text; }
+.prc input { width: 100%; border: 0; padding: 0; font-size: 14.5px; font-weight: 700; background: transparent; outline: none; }
 </style>
 
 <header class="topbar">
@@ -2405,15 +2418,32 @@ a.instbtn { color: inherit; text-decoration: none; }
   }
   function prayerCard() {
       var pr = h("div", { cls: "order" });
-      // 한 사람당 한 줄 · 글씨 크기 통일. 차량 기도는 같은 날·때 아래 🚌 버스 / 🚐 쏠라티 두 줄
+      // 글씨 크기 통일, 빈칸 없이. 차량 기도는 같은 줄에 🚌 버스 | 🚐 쏠라티 나란히 (이름 / 교회 두 줄)
+      var cell = function (x, idx, wide) {
+        if (!x) return h("span", { cls: "prc soft", text: "" });
+        var m = (x.v || "").match(/^(.*?)\s*(\(.*\))\s*$/);
+        var show = function () { return x.v ? (wide || !m ? [h("b", { text: x.v })] : [h("b", { text: m[1] }), h("small", { text: m[2] })]) : [h("b", { cls: "soft", text: canWrite ? "기도자 입력" : "미정" })]; };
+        var d = h("div", { cls: "prc" + (wide ? " wide" : "") }, show());
+        if (canWrite) {
+          d.classList.add("edit"); d.tabIndex = 0;
+          d.addEventListener("click", function () {
+            if (d.querySelector("input")) return;
+            var inp = h("input", { id: "pr" + idx, placeholder: "기도자", "aria-label": x.k }); inp.value = x.v || "";
+            inp.addEventListener("input", function () { x.v = inp.value; changed(); });
+            inp.addEventListener("blur", function () { m = (x.v || "").match(/^(.*?)\s*(\(.*\))\s*$/); d.textContent = ""; show().forEach(function (n) { d.appendChild(n); }); });
+            d.textContent = ""; d.appendChild(inp); inp.focus();
+          });
+        }
+        return d;
+      };
+      var head = false;
       S.prayers.forEach(function (r, i) {
-        var bus = / 🚌 버스$/.test(r.k), van = / 🚐 쏠라티$/.test(r.k);
-        var lab = van ? "" : r.k.replace(/ 기도$/, "").replace(/ 🚌 버스$/, "");
-        var val;
-        if (canWrite) { val = h("input", { id: "pr" + i, placeholder: "기도자", "aria-label": r.k }); val.value = r.v || ""; val.addEventListener("input", function () { r.v = val.value; changed(); }); }
-        else val = h("span", { cls: "oval" + (r.v ? "" : " soft"), text: r.v || "미정" });
-        pr.appendChild(h("div", { cls: "orow" + (van ? " vanrow" : "") }, [h("label", { "for": "pr" + i, text: lab }),
-          h("div", { cls: "prval" }, [bus || van ? h("span", { cls: "cartag " + (van ? "van" : "bus"), text: van ? "쏠라티" : "버스" }) : null, val])]));
+        if (/ 🚐 쏠라티$/.test(r.k)) return;
+        var mm = r.k.match(/^(.*) 🚌 버스$/), lab = (mm ? mm[1] : r.k).replace(/ 기도$/, "");
+        if (!mm) { pr.appendChild(h("div", { cls: "prrow one" }, [h("label", { text: lab }), cell(r, i, true)])); return; }
+        var j = -1; S.prayers.forEach(function (x, k) { if (x.k === mm[1] + " 🚐 쏠라티") j = k; });
+        if (!head) { head = true; pr.appendChild(h("div", { cls: "prrow phead" }, [h("span"), h("b", { cls: "bus", text: "🚌 버스" }), h("b", { cls: "van", text: "🚐 쏠라티" })])); }
+        pr.appendChild(h("div", { cls: "prrow two" }, [h("label", { text: lab }), cell(r, i), cell(S.prayers[j], j)]));
       });
       pr.classList.add("prlist");
       return h("div", { cls: "card glass" }, [h("h3", { text: "🙏 기도 담당" }), pr]);
