@@ -808,6 +808,20 @@ a.instbtn { color: inherit; text-decoration: none; }
   li.evli { list-style: none; display: grid; grid-template-columns: 58px 1fr 64px; gap: 10px; align-items: center; padding: 10px 12px; margin: 6px 0; border-radius: 14px; background: #fff7ed; border: 2px solid #fb923c; }
   li.evli .when { color: #c2410c; font-weight: 900; }
   li.evli .evbody { display: grid; gap: 3px; } li.evli .evbody b { color: #9a3412; font-size: 15px; } li.evli .evbody small { color: #57534e; font-size: 12.5px; }
+  table.exptbl { table-layout: fixed; font-size: 12.5px; }
+  table.exptbl th, table.exptbl td { padding: 5px 4px; }
+  table.exptbl td input.money, table.exptbl td input.txt { box-sizing: border-box; min-width: 0; width: 100%; padding: 4px 5px; font-size: 12.5px; }
+  .tblwrap table.exptbl { width: 100%; max-width: 100%; }
+  table.exptbl tr.enrow td { border-top: 2px solid var(--line); padding-bottom: 0; font-weight: 800; color: var(--navy); }
+  table.exptbl tr.enrow td input.txt { min-width: 0; font-weight: 800; }
+  table.exptbl tr.evrow td { border-top: 0; }
+  table.exptbl thead th:empty { width: 24px; }
+  table.exptbl:not(.sub) thead th:nth-child(1), table.exptbl:not(.sub) thead th:nth-child(3), table.exptbl:not(.sub) thead th:nth-child(4) { width: 28%; }
+  table.exptbl:not(.sub) thead th:nth-child(2) { width: 13%; }
+  table.exptbl .xbtn { padding: 0; font-size: 16px; }
+  table.exptbl td { overflow: hidden; } table.exptbl td:has(.xbtn) { padding: 5px 0; text-align: center; }
+  table.exptbl td.r { white-space: normal; word-break: keep-all; }
+  .tblwrap.tight table { font-size: 12px; } .tblwrap.tight th, .tblwrap.tight td { padding: 6px 4px; }
 </style>
 
 <header class="topbar">
@@ -2768,16 +2782,20 @@ a.instbtn { color: inherit; text-decoration: none; }
 
     // 지출: 예산안 항목(sub 없음)과 결산 세부 항목(sub: 식당·카페·입장료, 예산은 위 묶음에 포함)
     var expTable = function (rows, sub) {
-      var tt = h("table", null, [h("thead", null, [h("tr", null, [h("th", { text: sub ? "결산 항목" : "지출 항목" }), sub ? null : h("th", { cls: "r", text: "단가" }), sub ? null : h("th", { cls: "r", text: "수량" }), sub ? null : h("th", { cls: "r", text: "예산" }), h("th", { cls: "r", text: "실제" }), canWrite ? h("th", { text: "" }) : null])])]);
+      // 휴대폰 폭에 맞게: 항목 이름은 한 줄 전체, 그 아래 줄에 숫자 칸
+      var ncol = (sub ? 1 : 4) + (canWrite ? 1 : 0);
+      var tt = h("table", { cls: "exptbl" + (sub ? " sub" : "") }, [h("thead", null, [h("tr", null, [sub ? null : h("th", { cls: "r", text: "단가" }), sub ? null : h("th", { cls: "r", text: "수량" }), sub ? null : h("th", { cls: "r", text: "예산" }), h("th", { cls: "r", text: "실제" }), canWrite ? h("th") : null])])]);
       var tb = h("tbody"), sp = 0, sa = 0;
       rows.forEach(function (r) {
         sp += (r.unit || 0) * (r.qty || 0); sa += (r.actual || 0) + rcSum(r);
-        tb.appendChild(h("tr", null, [canWrite ? nameInput(r) : h("td", { text: r.name }), sub ? null : h("td", { cls: "r" }, [moneyInput(r, "unit")]), sub ? null : h("td", { cls: "r" }, [moneyInput(r, "qty", true)]),
+        var nc = canWrite ? nameInput(r) : h("td", { text: r.name }); nc.colSpan = ncol; nc.className = "ename";
+        tb.appendChild(h("tr", { cls: "enrow" }, [nc]));
+        tb.appendChild(h("tr", { cls: "evrow" }, [sub ? null : h("td", { cls: "r" }, [moneyInput(r, "unit")]), sub ? null : h("td", { cls: "r" }, [moneyInput(r, "qty", true)]),
           sub ? null : h("td", { cls: "r", text: won((r.unit || 0) * (r.qty || 0)) }), h("td", { cls: "r" }, [moneyInput(r, "actual"), rcSum(r) ? h("small", { cls: "rcadd", text: "+영수증 " + won(rcSum(r)) }) : null]),
           canWrite ? h("td", null, [h("button", { cls: "xbtn", type: "button", "aria-label": r.name + " 삭제", text: "×", onclick: function () { S.expense.splice(S.expense.indexOf(r), 1); moneySave(); renderMoney(); } })]) : null]));
       });
       tt.appendChild(tb);
-      tt.appendChild(h("tfoot", null, [h("tr", null, [h("td", { text: "합계" }), sub ? null : h("td"), sub ? null : h("td"), sub ? null : h("td", { cls: "r", text: won(sp) }), h("td", { cls: "r", text: sa ? won(sa) : "" }), canWrite ? h("td") : null])]));
+      tt.appendChild(h("tfoot", null, [h("tr", null, [sub ? null : h("td", { text: "합계" }), sub ? null : h("td"), sub ? null : h("td", { cls: "r", text: won(sp) }), h("td", { cls: "r", text: (sub ? "합계 " : "") + (sa ? won(sa) : "") }), canWrite ? h("td") : null])]));
       return tt;
     };
     var add = function (sub) { return canWrite ? h("button", { cls: "btn", type: "button", text: "+ 항목 추가", onclick: function () { var r = { id: uid("e"), name: "새 항목", unit: 0, qty: 1, actual: 0 }; if (sub) r.sub = 1; S.expense.push(r); moneySave(); renderMoney(); } }) : null; };
@@ -2883,7 +2901,7 @@ a.instbtn { color: inherit; text-decoration: none; }
     var tm = h("table", null, [h("thead", null, [h("tr", null, [h("th", { text: "월" }), h("th", { cls: "r", text: "수입" }), h("th", { cls: "r", text: "지출" }), h("th", { cls: "r", text: "월말 잔액" })])]),
       h("tbody", null, order.map(function (m) { return h("tr", null, [h("td", { text: m }), h("td", { cls: "r num", text: mon[m][0] ? won(mon[m][0]) : "–" }), h("td", { cls: "r num", text: mon[m][1] ? won(mon[m][1]) : "–" }), h("td", { cls: "r num", text: won(mon[m][2]) })]); })),
       h("tfoot", null, [h("tr", null, [h("td", { text: "합계" }), h("td", { cls: "r", text: won(tin) }), h("td", { cls: "r", text: won(tout) }), h("td", { cls: "r", text: won(tin - tout) })])])]);
-    w.appendChild(h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: "월별 수입·지출" })]), h("div", { cls: "tblwrap" }, [tm])]));
+    w.appendChild(h("div", { cls: "group" }, [h("div", { cls: "ghead" }, [h("h3", { text: "월별 수입·지출" })]), h("div", { cls: "tblwrap tight" }, [tm])]));
     var tb = h("tbody");
     var last = "";
     LEDGER.forEach(function (r) {
