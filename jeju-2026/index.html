@@ -2693,10 +2693,11 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     });
     var p2 = h("input", { cls: "field", id: "part2", placeholder: "2부 순서 (예: 레크, 나눔)", readonly: !canWrite });
     p2.value = S.part2 || ""; p2.addEventListener("input", function () { S.part2 = p2.value; changed(); });
-    w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "개회 예배 순서 · 1일차 저녁 세미나실" }), ttl && ttl.v ? h("p", { cls: "sermon", text: "“" + ttl.v.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "") + "”" }) : null, ord]));
-    w.appendChild(pptCard());
+    // 2일차는 숙소 칸 뒤에 과일 봉지 수령표만 둔다
+    if (dayKey !== "d2") w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "개회 예배 순서 · 1일차 저녁 세미나실" }), ttl && ttl.v ? h("p", { cls: "sermon", text: "“" + ttl.v.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "") + "”" }) : null, ord]));
+    if (dayKey !== "d2") w.appendChild(pptCard());
     // 친교의 시간 1~3: 순서는 1~5번 빈칸으로 두고 편집 화면에서 채운다
-    w.appendChild(fellowCard(["fellow1", "친교의 시간 1 · 자기소개 + 선물 수집"]));
+    if (dayKey !== "d2") w.appendChild(fellowCard(["fellow1", "친교의 시간 1 · 자기소개 + 선물 수집"]));
     // 과일 봉지 수령표: 그날(1·2일차) 맨 마지막 칸
     var fd = dayKey === "d1" || dayKey === "d2" ? dayKey : null;
     if (fd) w.appendChild(h("div", { cls: "card glass" }, [h("h3", { text: "🍊 과일 봉지 수령 · " + fd.slice(1) + "일차 숙소로" }), fruitBox(fd)]));
