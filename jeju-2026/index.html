@@ -234,6 +234,8 @@ ul.tri .pmini span:last-child { font-size: 10.5px; color: #555; }
 ul.tri .pmini { padding: 5px 3px !important; gap: 2px !important; }
 ul.tri .pmini.blank { visibility: hidden; }
 .pmini .ch { color: var(--muted); font-size: 13px; }
+.pmini .agrel { color: #c2255c; font-size: 13px; font-weight: 700; }
+.pmini.age { flex-wrap: wrap; row-gap: 2px; }
 .pmini .agb { margin-left: auto; color: #1864ab; font-weight: 700; }
 .sqbox { padding: 12px; }
 .sqbox .search { margin: 0; }
@@ -3326,7 +3328,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     function fill() {
       ul.textContent = "";
       var inF = function (p) { return (!pfil || SCD()[p.n] === pfil) && (!q || [p.name, p.church, p.phone, p.role, String(p.n)].join(" ").indexOf(q) !== -1); };
-      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthTxt(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
+      if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini age " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null,
+        spouseOf(p) ? h("span", { cls: "agrel", text: "- " + spouseOf(p).name + " " + spouseOf(p).role + (isSp(p) ? "의 아내" : "의 남편") }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthTxt(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
       if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") + (TAMNA_LATE.indexOf(p.name) >= 0 ? " late" : "") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role.replace("원로목사", "원로") })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); else { var its = Array.prototype.slice.call(ul.children), rows = Math.ceil(its.length / 4); ul.textContent = ""; for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < 4; cc++) ul.appendChild(its[cc * rows + rr] || h("li", { cls: "pmini blank" }));
         var late = S.people.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p, i) { return { p: p, no: i + 1 }; }).filter(function (x) { return TAMNA_LATE.indexOf(x.p.name) >= 0; });
         if (late.length) ul.appendChild(h("li", { cls: "latenote" }, [h("b", { text: "⏰ 늦게 도착 · 2026.11.02(월) 17:00" }), h("span", { text: late.map(function (x) { return x.no + ". " + x.p.name + " " + x.p.role; }).join(" · ") })])); } return; }
