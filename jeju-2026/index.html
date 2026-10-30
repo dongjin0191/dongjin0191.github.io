@@ -828,6 +828,7 @@ a.instbtn { color: inherit; text-decoration: none; }
   ul.tri li.latenote { grid-column: 1 / -1; display: grid; gap: 3px; margin-top: 6px; padding: 9px 12px; border-radius: 12px; background: #fff7ed; border: 2px solid #fb923c; list-style: none; }
   ul.tri li.latenote b { color: #c2410c; font-size: 14.5px; } ul.tri li.latenote span { font-weight: 800; color: #1e293b; font-size: 14.5px; }
   ul.tri .pmini.late { outline: 2px solid #fb923c; background: #fff7ed; }
+.cbtn.sms, .staff-tel.sms, a.smsb { background: #e8f1ff; color: #1d4ed8; border-color: #bcd3f5; }
 </style>
 
 <header class="topbar">
@@ -1262,13 +1263,10 @@ a.instbtn { color: inherit; text-decoration: none; }
     var done = function () { var o = btn.textContent; btn.textContent = "복사됨"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = o; btn.classList.remove("copied"); }, 1400); };
     try { navigator.clipboard.writeText(text).then(done, function () { selectNext(btn); }); } catch (e) { selectNext(btn); }
   }
-  // 카톡 버튼: 오픈프로필 링크가 있으면 바로 그 대화로, 없으면 번호를 복사하고 카카오톡을 연다
-  var KK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#3c1e1e"/><path d="M12 5.2c-4.2 0-7.6 2.6-7.6 5.9 0 2.1 1.4 3.9 3.5 5l-.8 3 3.4-2.2c.5.1 1 .1 1.5.1 4.2 0 7.6-2.6 7.6-5.9S16.2 5.2 12 5.2z" fill="#fee500"/></svg>';
+  var KK_SVG = "";
+  // 개인 연락 버튼: 카톡 1:1은 번호로 바로 열 수 없어 문자 보내기로 연결한다
   function kkBtn(cls, phone, link, label, name) {
-    var a = h("a", { cls: cls + " kkb", href: link || "kakaotalk://launch", target: link ? "_blank" : "_top", rel: "noopener", "aria-label": label, title: link ? "카카오톡 대화 열기" : "카카오톡 연결 방법 고르기" });
-    a.innerHTML = KK_SVG + "<span>카톡</span>";
-    if (!link) a.addEventListener("click", function (e) { e.preventDefault(); kkSheet(name || label.replace(/ 카톡$/, ""), phone); });
-    return a;
+    return h("a", { cls: cls.replace(/\s*(kakaobtn|kakao)\b/g, "") + " smsb", href: "sms:" + (phone || "").replace(/[^\d]/g, ""), target: "_top", "aria-label": (name || label) + " 문자 보내기", text: "✉️ 문자" });
   }
   // 번호만으로 1:1 대화를 바로 여는 카카오톡 주소는 없어서, 할 수 있는 길을 모두 모아 보여 준다
   function kkSheet(name, phone) {
@@ -1709,24 +1707,10 @@ a.instbtn { color: inherit; text-decoration: none; }
       h("ul", { cls: "staff-list" }, STAFF.map(function (s) {
         var p = (S.people || []).filter(function (x) { return x.name === s[1]; })[0];
         var ph = (p && p.phone) || s[3] || "", tel = ph.replace(/[^\d]/g, "");
-        var key = "kk-" + s[1], kk = (S.links && S.links[key]) || "";
-        // 카톡: 1:1 오픈채팅 링크가 있으면 그 방으로, 없으면 번호를 복사하고 카카오톡을 연다(친구 추가 → 번호로 추가)
-        var talk = function (e) {
-          if (kk) return;
-          e.preventDefault();
-          if (tel) copy(ph, e.currentTarget);
-          setTimeout(function () { location.href = "kakaotalk://launch"; }, 300);
-        };
         var li = h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
           h("span", { cls: "staff-name one" }, [h("b", { text: s[1] + " " + s[2] }), (p && p.church) || s[4] ? h("small", { text: " (" + ((p && p.church) || s[4]).split(" · ")[0] + "교회)" }) : null]),
-          (kk || tel) ? h("a", { cls: "staff-tel kk", href: kk || "kakaotalk://launch", target: "_blank", rel: "noopener", "aria-label": s[1] + " " + s[2] + " 카톡", text: "💬", onclick: talk }) : h("span"),
+          tel ? h("a", { cls: "staff-tel sms", href: "sms:" + tel, target: "_top", "aria-label": s[1] + " " + s[2] + " 문자 보내기", text: "✉️" }) : h("span"),
           tel ? h("a", { cls: "staff-tel", href: "tel:" + tel, "aria-label": s[1] + " " + s[2] + " 전화" , text: "📞" }) : h("span")]);
-        if (canWrite) {
-          var ki = h("input", { cls: "field staff-kk", placeholder: s[1] + " " + s[2] + " 1:1 오픈채팅 링크 (https://open.kakao.com/o/…)", "aria-label": s[1] + " 카톡 링크" });
-          ki.value = kk;
-          ki.addEventListener("change", function () { var u = ki.value.trim(); if (u && !/^https:\/\/open\.kakao\.com\//.test(u)) { ki.value = ""; return; } S.links[key] = u; changed(); renderHome(); });
-          li.appendChild(ki);
-        }
         return li;
       }))
     ]);
@@ -1875,26 +1859,18 @@ a.instbtn { color: inherit; text-decoration: none; }
     return box;
   }
   function contactBtns(name, phone, key) {
-    var kk = (S.links && S.links[key]) || "";
     var box = h("div", { cls: "contact" }, [
       h("p", { cls: "contact-name" }, [h("b", { text: name + " " }), h("span", { cls: "num", text: phone })]),
       h("div", { cls: "cbtns" }, [
         h("button", { cls: "cbtn", type: "button", onclick: function (e) { copy(phone, e.currentTarget.querySelector("b")); } }, [h("span", { text: "📋" }), h("b", { text: "번호 복사" })]),
         h("a", { cls: "cbtn call", href: "tel:" + phone.replace(/-/g, "") }, [h("span", { text: "📞" }), h("b", { text: "전화 걸기" })]),
-        h("a", { cls: "cbtn kakao", href: kk || "kakaotalk://launch", target: "_blank", rel: "noopener" }, [h("span", { text: "💬" }), h("b", { text: "카톡 연결" })])
+        h("a", { cls: "cbtn sms", href: "sms:" + phone.replace(/-/g, ""), target: "_top" }, [h("span", { text: "✉️" }), h("b", { text: "문자 보내기" })])
       ])
     ]);
-    if (canWrite) {
-      var ki = h("input", { cls: "field", placeholder: name.split(" ")[0] + " 카카오 오픈채팅 링크 (https://open.kakao.com/...)", "aria-label": name + " 카카오 오픈채팅 링크" });
-      ki.value = kk;
-      ki.addEventListener("change", function () { var u = ki.value.trim(); if (u && !/^https:\/\//.test(u)) { ki.value = ""; return; } S.links[key] = u; changed(); renderHome(); });
-      box.appendChild(ki);
-    }
     return box;
   }
   function contactCard(title, name, phone, key) {
-    return h("div", { cls: "card" }, [h("h3", { text: title }), contactBtns(name, phone, key),
-      h("p", { cls: "muted", text: "카톡 연결은 카카오톡을 열어 줍니다. 오픈채팅 링크를 넣으면 대화방으로 바로 연결됩니다." })]);
+    return h("div", { cls: "card" }, [h("h3", { text: title }), contactBtns(name, phone, key)]);
   }
   function goTamna(e) { if (e) e.preventDefault(); pv = "list"; porder = "tamna"; q = ""; go("people"); window.scrollTo(0, 0); }
   function goRooms(e) { if (e) e.preventDefault(); pv = "room"; go("people"); window.scrollTo(0, 0); }
@@ -3274,9 +3250,8 @@ a.instbtn { color: inherit; text-decoration: none; }
       p.phone ? h("div", { cls: "pline" }, [h("a", { href: "tel:" + tel, text: p.phone }),
         h("button", { cls: "btn", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
         h("a", { cls: "btn callbtn", href: "tel:" + tel, target: "_top", "aria-label": p.name + " 전화걸기", text: "📞 전화" }),
-        /^01/.test(tel) || p.kakao ? kkBtn("btn kakaobtn", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null
+        /^01/.test(tel) ? kkBtn("btn kakaobtn", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null
       ])]),
-      canWrite ? kakaoLinkInput(p) : null,
       canWrite ? photoInput(p) : null,
       h("dl", { cls: "pinfo2" }, [
         h("div", null, [h("dt", { text: "✈ 예약번호" }), h("dd", null, [pnr])]),
@@ -3486,7 +3461,7 @@ a.instbtn { color: inherit; text-decoration: none; }
         h("ol", { cls: "tklist" }, ps.map(function (p) { var tel = (p.phone || "").replace(/[^\d]/g, "");
           return h("li", { cls: isSp(p) ? "f" : "m" }, [h("div", { cls: "tkrow" }, [h("span", { cls: "num", text: String(p.n) }), h("b", { text: p.name }), h("small", { text: p.role }), birthOf(p) ? h("em", { cls: "tkb num", text: birthOf(p) }) : null, birthOf(p) ? h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(birthOf(p), e.currentTarget); } }) : null]),
             p.phone ? h("div", { cls: "tkph" }, [h("a", { cls: "num", href: "tel:" + tel, text: p.phone }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(p.phone, e.currentTarget); } }),
-              /^01/.test(tel) || p.kakao ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
+              /^01/.test(tel) ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
     });
     if (canWrite) w.appendChild(h("p", { cls: "muted", text: "예약번호는 명단 탭 서열순 카드의 '예약번호' 칸에서 고칠 수 있습니다." }));
