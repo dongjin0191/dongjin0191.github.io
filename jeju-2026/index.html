@@ -825,6 +825,9 @@ a.instbtn { color: inherit; text-decoration: none; }
   table.exptbl td { overflow: hidden; } table.exptbl td:has(.xbtn) { padding: 5px 0; text-align: center; }
   table.exptbl td.r { white-space: normal; word-break: keep-all; }
   .tblwrap.tight table { font-size: 12px; } .tblwrap.tight th, .tblwrap.tight td { padding: 6px 4px; }
+  ul.tri li.latenote { grid-column: 1 / -1; display: grid; gap: 3px; margin-top: 6px; padding: 9px 12px; border-radius: 12px; background: #fff7ed; border: 2px solid #fb923c; list-style: none; }
+  ul.tri li.latenote b { color: #c2410c; font-size: 14.5px; } ul.tri li.latenote span { font-weight: 800; color: #1e293b; font-size: 14.5px; }
+  ul.tri .pmini.late { outline: 2px solid #fb923c; background: #fff7ed; }
 </style>
 
 <header class="topbar">
@@ -2324,6 +2327,7 @@ a.instbtn { color: inherit; text-decoration: none; }
       return h("button", { type: "button", cls: "bythumb", "aria-label": p.cap, onclick: function () { openPhoto(i, list); } }, [h("img", { src: p.src, alt: p.cap }), h("span", { text: String(i + 1) })]);
     }))]);
   }
+  var TAMNA_LATE = ["김지수", "이주은"];  // 탐나전 연번은 그대로, 아래에 따로 표시
   // 비양도 이벤트: 일정 사이에 따로 끼우는 칸 (포스터 누르면 크게)
   var BYEV = [
     ["11:35", "🎉 비양도 이벤트 안내", "보말 점심 · 커피숍 티타임 · 이벤트 3가지", "d1-6"],
@@ -3159,7 +3163,9 @@ a.instbtn { color: inherit; text-decoration: none; }
       ul.textContent = "";
       var inF = function (p) { return (!pfil || SCD()[p.n] === pfil) && (!q || [p.name, p.church, p.phone, p.role, String(p.n)].join(" ").indexOf(q) !== -1); };
       if (porder === "age") { var k0 = 0; ageList().forEach(function (p) { if (!inF(p)) return; k0++; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(k0) }), h("b", { text: p.name }), h("small", { text: p.role }), churchOf(p) ? h("span", { cls: "ch", text: "(" + churchOf(p).replace(/교회$/, "") + ")" }) : null, birthOf(p) ? h("span", { cls: "num agb", text: birthOf(p) }) : null])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); return; }
-      if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role.replace("원로목사", "원로") })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); else { var its = Array.prototype.slice.call(ul.children), rows = Math.ceil(its.length / 4); ul.textContent = ""; for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < 4; cc++) ul.appendChild(its[cc * rows + rr] || h("li", { cls: "pmini blank" })); } return; }
+      if (porder === "tamna") { ul.classList.add("tri"); S.people.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (p, i) { if (!inF(p)) return; ul.appendChild(h("li", { cls: "pmini " + (isSp(p) ? "f" : "m") + (TAMNA_LATE.indexOf(p.name) >= 0 ? " late" : "") }, [h("span", { cls: "num no", text: String(i + 1) }), h("b", { text: p.name }), h("span", { text: p.role.replace("원로목사", "원로") })])); }); if (!ul.children.length) ul.appendChild(h("li", { cls: "muted", text: "찾는 분이 없습니다." })); else { var its = Array.prototype.slice.call(ul.children), rows = Math.ceil(its.length / 4); ul.textContent = ""; for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < 4; cc++) ul.appendChild(its[cc * rows + rr] || h("li", { cls: "pmini blank" }));
+        var late = S.people.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p, i) { return { p: p, no: i + 1 }; }).filter(function (x) { return TAMNA_LATE.indexOf(x.p.name) >= 0; });
+        if (late.length) ul.appendChild(h("li", { cls: "latenote" }, [h("b", { text: "⏰ 늦게 도착 · 2026.11.02(월) 17:00" }), h("span", { text: late.map(function (x) { return x.no + ". " + x.p.name + " " + x.p.role; }).join(" · ") })])); } return; }
       var LIST = S.people;
       LIST.forEach(function (p, i) {
         if (!inF(p)) return;
