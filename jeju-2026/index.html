@@ -3082,9 +3082,15 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   }
   // 게임 칸 → [문제 페이지, 소스 페이지]
   var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html", BC_URL = "https://dongjin0191.github.io/games/bible-charades/";
+  // 폰(대시보드 미리보기 창·카톡 안 브라우저)에서도 열리도록 진짜 링크(새 창)로. 카톡 안에서는 바깥 브라우저로
+  function gameLink(u, t, c) {
+    return h("a", { cls: "btn fwqbtn" + c, href: u, target: "_blank", rel: "noopener", text: t, onclick: function (e) {
+      if (IN_KAKAO) { e.preventDefault(); location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(u); return; }
+    } });
+  }
   function gameOf(v) {
     if (/이구동성|초성/.test(v || "")) return [IGU_URL, IGU_URL];
-    if (/몸으로/.test(v || "")) return [BC_URL, BC_URL];
+    if (/몸으로/.test(v || "")) return [BC_URL, BC_URL + "source.html"];
     return null;
   }
   // 빙고판: 각자 휴대폰에만 저장(localStorage). 5판, 판마다 25칸에 적고 불린 칸을 눌러 색칠
@@ -3197,8 +3203,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       });
       fe.appendChild(h("div", { cls: "fwrow" + (circ || sub ? " nolab" : "") + (sub ? " sub" : "") + (r.k === "※" ? " note" : "") }, [circ || sub ? null : h("span", { cls: "fwk", text: r.k }),
         // 이구동성·곡 초성 문제 페이지는 총무 계정에서만 버튼이 보인다
-        IS_OWNER && gameOf(r.v) ? h("div", { cls: "fwq" }, [txt, h("button", { cls: "btn fwqbtn", type: "button", text: "📝 문제", onclick: function () { openOut(gameOf(r.v)[0]); } }),
-          h("button", { cls: "btn fwqbtn src", type: "button", text: "<소스>", onclick: function () { openOut(gameOf(r.v)[1]); } })]) : txt]));
+        IS_OWNER && gameOf(r.v) ? h("div", { cls: "fwq" }, [txt, gameLink(gameOf(r.v)[0], "📝 문제", ""), gameLink(gameOf(r.v)[1], "<소스>", " src")]) : txt]));
     });
     return h("div", { cls: "card glass" }, [h("h3", { text: f[1] }), fe]);
   }
