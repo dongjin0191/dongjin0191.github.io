@@ -858,6 +858,14 @@ a.instbtn { color: inherit; text-decoration: none; }
   .pptfull .pf-nav.prev { left: 14px; } .pptfull .pf-nav.next { right: 14px; }
   body.pf-on { overflow: hidden; }
   li.tlcard { list-style: none; margin: 4px 0; } li.tlcard > .card { margin: 0; }
+  /* 후원 신청: 크게, 가운데 */
+  .spnote.big { text-align: center; font-size: 17px; line-height: 1.6; padding: 16px 14px; word-break: keep-all; }
+  .ctbox.big .ctrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; padding: 16px 12px; }
+  .ctbox.big .ctrow > span:first-child { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+  .ctbox.big .ctrow > span:first-child b { font-size: 21px; }
+  .ctbox.big .ctrow > span:first-child small { font-size: 19px; font-weight: 700; }
+  .ctbox.big .kkpair { display: contents; }
+  .ctbox.big .pbtn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 58px; margin: 0; padding: 8px 4px; font-size: 18px; font-weight: 800; box-sizing: border-box; white-space: nowrap; }
   .spnote { margin: 12px 0 6px; padding: 10px 12px; border-radius: 12px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 14px; line-height: 1.5; }
   .kcol { display: grid; gap: 6px; justify-items: center; }
   a.hostbtn { display: inline-block; background: #dc2626; color: #fff; font-weight: 900; font-size: 12.5px; padding: 5px 9px; border-radius: 999px; text-decoration: none; box-shadow: 0 2px 6px rgba(220,38,38,.3); }
@@ -1648,8 +1656,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(h("div", { cls: "card" }, [
       h("h3", { text: "찬조해 주신 분들" }),
       h("p", { cls: "muted", text: "아름다운 수양회를 위해 후원해 주셔서 감사합니다. 합계 " + man(pledged) + (chkById("p70").ok ? " (최종 확인 " + (chkById("p70").at || "").slice(5, 10).replace("-", "/") + ")" : " (10월 20일 현재)") }), sp,
-      h("p", { cls: "spnote", text: "※ 현지에서 어떤 방법으로든 추가 후원 및 물품, 상품, 카페, 공동연합 섬김으로 섬기실 분들은 총무 이동진 목사에게 미리 알려 주세요." }),
-      contactBox([["총무 이동진 목사", "010-2540-0533"]])]));
+      h("p", { cls: "spnote big", text: "※ 현지에서 어떤 방법으로든 추가 후원 및 물품, 상품, 카페, 공동연합 섬김으로 섬기실 분들은 총무 이동진 목사에게 미리 알려 주세요." }),
+      contactBox([["총무 이동진 목사", "010-2540-0533"]], " big")]));
     w.appendChild(h("p", { cls: "foot", text: "대한예수교장로회 시화산노회 제19회기 목사·장로 부부 수양회" }));
     v.appendChild(w);
   }
@@ -2684,8 +2692,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     "d2-10": [["델문도 매장", "064-702-0007"], ["델문도 담당자 (개인)", "010-7790-1250"], ["델문도 김현 팀장", "010-3281-9284"]],
     "d3-4": [["폴 바셋 매장", "064-749-1630"], ["폴 바셋 매니저 (개인)", "010-5572-8956"]]
   };
-  function contactBox(list) {
-    return h("div", { cls: "ctbox" }, list.map(function (c) {
+  function contactBox(list, extra) {
+    return h("div", { cls: "ctbox" + (extra || "") }, list.map(function (c) {
       var num = c[1].replace(/[^\d]/g, "");
       return h("div", { cls: "ctrow" }, [h("span", null, [h("b", { text: c[0] }), h("small", { cls: "num", text: c[1] })]),
         h("a", { cls: "pbtn call", href: "tel:" + num, target: "_top", text: "📞 전화" }),
