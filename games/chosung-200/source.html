@@ -8,4 +8,24 @@ function render(){const item=songs[order[index]];if(!item){$('kind').textContent
 function setup(shuffle=false){order=songs.map((s,i)=>i).filter(i=>$('category').value==='전체'||songs[i].type===$('category').value);if(shuffle){for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}}index=0;shown=false;render();}
 function move(delta){index=(index+delta+order.length)%order.length;shown=false;render();}
 $('category').addEventListener('change',()=>setup());$('shuffle').onclick=()=>setup(true);$('reset').onclick=()=>setup();$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('reveal').onclick=()=>{shown=!shown;render()};$('full').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen?.();else document.documentElement.requestFullscreen?.()};document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')move(1);if(e.key==='ArrowLeft')move(-1);if(e.code==='Space'){e.preventDefault();shown=!shown;render()}if(e.key.toLowerCase()==='s')setup(true)});setup(true);
-</script></body></html>
+</script><!-- 폰을 눕혀서 진행: 오른쪽 가운데 '다음 ▶', 바로 밑 '정답' 버튼 (가로 화면에서만) -->
+<style>
+.fabnav{display:none}
+@media (orientation:landscape) and (max-height:600px),(orientation:landscape) and (pointer:coarse){
+  .fabnav{position:fixed;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);z-index:9999;display:flex;flex-direction:column;gap:12px}
+  .fabnav button{width:84px!important;min-width:84px;min-height:84px;padding:6px 4px!important;margin:0!important;white-space:nowrap;word-break:keep-all;letter-spacing:0;border:0;border-radius:20px;font:inherit;font-size:20px;font-weight:900;line-height:1.15;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .fabnav .fnext{background:#fbbf24;color:#1c1300;font-size:24px}
+  .fabnav .fans{background:#fff;color:#1d2b6b;min-height:64px;font-size:18px}
+  .fabnav button:active{transform:scale(.95)}
+  body{padding-right:calc(104px + env(safe-area-inset-right))!important}
+}
+</style>
+<div class="fabnav" aria-label="빠른 넘기기"><button type="button" class="fnext" id="fabNext">다음<br>▶</button><button type="button" class="fans" id="fabAns">정답</button></div>
+<script>
+(function(){
+  function find(re){return Array.prototype.find.call(document.querySelectorAll("main button, body > button, button"),function(b){return !b.closest(".fabnav")&&re.test(b.textContent.trim());});}
+  document.getElementById("fabNext").onclick=function(){var b=find(/^다음/);if(b)b.click();};
+  document.getElementById("fabAns").onclick=function(){var b=find(/정답/);if(b)b.click();};
+})();
+</script>
+</body></html>
