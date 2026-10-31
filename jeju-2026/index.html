@@ -891,6 +891,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .fruit-b.on .fruit-top i { color: #15803d; }
 .fwrow { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
 .fwrow.nolab { grid-template-columns: 1fr; }
+.ordcopy { margin-top: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; } .ordcopy pre { white-space: pre-wrap; font: inherit; font-size: 14px; line-height: 1.5; margin: 4px 0 8px; background: #f8fafc; border-radius: 8px; padding: 8px; } .ordcopybtns { display: flex; flex-wrap: wrap; gap: 6px; }
 .appshare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 8px; } .appshare .btn { font-size: 16px; padding: 12px 6px; font-weight: 800; } .kakaoshare { background: #fee500; color: #191919; border-color: #fee500; }
 .bingo h3 { margin-bottom: 8px; } .bgset { width: 100%; margin-bottom: 8px; }
 .bgtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
@@ -3301,7 +3302,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   }
   function orderCard() {
     var box = h("div", { cls: "card order" }, [h("h3", { text: "🍽 메뉴 고르기" }),
-      h("p", { cls: "muted", text: simpleOrd() ? "이름과 메뉴를 고르고 '총무에게 문자 보내기'를 누르면 끝입니다. 총무가 모아서 한 번에 주문합니다." : "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
+      h("p", { cls: "muted", text: simpleOrd() ? "이름과 메뉴를 고르고 '고르기 완료'를 누르면 끝입니다. 메뉴별 개수와 이름이 '모인 주문'에 쌓이고, 총무가 그대로 복사해 식당·카페에 주문합니다." : "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
     var ready = true, OL = simpleOrd() || ORD ? ordList() : null;
     menus().forEach(function (m) {
       var mine = OL && ordMe ? OL.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
@@ -3330,7 +3331,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     if (HOSTED && ready && ORD === null && orderUrl()) loadOrders(function () { if (cur === "home") renderHome(); });
     return box;
   }
-  var MCONTACT = { m2: CONTACTS["d1-8"], m3: CONTACTS["d2-5"], m3b: CONTACTS["d2-9"], m4: CONTACTS["d3-4"] };
+  var MCONTACT = { m1: CONTACTS["d1-4"], m2: CONTACTS["d1-8"], m3: CONTACTS["d2-5"], m3b: CONTACTS["d2-9"], m4: CONTACTS["d3-4"] };
   function orderSheet(m) {
     var ov = h("div", { cls: "ordsheet", role: "dialog", "aria-label": m.title + " 메뉴 고르기" });
     var shut = function () { ov.remove(); if (cur === "sched") { var y = window.scrollY; renderSched(); window.scrollTo(0, y); } };
@@ -3366,13 +3367,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
             if (menu) S.orders.push(rec);
             changed(); msg.textContent = menu ? "✔ " + ordMe + " 님 주문을 기록했습니다." : "✔ " + ordMe + " 님 주문을 지웠습니다."; draw(); renderHome(); return;
           }
+          // 총무에게 따로 보내지 않는다: 고른 것은 아래 '모인 주문'에 바로 쌓인다
           lsSet(LS + "-ord-" + m.id, menu ? JSON.stringify(rec) : "");
-          var txt = "[제주수양회 메뉴] " + m.title + "\n" + ordMe + " : " + (menu ? pick.menu + (pick.opt ? " · " + pick.opt : "") : "주문 취소");
-          var ua = navigator.userAgent || "", smsHref = "sms:" + ORD_PHONE + (/iPhone|iPad|Macintosh/.test(ua) ? "&" : "?") + "body=" + encodeURIComponent(txt);
-          msg.textContent = "";
-          msg.appendChild(h("a", { cls: "btn solid ordsend", href: smsHref, target: "_top", text: "📩 총무에게 문자 보내기" }));
-          msg.appendChild(h("button", { cls: "btn ordsend", type: "button", text: "📋 복사해서 카톡으로 보내기", onclick: function () { copy(txt, this); } }));
-          msg.appendChild(h("small", { cls: "muted", text: "문자 창이 열리면 '전송'만 누르세요. 총무가 받아서 명단에 기록하면 모인 주문에 나옵니다." }));
+          draw(); msg.textContent = menu ? "✔ " + ordMe + " 님: " + pick.menu + (pick.opt ? " · " + pick.opt : "") + " 골랐습니다." : "주문을 취소했습니다.";
           return;
         }
         msg.textContent = "보내는 중…";
@@ -3385,12 +3382,24 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       body.appendChild(msg);
       // 모인 주문
       var list = ordList().filter(function (o) { return o.place === m.title; });
+      if (simpleOrd()) { var lc2 = myLocal(m); if (lc2 && lc2.name && lc2.menu && !list.some(function (o) { return o.name === lc2.name; })) list = list.concat([lc2]); }
       var tally = {}; list.forEach(function (o) { var k = o.menu + (o.opt ? " · " + o.opt : ""); (tally[k] = tally[k] || []).push(o.name); });
       var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: m.optout ? "선지 없음 신청 " + list.length + "명 (나머지는 선지 넣음)" : "모인 주문 " + list.length + " / " + S.people.length + "명" })]);
       Object.keys(tally).sort().forEach(function (k) { sum.appendChild(h("div", { cls: "ordrow" }, [h("b", { text: k }), h("span", { cls: "num", text: tally[k].length + "개" }), h("small", { text: tally[k].join(", ") })])); });
       var none = S.people.filter(function (p) { return !list.some(function (o) { return o.name === p.name; }); });
       if (!m.optout && none.length && list.length) sum.appendChild(h("p", { cls: "muted", text: "아직 안 고른 분: " + none.map(function (p) { return p.name; }).join(", ") }));
       body.appendChild(sum);
+      // 메뉴별 개수·이름을 그대로 복사해 식당·카페 주문 문자에 붙여 넣는다
+      if (list.length) {
+        var keys = Object.keys(tally).sort(function (a, b) { return tally[b].length - tally[a].length; });
+        var otxt = "[시화산노회 제주 부부수양회] " + m.title.replace(/^\d일차\s*/, "") + " 단체 주문\n" + (m.when ? m.when + "\n" : "") +
+          keys.map(function (k) { return "· " + k.replace(/\s*(HOT|ICE)?\s*\d{1,2},\d{3}(\s*\/\s*(HOT|ICE)\s*\d{1,2},\d{3})?/g, "") + " " + tally[k].length + "개 (" + tally[k].join(", ") + ")"; }).join("\n") + "\n합계 " + list.length + "개";
+        var cts = (MCONTACT[m.id] || []).concat(m.contacts || []).filter(function (c) { return /^01/.test(c[1].replace(/[^\d]/g, "")); });
+        var ua2 = navigator.userAgent || "", amp = /iPhone|iPad|Macintosh/.test(ua2) ? "&" : "?";
+        body.appendChild(h("div", { cls: "ordcopy" }, [h("p", { cls: "ordlbl", text: "📋 주문 문자 내용 (메뉴별 누적)" }), h("pre", { text: otxt }),
+          h("div", { cls: "ordcopybtns" }, [h("button", { cls: "btn solid", type: "button", text: "📋 주문 내용 복사", onclick: function (e) { copy(otxt, e.currentTarget); } })].concat(
+            cts.map(function (c) { return h("a", { cls: "btn", href: "sms:" + c[1].replace(/[^\d]/g, "") + amp + "body=" + encodeURIComponent(otxt), target: "_top", text: "📩 " + c[0].replace(/\s*\(.*\)$/, "") + "에게 문자" }); })))]));
+      }
       if (MCONTACT[m.id] || (m.contacts && m.contacts.length)) body.appendChild(h("p", { cls: "ordlbl", text: "📞 주문 연락처" }));
       if (MCONTACT[m.id]) body.appendChild(contactBox(MCONTACT[m.id]));
       if (m.contacts && m.contacts.length) body.appendChild(contactBox(m.contacts));
