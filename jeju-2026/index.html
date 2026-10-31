@@ -3181,7 +3181,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     } });
   }
   function gameOf(v) {
-    if (/이구동성|초성/.test(v || "")) return [IGU_URL, IGU_URL];
+    if (/이구동성/.test(v || "")) return [IGU_URL, IGU_URL];  // 곡 초성 맞추기는 아직 따로 만든 페이지가 없음(10/31 확인)
     if (/몸으로/.test(v || "")) return [BC_URL, BC_URL + "source.html"];
     return null;
   }
