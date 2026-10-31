@@ -1301,8 +1301,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var btns = h("div", { cls: "pbtns" }, [
       p.tel ? h("a", { cls: "pbtn call", href: "tel:" + p.tel.replace(/[^\d]/g, "") }, ["📞 전화"]) : null,
       h("button", { cls: "pbtn", type: "button", text: "주소 복사", onclick: function (e) { copy(p.addr || dest, e.currentTarget); } }),
-      h("a", { cls: "pbtn kakao", href: "https://map.kakao.com/link/search/" + encodeURIComponent(dest), target: "_blank", rel: "noopener", text: "카카오내비" }),
-      h("a", { cls: "pbtn tmap", href: "tmap://search?name=" + encodeURIComponent(dest), text: "티맵" }),
+      h("a", { cls: "pbtn kakao", href: "https://map.kakao.com/link/search/" + encodeURIComponent(p.q || dest), target: "_blank", rel: "noopener", text: "카카오맵" }),
+      h("a", { cls: "pbtn tmap", href: tmapHref(p.q || dest), text: "티맵" }),
       p.q || p.addr ? h("a", { cls: "pbtn naver", href: mapUrl(p.q || p.addr), target: "_blank", rel: "noopener", text: "네이버지도" }) : null
     ]);
     var kids = [lines, btns];
@@ -1409,6 +1409,24 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function won(n) { return (Math.round(n) || 0).toLocaleString("ko-KR") + "원"; }
   function man(n) { n = n || 0; return (n % 10000 === 0 ? (n / 10000).toLocaleString("ko-KR") : (n / 10000).toFixed(1)) + "만원"; }
   function parseNum(s) { var n = parseInt(String(s).replace(/[^\d-]/g, ""), 10); return isNaN(n) ? 0 : n; }
+  // 전화·문자·앱 열기 링크(tel:, sms:, tmap:, intent: …) 공통 처리.
+  // 대시보드(claude.ai 안 액자 화면)는 그 자리 이동이 막혀 눌러도 아무 일이 없으므로 새 창으로 열어 폰이 전화·앱으로 넘기게 한다.
+  var FRAMED = (function () { try { return window.top !== window; } catch (e) { return true; } })();
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null; if (!a) return;
+    var u = a.getAttribute("href") || "";
+    if (!/^(tel|sms|tmap|intent|kakaotalk|kakaomap|nmap):/i.test(u)) return;
+    if (!FRAMED) { if (a.getAttribute("target")) { e.preventDefault(); location.href = u; } return; }
+    e.preventDefault();
+    var w = null; try { w = window.open(u, "_blank"); } catch (x) {}
+    if (!w) { try { window.top.location.href = u; } catch (x) { location.href = u; } }
+  }, true);
+  // 티맵: 안드로이드는 앱이 없으면 플레이스토어로, 아이폰은 앱 주소로
+  function tmapHref(dest) {
+    var q = encodeURIComponent(dest);
+    if (/Android/i.test(navigator.userAgent || "")) return "intent://search?name=" + q + "#Intent;scheme=tmap;package=com.skt.tmap.ku;S.browser_fallback_url=" + encodeURIComponent("https://play.google.com/store/apps/details?id=com.skt.tmap.ku") + ";end";
+    return "tmap://search?name=" + q;
+  }
   function mapUrl(q) { return "https://map.naver.com/p/search/" + encodeURIComponent(q); }
   function copy(text, btn) {
     var done = function () { var o = btn.textContent; btn.textContent = "복사됨"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = o; btn.classList.remove("copied"); }, 1400); };
