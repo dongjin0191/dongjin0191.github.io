@@ -857,6 +857,35 @@ a.instbtn { color: inherit; text-decoration: none; }
   .pptfull .pf-nav { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 50%; border: 0; background: rgba(255,255,255,.2); color: #fff; font-size: 22px; }
   .pptfull .pf-nav.prev { left: 14px; } .pptfull .pf-nav.next { right: 14px; }
   body.pf-on { overflow: hidden; }
+  /* 임무표 */
+  .dchips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+  .dchip { display: inline-block; background: var(--c); color: #fff; font-size: 12.5px; font-weight: 800; border-radius: 6px; padding: 2px 7px; line-height: 1.5; }
+  .dchips.big .dchip { font-size: 16px; padding: 6px 10px; border-radius: 7px; }
+  li.leg .dchips { margin-top: 4px; }
+  @media (min-width: 900px) { .wrap.dutyv { max-width: 1400px; } }
+  .dutyv .dutyh { margin: 4px 0 8px; font-size: 22px; }
+  .dbtns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .dbtns button { border: 2px solid #cbd4df; border-radius: 9px; background: #fff; color: #1c2735; font-size: 15px; font-weight: 800; padding: 9px 12px; min-height: 44px; }
+  .dbtns button[aria-pressed="true"] { background: #223c63; color: #fff; border-color: #223c63; }
+  .dbtns .dmem { border-color: var(--c); color: var(--c); }
+  .dbtns .dmem[aria-pressed="true"] { background: var(--c); color: #fff; border-color: var(--c); }
+  .dtable { overflow-x: auto; background: #fff; border-radius: 10px; border: 1px solid #bdc7d4; margin-top: 10px; }
+  .dtable table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+  .dtable table.only { min-width: 480px; }
+  .dtable th, .dtable td { border: 1px solid #b9c3d0; padding: 8px 6px; font-size: 14.5px; line-height: 1.45; overflow-wrap: anywhere; vertical-align: middle; }
+  .dtable th { background: #eaf0f8; }
+  .dtable .dwhen { width: 12%; font-weight: 750; } .dtable .dwhat { width: 28%; font-weight: 800; }
+  .dtable .dph { border-top: 5px solid var(--c); color: var(--c); }
+  .dtable .dp { text-align: center; font-weight: 800; } .dtable .dp span { color: var(--c); }
+  .dtable .dmove td { background: #f1f4f9; font-weight: 600; font-size: 13px; }
+  .dtable .dtday td { background: #29466f; color: #fff; font-size: 17px; font-weight: 900; }
+  .dmob { display: none; }
+  .ddaylab { font-size: 20px; font-weight: 900; background: #29466f; color: #fff; padding: 11px 12px; border-radius: 8px; margin: 14px 0 8px; }
+  .devent { background: #fff; border: 1px solid #c5cfdb; border-radius: 11px; padding: 11px 12px; margin: 8px 0; }
+  .devent.move { background: #f0f4fa; }
+  .devent .dtime { font-size: 15px; font-weight: 850; color: #3c5577; }
+  .devent .dtitle { font-size: 18px; font-weight: 850; margin: 3px 0 6px; line-height: 1.4; }
+  @media (max-width: 760px) { .dtable { display: none; } .dmob { display: block; } }
   li.tlcard { list-style: none; margin: 4px 0; } li.tlcard > .card { margin: 0; }
   /* 후원 신청: 크게, 가운데 */
   .spnote.big { text-align: center; font-size: 17px; line-height: 1.6; padding: 16px 14px; word-break: keep-all; }
@@ -1027,6 +1056,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   <section data-view="sched" id="v-sched" class="sched" hidden></section>
   <section data-view="ticket" id="v-ticket" hidden></section>
   <section data-view="host" id="v-host" hidden></section>
+  <section data-view="duty" id="v-duty" hidden></section>
   <section data-view="money" id="v-money" hidden></section>
   <section data-view="people" id="v-people" hidden></section>
 </main>
@@ -1037,6 +1067,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     <a href="#prep" data-tab="prep"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>안내</a>
     <a href="#sched" data-tab="sched"><svg viewBox="0 0 24 24"><path d="M2 16l20-6-2-3-7 2-6-5-2 1 4 6-5 1-2-2-1 1 2 4z"/><path d="M3 21h18"/></svg>일정</a>
     <a href="#host" data-tab="host"><svg viewBox="0 0 24 24"><path d="M3 10v4h3l6 4V6L6 10z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>총무</a>
+    <a href="#duty" data-tab="duty"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 12l2 2 4-4M8.5 17h7"/></svg>임무</a>
     <a href="#people" data-tab="people"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5.8"/></svg>명단</a>
     <a href="#ticket" data-tab="ticket"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>티켓</a>
     <a href="#money" data-tab="money"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>정산</a>
@@ -1229,6 +1260,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function statOf(key) { return (S.stopStat && S.stopStat[key]) || STAT_DEF[key] || "ok"; }
   function statBadge(key) {
     var st = statOf(key);
+    if (st === "ok") return null; // 초록 '✔ 확정'은 표시하지 않는다(10/31) — 대신 임무표 색 칸
+
     var b = h(canWrite ? "button" : "span", { cls: "stat st-" + st, text: STAT_TXT[st] });
     if (canWrite) {
       b.type = "button"; b.title = "눌러서 확정 → 예비 → 확인 중 바꾸기";
@@ -1243,7 +1276,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       var st = statOf(d.key + "-" + si);
       if (s[6]) rows.push(h("tr", { cls: "mvrow" }, [h("td", { colspan: "2" }, [h("span", { text: legShort(s).replace(/^🚌 /, "🚌 " + depTxt(d.stops[si - 1], s)) })])]));
       rows.push(h("tr", { cls: st !== "ok" ? "r-" + st : null }, [h("td", { cls: "tt" }, [s[0] || "", s[5] ? h("small", { text: "~" + s[5] }) : null, durText(s) ? h("small", { cls: "dur", text: durText(s) }) : null]),
-        h("td", { cls: "tw" }, [h("b", { text: s[1] }), h("span", { cls: "stat st-" + st, text: STAT_TXT[st] })])]));
+        h("td", { cls: "tw" }, [h("b", { text: s[1] }), st !== "ok" ? h("span", { cls: "stat st-" + st, text: STAT_TXT[st] }) : null, dutyChips(d.key + "-" + si, d.key + "-" + si + "L")])]));
     });
     return h("table", null, [h("tbody", null, rows)]);
   }
@@ -3259,7 +3292,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(tabs);
     w.appendChild(globalSearch());
     var day = DAYS.filter(function (d) { return d.key === dayKey; })[0];
-    w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "stat st-ok", text: "✔ 확정" }), "장소·식당 확정 ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
+    w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "dchip", style: "--c:#db2638", text: "이름 임무" }), " 임원 임무(임무 탭과 같은 색) ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
     var items = [];
     function lodgeCard() { return h("div", { cls: "card glass" }, [h("h3", { text: "숙소 · 라마다 제주함덕호텔" }),
       h("p", { text: "제주시 조천읍 신북로 470 · 2인 1실 · 2박" }),
@@ -3284,9 +3317,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     // 1일차 타임라인: 19:30 개회예배 칸 밑에 예배 순서 + PPT, 20:20 친교1 칸 밑에 친교1, 22:10 체크인 칸 밑에 숙소
     var worshipLi = function () { return [h("li", { cls: "tlcard" }, [h("div", { cls: "card glass" }, [h("h3", { text: "개회예배 순서 · 1일차 19:30 스타즈호텔 헤리티지 2층 세미나실" }), ttl && ttl.v ? h("p", { cls: "sermon", text: "“" + ttl.v.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "") + "”" }) : null, ord])]), h("li", { cls: "tlcard" }, [pptCard()])]; };
     day.stops.forEach(function (s, si) {
-      if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: legText(s).replace(/^🚌 /, "🚌 " + depTxt(day.stops[si - 1], s)) })]));
+      if (s[6]) items.push(h("li", { cls: "leg", "aria-label": "이동" }, [h("span", { text: legText(s).replace(/^🚌 /, "🚌 " + depTxt(day.stops[si - 1], s)) }), dutyChips(day.key + "-" + si + "L")]));
       var what = h("div", { cls: "what" }, [h("div", { cls: "stitle" }, [statBadge(day.key + "-" + si), h("b", { text: s[1] })]), s[2] ? h("small", { text: s[2] }) : null,
-        prayLine(day.key + "-" + si), stopExtra(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
+        dutyChips(day.key + "-" + si, !s[6] ? day.key + "-" + si + "L" : null), prayLine(day.key + "-" + si), stopExtra(day.key + "-" + si), placeBox(day.key + "-" + si, s[1])]);
       var when = h("span", { cls: "when num" + (/\d/.test(s[0]) ? "" : " soft") }, [s[0] || "·", s[5] ? h("em", { text: "~" + s[5] }) : null, durText(s) ? h("em", { cls: "dur", text: durText(s) }) : null,
         h("i", { cls: s[7] ? "fix" : "est", text: s[7] ? "시각 확정" : "예상 시각" })]);
       items.push(h("li", { cls: "stop glass s-" + statOf(day.key + "-" + si) + (sjump === day.key + "-" + si ? " jump" : ""), id: "stop-" + day.key + "-" + si }, [when, what, h("div", { cls: "kcol" }, [h("span", { cls: "kind k-" + s[3], text: KIND[s[3]] }), hostBtn(HOSTAT[day.key + "-" + si])])]));
@@ -3449,6 +3482,57 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       h("thead", null, [h("tr", null, ["순번", "성명", "생년월일", "성별", "전화번호", "비고", "주소"].map(function (x) { return h("th", { text: x }); }))]), tb])]));
     c.appendChild(msg);
     return c;
+  }
+  /* ---------- 임무표 (교육친교부 임원 6명 · 사람마다 색) ---------- */
+  var DUTYP = [{ name: "강명우", color: "#d932a8" }, { name: "이동진", color: "#db2638" }, { name: "김선민", color: "#164cce" }, { name: "안상천", color: "#16813b" }, { name: "김동석", color: "#0086aa" }, { name: "손병민", color: "#8423a6" }];
+  // 키 = 일정 칸(d1-0 …), 끝에 L = 그 칸으로 가는 이동 구간. 값 = 위 6명 순서의 임무
+  var DUTY = { "d1-0": ["인사", "", "", "사진객실", "상품", ""], "d1-1": ["", "출석", "등록", "", "", "등록"], "d1-2": ["", "", "탐나", "", "", "탐나"], "d1-3": ["", "수령", "", "인솔", "짐정리", "짐정리"], "d1-4": ["", "", "", "사전", "", ""], "d1-5": ["", "드론", "", "", "사진", "현수막"], "d1-6L": ["", "주문 · 버스레크1 OT", "", "어플", "어플", ""], "d1-6": ["", "", "", "배대기", "", ""], "d1-7": ["", "드론", "", "사전", "", ""], "d1-8": ["", "", "", "", "", "현수막"], "d1-9": ["", "노래", "커피", "커피", "자전거", "자전거"], "d1-10": ["", "", "", "배대기", "", ""], "d1-11L": ["", "버스레크2", "", "", "", ""], "d1-11": ["", "안내", "", "사전", "사진", "사진"], "d1-12": ["", "드론", "", "안내/탐", "사진", "현수막"], "d1-13": ["", "", "", "사전", "", ""], "d1-14": ["명설교", "촬영", "현수막", "예배", "PPT", "찬양"], "d1-15": ["", "친교1", "도움1", "도움2", "도움3", "도움4"], "d1-16L": ["", "버스레크3", "", "", "", ""], "d1-16": ["객실", "광고", "파악", "객실", "짐정리", "짐정리"], "d1-17": ["", "", "과일", "", "과일", "과일"], "d2-0": ["", "인원파악", "", "", "", ""], "d2-1L": ["주문", "", "", "", "", ""], "d2-1": ["", "", "", "사전", "", "현수막"], "d2-2": ["", "안내·드론", "", "사전", "사진", "현수막"], "d2-3L": ["", "버스레크4", "", "", "", ""], "d2-3": ["", "", "", "사전", "", ""], "d2-4": ["", "", "어르신", "", "사진", "사진"], "d2-5": ["", "친교2", "", "음향", "사진", "현수막"], "d2-6": ["", "드론", "커피", "버스", "사진", "사진"], "d2-7L": ["", "버스레크5", "", "", "", ""], "d2-7": ["", "", "", "사전", "사진", ""], "d2-8L": ["", "버스레크6", "", "", "", ""], "d2-8": ["", "", "", "사전", "", ""], "d2-9": ["", "친교3", "도움1", "과일1", "도움2", "과일"], "d2-10": ["", "안전1", "안전2", "운전", "", ""], "d2-11": ["", "", "", "과일2", "과일", "과일"], "d3-0": ["", "", "체크아웃", "", "", ""], "d3-1L": ["주문", "", "", "", "", ""], "d3-1": ["", "", "", "사전", "", ""], "d3-2L": ["", "버스레크7", "", "", "", ""], "d3-2": ["", "드론", "", "사전", "사진", "현수막"], "d3-3L": ["", "버스레크8", "", "", "", ""], "d3-3": ["", "", "", "사전", "", ""], "d3-4": ["", "주문", "커피", "사전", "", ""], "d3-5": ["", "인솔", "인원파악", "인솔", "짐정리", "짐정리"], "d3-7": ["마침기도", "", "", "", "", ""] };
+  var dutySel = -1, dutyDay = 0;
+  function dutyList(key, key2) {
+    var out = [];
+    [key, key2].forEach(function (k) { var t = k && DUTY[k]; if (t) t.forEach(function (x, i) { if (x) out.push([i, x]); }); });
+    return out;
+  }
+  function dutyChip(i, x) { return h("span", { cls: "dchip", style: "--c:" + DUTYP[i].color, text: DUTYP[i].name + " " + x }); }
+  function dutyChips(key, key2) {
+    var L = dutyList(key, key2);
+    return L.length ? h("div", { cls: "dchips" }, L.map(function (a) { return dutyChip(a[0], a[1]); })) : null;
+  }
+  function renderDuty() {
+    var v = document.getElementById("v-duty"); v.textContent = "";
+    var w = h("div", { cls: "wrap dutyv" });
+    w.appendChild(h("div", { cls: "card glass" }, [h("small", { cls: "muted", text: "시화산노회 제19회기 · 2026년 11월 2~4일" }), h("h2", { cls: "dutyh", text: "한눈에 보는 일정 · 임무표" }),
+      h("div", { cls: "dbtns" }, [h("button", { type: "button", "aria-pressed": String(dutySel === -1), text: "전체동시", onclick: function () { dutySel = -1; renderDuty(); } })].concat(DUTYP.map(function (p, i) {
+        return h("button", { type: "button", cls: "dmem", style: "--c:" + p.color, "aria-pressed": String(dutySel === i), text: p.name, onclick: function () { dutySel = dutySel === i ? -1 : i; renderDuty(); } }); }))),
+      h("div", { cls: "dbtns days" }, [0, 1, 2, 3].map(function (d) { return h("button", { type: "button", "aria-pressed": String(dutyDay === d), text: d ? d + "일차" : "전체", onclick: function () { dutyDay = d; renderDuty(); } }); })),
+      h("p", { cls: "muted", text: "전체동시: 모든 담당자 · 이름: 그 사람 임무만 · 일정 탭의 각 칸에도 같은 색으로 표시됩니다." })]));
+    var cols = dutySel < 0 ? DUTYP.map(function (_, i) { return i; }) : [dutySel];
+    var thead = h("tr", null, [h("th", { cls: "dwhen", text: "언제" }), h("th", { cls: "dwhat", text: "무엇 · 장소" })].concat(cols.map(function (i) { return h("th", { cls: "dph", style: "--c:" + DUTYP[i].color, text: DUTYP[i].name }); })));
+    var trs = [], mob = h("div", { cls: "dmob" });
+    DAYS.forEach(function (d, di) {
+      if (dutyDay && dutyDay !== di + 1) return;
+      var lab = d.label + " · " + d.date;
+      trs.push(h("tr", { cls: "dtday" }, [h("td", { colspan: String(2 + cols.length), text: lab })]));
+      mob.appendChild(h("div", { cls: "ddaylab", text: lab }));
+      d.stops.forEach(function (s, si) {
+        var rowsOf = [];
+        if (s[6]) rowsOf.push([d.key + "-" + si + "L", legText(s).replace(/^🚌 /, "🚌 " + depTxt(d.stops[si - 1], s)), "", 1]);
+        rowsOf.push([d.key + "-" + si, s[1], (s[0] || "") + (s[5] ? "~" + s[5] : ""), 0]);
+        rowsOf.forEach(function (r) {
+          var t = DUTY[r[0]] || [];
+          if (r[3] && dutySel >= 0 && !t[dutySel]) return;
+          trs.push(h("tr", { cls: r[3] ? "dmove" : "" }, [h("td", { cls: "dwhen", text: r[3] ? "" : r[2] }), h("td", { cls: "dwhat", text: r[1] })].concat(cols.map(function (i) {
+            return h("td", { cls: "dp", style: "--c:" + DUTYP[i].color }, t[i] ? [h("span", { text: DUTYP[i].name + " " + t[i] })] : []); }))));
+          var have = cols.filter(function (i) { return t[i]; });
+          if (r[3] && !have.length) return;
+          mob.appendChild(h("article", { cls: "devent" + (r[3] ? " move" : "") }, [r[2] ? h("div", { cls: "dtime num", text: r[2] }) : null, h("div", { cls: "dtitle", text: r[1] }),
+            have.length ? h("div", { cls: "dchips big" }, have.map(function (i) { return dutyChip(i, t[i]); })) : null]));
+        });
+      });
+    });
+    w.appendChild(h("div", { cls: "dtable" }, [h("table", { cls: dutySel < 0 ? "" : "only" }, [h("thead", null, [thead]), h("tbody", null, trs)])]));
+    w.appendChild(mob);
+    v.appendChild(w);
   }
   function renderHost() {
     var v = document.getElementById("v-host"); v.textContent = "";
@@ -4317,8 +4401,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function rerender() { var y = window.scrollY; renderPeople(); window.scrollTo(0, y); }
 
   /* ---------- 탭 ---------- */
-  var VIEWS = ["home", "prep", "sched", "ticket", "host", "people", "money"];
-  var R = { home: renderHome, prep: renderNotice, sched: renderSched, ticket: renderTicket, host: renderHost, money: renderMoney, people: renderPeople };
+  var VIEWS = ["home", "prep", "sched", "ticket", "host", "duty", "people", "money"];
+  var R = { home: renderHome, prep: renderNotice, sched: renderSched, ticket: renderTicket, host: renderHost, duty: renderDuty, money: renderMoney, people: renderPeople };
   var cur = "home";
   // 뒤로가기: 탭·명단 보기·사진 크게 보기·설치 안내를 모두 기록에 쌓아 '뒤로'(휴대폰 버튼, 위쪽 ‹)가 한 단계씩 돌아가게 한다
   var OV = [], backBtn = document.getElementById("backBtn");
