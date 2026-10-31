@@ -3156,7 +3156,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     }))]);
   }
   // 게임 칸 → [문제 페이지, 소스 페이지]
-  var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html", BC_URL = "https://dongjin0191.github.io/games/bible-charades/";
+  var IGU_URL = "https://dongjin0191.github.io/igu-dongsung-jeju.html", BC_URL = "https://dongjin0191.github.io/games/bible-charades/"; var CS_URL = "https://dongjin0191.github.io/games/chosung-200/";
   // 폰(대시보드 미리보기 창·카톡 안 브라우저)에서도 열리도록 진짜 링크(새 창)로. 카톡 안에서는 바깥 브라우저로
   // 게임 문제·소스: 누구나 버튼은 보이지만 처음 한 번 비밀번호(이 폰에 기억). 총무 계정은 바로 열림
   function gamePinH(x) { var n = 0; String(x).split("").forEach(function (c) { n = (n * 131 + c.charCodeAt(0)) % 1000003; }); return n; }
@@ -3181,7 +3181,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     } });
   }
   function gameOf(v) {
-    if (/이구동성|초성/.test(v || "")) return [IGU_URL, IGU_URL];  // 곡 초성 맞추기도 같은 페이지(10/30 총무 지시)
+    if (/초성/.test(v || "")) return [CS_URL, CS_URL + "source.html"];  // 찬양 초성 맞히기 200 (10/31 총무 파일)
+    if (/이구동성/.test(v || "")) return [IGU_URL, IGU_URL];
     if (/몸으로/.test(v || "")) return [BC_URL, BC_URL + "source.html"];
     return null;
   }
