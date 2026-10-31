@@ -197,6 +197,8 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .nbtns { display: flex; gap: 6px; flex-wrap: wrap; }
 .nbtns .ndel { color: #c92a2a; }
 .walkli { list-style: none; margin: 4px 0 10px; }
+.gsres { max-height: 60vh; overflow-y: auto; }
+.gsflash { outline: 3px solid #fab005; outline-offset: 2px; border-radius: 12px; transition: outline-color .4s; }
 .ordgrid.withimg { grid-template-columns: 1fr 1fr; }
 .ordopt.hasimg { display: grid; gap: 6px; padding: 6px; align-content: start; }
 .ordopt.hasimg img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
@@ -2791,6 +2793,70 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     fill();
     return h("div", { cls: "card glass sqbox" }, [inp, res]);
   }
+  // 전체 검색(1·2·3일차 버튼 바로 밑): 일정·장소·전화·명단·좌석/객실·메뉴·안내·기도·예배 순서·총무 멘트를 한 번에.
+  // 비공개 자료(생년월일·주소·정답·정산)는 이 화면 데이터에 없으므로 검색되지 않는다.
+  function findIn(tab, text, day) {
+    if (day) dayKey = day;
+    go(tab);
+    setTimeout(function () {
+      var root = document.getElementById("v-" + tab); if (!root) return;
+      var key = (text || "").replace(/\s+/g, ""), best = null;
+      root.querySelectorAll("b, h3, h4, p, span, td, li, summary, button, a, pre").forEach(function (el) {
+        if (best || el.children.length > 3) return;
+        if ((el.textContent || "").replace(/\s+/g, "").indexOf(key) >= 0 && el.offsetParent) best = el;
+      });
+      if (best) { var t = best.closest("li, article, .card, details, tr") || best; if (t.tagName === "DETAILS") t.open = true; t.scrollIntoView({ block: "center", behavior: "smooth" }); t.classList.add("gsflash"); setTimeout(function () { t.classList.remove("gsflash"); }, 2200); }
+    }, 120);
+  }
+  function gsIndex() {
+    var out = [], add = function (tag, col, title, sub, hay, jump) { out.push({ tag: tag, col: col, title: title, sub: sub || "", hay: (title + " " + (sub || "") + " " + (hay || "")).replace(/\s+/g, "").toLowerCase(), jump: jump }); };
+    var stopOfMenu = {}, prayStop = {};
+    Object.keys(PRAYAT).forEach(function (k) { PRAYAT[k].forEach(function (i) { prayStop[i] = k; }); });
+    DAYS.forEach(function (d) {
+      d.stops.forEach(function (s, si) {
+        var key = d.key + "-" + si, p = placeOf(key);
+        var mk = { "d1-4": "m1", "d1-8": "m2", "d2-5": "m3", "d2-10": "m3b", "d3-4": "m4" }[key]; if (mk) stopOfMenu[mk] = key;
+        var tels = (CONTACTS[key] || []).map(function (c) { return c.join(" "); }).join(" ");
+        add(d.label, RCOL[d.key], s[1], s[0] + (s[2] ? " · " + s[2] : "") + (p.addr ? " · " + p.addr : ""), [s[4], s[6], p.q, p.tel, tels].join(" "), function () { go("sched"); dayKey = d.key; sjump = key; renderSched(); });
+      });
+    });
+    (S.people || []).forEach(function (pp) {
+      add("명단", "#5f3dc4", pp.name + " " + (pp.role || ""), (pp.church || "") + (pp.phone ? " · " + pp.phone : ""), "", function () { findIn("people", pp.name); });
+    });
+    (S.menus || []).forEach(function (m) {
+      add("메뉴", "#e8590c", m.title, (m.items || []).join(", "), m.when, function () { var k = stopOfMenu[m.id]; if (k) { go("sched"); dayKey = k.split("-")[0]; sjump = k; renderSched(); } else findIn("sched", m.title); });
+    });
+    (S.prayers || []).forEach(function (r, i) {
+      if (!r.v) return;
+      add("기도", "#2b8a3e", r.k.replace(/ 🚌 버스$/, " · 버스").replace(/ 🚐 쏠라티$/, " · 솔라티"), r.v, "", function () { var k = prayStop[i]; if (k) { go("sched"); dayKey = k.split("-")[0]; sjump = k; renderSched(); } else findIn("host", r.v); });
+    });
+    (S.worship || []).forEach(function (r) { if (r.v) add("예배 순서", "#862e9c", r.k, r.v, "", function () { findIn("sched", r.v, "d1"); }); });
+    allNotices().forEach(function (n) { add("안내", "#c92a2a", (n.tx || "").split("\n")[0].slice(0, 40), whenTxt(n.at), n.tx, function () { findIn("prep", (n.tx || "").split("\n")[0].slice(0, 15)); }); });
+    GUIDE.forEach(function (c) { add("총무 멘트", "#1864ab", c.title, c.day || "", [c.ment, c.st, c.mv].join(" "), function () { hostJump = c.id; go("host"); }); });
+    return out;
+  }
+  var gq = "";
+  function globalSearch() {
+    var res = h("ul", { cls: "sqres gsres" });
+    var inp = h("input", { cls: "search", type: "search", placeholder: "🔍 무엇이든 검색 (사람·장소·전화·메뉴·안내·기도·멘트)", "aria-label": "가이드북 전체 검색" });
+    inp.value = gq;
+    var idx = null;
+    var fill = function () {
+      res.textContent = "";
+      var k = gq.replace(/\s+/g, "").toLowerCase(); if (!k) return;
+      if (!idx) idx = gsIndex();
+      var hits = idx.filter(function (x) { return x.hay.indexOf(k) >= 0; });
+      hits.slice(0, 40).forEach(function (x) {
+        res.appendChild(h("li", null, [h("button", { type: "button", onclick: x.jump }, [
+          h("span", { cls: "sqday", style: "background:" + x.col, text: x.tag }), h("b", { text: x.title }), x.sub ? h("small", { text: x.sub }) : null])]));
+      });
+      if (!hits.length) res.appendChild(h("li", { cls: "muted", text: "찾는 내용이 없습니다." }));
+      else if (hits.length > 40) res.appendChild(h("li", { cls: "muted", text: "그 밖에 " + (hits.length - 40) + "개 더 있습니다. 조금 더 자세히 적어 보세요." }));
+    };
+    inp.addEventListener("input", function () { gq = inp.value.trim(); fill(); });
+    fill();
+    return h("div", { cls: "card glass sqbox gsbox" }, [inp, res]);
+  }
   // 예배순서 PPT: 슬라이드를 위아래로 넘겨 보고 ▲▼로 한 장씩 이동
   var PPT = ["ppt/s-01.jpg", "ppt/s-02.jpg", "ppt/s-03.jpg", "ppt/s-04.jpg", "ppt/s-05.jpg", "ppt/s-06.jpg", "ppt/s-07.jpg", "ppt/s-08.jpg", "ppt/s-09.jpg", "ppt/s-10.jpg", "ppt/s-11.jpg", "ppt/s-12.jpg", "ppt/s-13.jpg", "ppt/s-14.jpg", "ppt/s-15.jpg", "ppt/s-16.jpg", "ppt/s-17.jpg", "ppt/s-18.jpg", "ppt/s-19.jpg", "ppt/s-20.jpg", "ppt/s-21.jpg", "ppt/s-22.jpg", "ppt/s-23.jpg", "ppt/s-24.jpg", "ppt/s-25.jpg", "ppt/s-26.jpg", "ppt/s-27.jpg", "ppt/s-28.jpg", "ppt/s-29.jpg", "ppt/s-30.jpg", "ppt/s-31.jpg", "ppt/s-32.jpg", "ppt/s-33.jpg", "ppt/s-34.jpg", "ppt/s-35.jpg", "ppt/s-36.jpg", "ppt/s-37.jpg", "ppt/s-38.jpg", "ppt/s-39.jpg", "ppt/s-40.jpg", "ppt/s-41.jpg", "ppt/s-42.jpg", "ppt/s-43.jpg", "ppt/s-44.jpg", "ppt/s-45.jpg", "ppt/s-46.jpg", "ppt/s-47.jpg", "ppt/s-48.jpg", "ppt/s-49.jpg", "ppt/s-50.jpg", "ppt/s-51.jpg", "ppt/s-52.jpg"];
   function pptCard() {
@@ -3017,6 +3083,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       tabs.appendChild(h("button", { type: "button", style: "--dc:" + RCOL[d.key], "aria-pressed": String(d.key === dayKey), onclick: function () { dayKey = d.key; renderSched(); } }, [d.label, h("small", { text: d.date })]));
     });
     w.appendChild(tabs);
+    w.appendChild(globalSearch());
     var day = DAYS.filter(function (d) { return d.key === dayKey; })[0];
     w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "stat st-ok", text: "✔ 확정" }), "장소·식당 확정 ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
     var items = [];
@@ -3038,7 +3105,6 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       if (day.key === "d2" && si === 9) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow3", "🤝 친교의 시간 3 · 삼다온 홀"])]));
     });
     w.appendChild(routeCard([day.key]));
-    w.appendChild(stopSearch());
     w.appendChild(timeCard([day.key]));
     w.appendChild(h("ol", { cls: "timeline" }, items));
     // 3일차: 김포공항 도착 뒤에는 감사 포스터만(10/31 총무 지시)
