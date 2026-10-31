@@ -54,6 +54,14 @@
     : kakao ? ["오른쪽 아래(또는 위) ⋮ 메뉴 → <b>다른 브라우저로 열기</b>", "크롬에서 위 노란 버튼을 다시 누릅니다"]
     : ["오른쪽 위 ⋮ 메뉴를 누릅니다", "<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다"];
   steps.innerHTML = S.map(function (s) { return "<li>" + s + "</li>"; }).join("");
+  // 카톡·앱 안 창(안드로이드)으로 열렸으면 누르지 않아도 곧바로 크롬으로 넘깁니다(설치 창은 크롬에서만 뜸).
+  var inApp = kakao || /; wv\)|NAVER|Instagram|FBAN|FBAV|Line\//i.test(ua);
+  if (/Android/i.test(ua) && inApp && !/[?&]chrome=1/.test(location.search)) {
+    st.textContent = "크롬으로 여는 중…";
+    location.href = "intent://" + location.host + location.pathname + "?chrome=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(location.href) + ";end";
+  }
+  // 아이폰 카톡 안 창: 사파리로 열어야 홈 화면에 추가가 됩니다 → 카톡 '사파리로 열기' 주소로 넘깁니다.
+  if (ios && kakao) { document.getElementById("manual").hidden = false; st.textContent = "사파리에서 열어야 홈 화면에 추가할 수 있습니다 👇"; }
   addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; st.textContent = ""; });
   addEventListener("appinstalled", function () { st.textContent = "✅ 홈 화면에 아이콘이 생겼습니다. (어플방에만 보이면 길게 눌러 홈에 추가)"; });
   function fallback() {
@@ -64,7 +72,9 @@
     st.textContent = "아래 안내대로 메뉴에서 '홈 화면에 추가'를 눌러 주세요 👇"; document.getElementById("manual").hidden = false;
   }
   document.getElementById("inst").onclick = function () {
-    if (kakao && /Android/i.test(ua)) { location.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; return; }
+    if (kakao && /Android/i.test(ua)) { location.href = "intent://" + location.host + location.pathname + "?chrome=1#Intent;scheme=https;package=com.android.chrome;end"; return; }
+    if (ios && kakao) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); return; }
+    if (ios) { st.textContent = "아이폰은 사파리 공유(□↑) → '홈 화면에 추가'로 만듭니다 👇"; var m = document.getElementById("manual"); m.hidden = false; m.scrollIntoView({ behavior: "smooth" }); return; }
     var ask = function () { dp.prompt(); dp.userChoice.then(function (r) { if (r.outcome !== "accepted") st.textContent = "취소되었습니다. 다시 누르셔도 됩니다."; dp = null; }); };
     if (dp) return ask();
     // 크롬 설치 창 준비가 조금 늦게 오는 경우 잠시 기다립니다.
