@@ -891,7 +891,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .fruit-b.on .fruit-top i { color: #15803d; }
 .fwrow { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
 .fwrow.nolab { grid-template-columns: 1fr; }
-.ordcopy { margin-top: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; } .ordcopy pre { white-space: pre-wrap; font: inherit; font-size: 14px; line-height: 1.5; margin: 4px 0 8px; background: #f8fafc; border-radius: 8px; padding: 8px; } .ordcopybtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.ordcopy { margin-top: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; } .ordcopy pre { white-space: pre-wrap; font: inherit; font-size: 14px; line-height: 1.5; margin: 4px 0 8px; background: #f8fafc; border-radius: 8px; padding: 8px; } .ordcopybtns { display: flex; flex-wrap: wrap; gap: 6px; } .ctrow .ctbtns.three { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 4px; } .ctbtns.three .btn { display: block; font-size: 14px; font-weight: 800; padding: 9px 2px; text-align: center; border-radius: 10px; text-decoration: none; white-space: nowrap; } .ctbtns.three .btn.call { background: #e6f7ec; color: #1b7a3d; }
 .appshare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 8px; } .appshare .btn { font-size: 16px; padding: 12px 6px; font-weight: 800; } .kakaoshare { background: #fee500; color: #191919; border-color: #fee500; }
 .bingo h3 { margin-bottom: 8px; } .bgset { width: 100%; margin-bottom: 8px; }
 .bgtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
@@ -3389,20 +3389,27 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       var none = S.people.filter(function (p) { return !list.some(function (o) { return o.name === p.name; }); });
       if (!m.optout && none.length && list.length) sum.appendChild(h("p", { cls: "muted", text: "아직 안 고른 분: " + none.map(function (p) { return p.name; }).join(", ") }));
       body.appendChild(sum);
-      // 메뉴별 개수·이름을 그대로 복사해 식당·카페 주문 문자에 붙여 넣는다
-      if (list.length) {
-        var keys = Object.keys(tally).sort(function (a, b) { return tally[b].length - tally[a].length; });
-        var otxt = "[시화산노회 제주 부부수양회] " + m.title.replace(/^\d일차\s*/, "") + " 단체 주문\n" + (m.when ? m.when + "\n" : "") +
-          keys.map(function (k) { return "· " + k.replace(/\s*(HOT|ICE)?\s*\d{1,2},\d{3}(\s*\/\s*(HOT|ICE)\s*\d{1,2},\d{3})?/g, "") + " " + tally[k].length + "개 (" + tally[k].join(", ") + ")"; }).join("\n") + "\n합계 " + list.length + "개";
-        var cts = (MCONTACT[m.id] || []).concat(m.contacts || []).filter(function (c) { return /^01/.test(c[1].replace(/[^\d]/g, "")); });
-        var ua2 = navigator.userAgent || "", amp = /iPhone|iPad|Macintosh/.test(ua2) ? "&" : "?";
-        body.appendChild(h("div", { cls: "ordcopy" }, [h("p", { cls: "ordlbl", text: "📋 주문 문자 내용 (메뉴별 누적)" }), h("pre", { text: otxt }),
-          h("div", { cls: "ordcopybtns" }, [h("button", { cls: "btn solid", type: "button", text: "📋 주문 내용 복사", onclick: function (e) { copy(otxt, e.currentTarget); } })].concat(
-            cts.map(function (c) { return h("a", { cls: "btn", href: "sms:" + c[1].replace(/[^\d]/g, "") + amp + "body=" + encodeURIComponent(otxt), target: "_top", text: "📩 " + c[0].replace(/\s*\(.*\)$/, "") + "에게 문자" }); })))]));
+      // 메뉴별 개수·이름을 그대로 복사해 식당·카페 주문 문자·카톡에 붙여 넣는다
+      var keys = Object.keys(tally).sort(function (a, b) { return tally[b].length - tally[a].length; });
+      var otxt = "[시화산노회 제주 부부수양회] " + m.title.replace(/^\d일차\s*/, "") + " 단체 주문\n" + (m.when ? m.when + "\n" : "") +
+        (keys.length ? keys.map(function (k) { return "· " + k.replace(/\s*(HOT|ICE)?\s*\d{1,2},\d{3}(\s*\/\s*(HOT|ICE)\s*\d{1,2},\d{3})?/g, "") + " " + tally[k].length + "개 (" + tally[k].join(", ") + ")"; }).join("\n") + "\n합계 " + list.length + "개" : "(아직 모인 주문 없음)");
+      var amp = /iPhone|iPad|Macintosh/.test(navigator.userAgent || "") ? "&" : "?";
+      var kshare = function (e) { var bt = e.currentTarget; if (navigator.share) navigator.share({ text: otxt }).catch(function () {}); else { copy(otxt, bt); alert("주문 내용을 복사했습니다. 카카오톡 대화방에 붙여 넣어 보내 주세요."); } };
+      body.appendChild(h("div", { cls: "ordcopy" }, [h("p", { cls: "ordlbl", text: "📋 주문 문자 내용 (메뉴별 누적)" }), h("pre", { text: otxt }),
+        h("div", { cls: "ordcopybtns" }, [h("button", { cls: "btn solid", type: "button", text: "📋 주문 내용 복사", onclick: function (e) { copy(otxt, e.currentTarget); } }),
+          h("button", { cls: "btn kakaoshare", type: "button", text: "💬 카톡 공유", onclick: kshare })])]));
+      // 주문 받을 사람: 연락처마다 전화 · 문자(주문 내용 채워짐) · 카톡 공유
+      var cts = (MCONTACT[m.id] || []).concat(m.contacts || []);
+      if (cts.length) {
+        body.appendChild(h("p", { cls: "ordlbl", text: "📞 주문 받을 사람 · 연락처" }));
+        body.appendChild(h("div", { cls: "ctbox" }, cts.map(function (c) {
+          var num = c[1].replace(/[^\d]/g, "");
+          return h("div", { cls: "ctrow" }, [h("span", null, [h("b", { text: c[0] }), h("small", { cls: "num", text: c[1] })]),
+            h("div", { cls: "ctbtns three" }, [h("a", { cls: "btn call", href: "tel:" + num, text: "📞 전화" }),
+              h("a", { cls: "btn smsb", href: "sms:" + num + amp + "body=" + encodeURIComponent(otxt), target: "_top", text: "✉️ 주문 문자" }),
+              h("button", { cls: "btn kakaoshare", type: "button", text: "💬 카톡 공유", onclick: kshare })])]);
+        })));
       }
-      if (MCONTACT[m.id] || (m.contacts && m.contacts.length)) body.appendChild(h("p", { cls: "ordlbl", text: "📞 주문 연락처" }));
-      if (MCONTACT[m.id]) body.appendChild(contactBox(MCONTACT[m.id]));
-      if (m.contacts && m.contacts.length) body.appendChild(contactBox(m.contacts));
     };
     draw(); document.body.appendChild(ov); ovOpen(shut);
     loadOrders(draw);
