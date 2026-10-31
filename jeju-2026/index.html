@@ -274,6 +274,9 @@ ul.tri .pmini.blank { visibility: hidden; }
 .staff-role { justify-self: start; padding: 3px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 12.5px; font-weight: 800; }
 .staff-name { display: grid; min-width: 0; } .staff-name b { font-size: 15.5px; } .staff-name small { color: var(--muted); font-size: 12.5px; }
 .staff-tel.kk { background: #fee500; }
+.staff-list li:has(.kk) { grid-template-columns: auto 1fr 32px 32px 32px !important; }
+.cbtns:has(.kakao) { grid-template-columns: repeat(4, 1fr); }
+.kkpair { display: inline-flex; gap: 4px; flex-wrap: wrap; } a.hostkk { background: #fee500 !important; color: #191919 !important; border-color: #fee500 !important; }
 .staff-name.one { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .staff-name.one b { font-size: 15px; } .staff-name.one small { font-size: 13px; }
 .staff-list li:has(.one) { padding: 5px 8px; grid-template-columns: auto 1fr 32px 32px; gap: 6px; }
@@ -1375,7 +1378,14 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   }
   var KK_SVG = "";
   // 개인 연락 버튼: 카톡 1:1은 번호로 바로 열 수 없어 문자 보내기로 연결한다
+  // 총무 이동진 목사 개인 오픈채팅 (번호로 1:1 카톡을 여는 길이 없어 따로 만든 방)
+  var HOST_KK = "https://open.kakao.com/o/sWf6qVUi", HOST_NUM = "01025400533";
+  function hostKkA(cls, text) { return h("a", { cls: cls, href: HOST_KK, target: "_blank", rel: "noopener", "aria-label": "총무 이동진 목사 카톡 대화", text: text, onclick: function (e) { e.preventDefault(); if (IN_KAKAO) location.href = HOST_KK; else openOut(HOST_KK); } }); }
   function kkBtn(cls, phone, link, label, name) {
+    if ((phone || "").replace(/[^\d]/g, "") === HOST_NUM) return h("span", { cls: "kkpair" }, [smsA(cls, phone, label, name), hostKkA(cls.replace(/\s*(kakaobtn|kakao)\b/g, "") + " hostkk", "💬 카톡")]);
+    return smsA(cls, phone, label, name);
+  }
+  function smsA(cls, phone, label, name) {
     return h("a", { cls: cls.replace(/\s*(kakaobtn|kakao)\b/g, "") + " smsb", href: "sms:" + (phone || "").replace(/[^\d]/g, ""), target: "_top", "aria-label": (name || label) + " 문자 보내기", text: "✉️ 문자" });
   }
   // 번호만으로 1:1 대화를 바로 여는 카카오톡 주소는 없어서, 할 수 있는 길을 모두 모아 보여 준다
@@ -1833,6 +1843,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         var li = h("li", null, [h("span", { cls: "staff-role", text: s[0] }),
           h("span", { cls: "staff-name one" }, [h("b", { text: s[1] + " " + s[2] }), (p && p.church) || s[4] ? h("small", { text: " (" + ((p && p.church) || s[4]).split(" · ")[0] + "교회)" }) : null]),
           tel ? h("a", { cls: "staff-tel sms", href: "sms:" + tel, target: "_top", "aria-label": s[1] + " " + s[2] + " 문자 보내기", text: "✉️" }) : h("span"),
+          tel === HOST_NUM ? hostKkA("staff-tel kk", "💬") : null,
           tel ? h("a", { cls: "staff-tel", href: "tel:" + tel, "aria-label": s[1] + " " + s[2] + " 전화" , text: "📞" }) : h("span")]);
         return li;
       }))
@@ -1987,7 +1998,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       h("div", { cls: "cbtns" }, [
         h("button", { cls: "cbtn", type: "button", onclick: function (e) { copy(phone, e.currentTarget.querySelector("b")); } }, [h("span", { text: "📋" }), h("b", { text: "번호 복사" })]),
         h("a", { cls: "cbtn call", href: "tel:" + phone.replace(/-/g, "") }, [h("span", { text: "📞" }), h("b", { text: "전화 걸기" })]),
-        h("a", { cls: "cbtn sms", href: "sms:" + phone.replace(/-/g, ""), target: "_top" }, [h("span", { text: "✉️" }), h("b", { text: "문자 보내기" })])
+        h("a", { cls: "cbtn sms", href: "sms:" + phone.replace(/-/g, ""), target: "_top" }, [h("span", { text: "✉️" }), h("b", { text: "문자 보내기" })]),
+        phone.replace(/[^\d]/g, "") === HOST_NUM ? h("a", { cls: "cbtn kakao", href: HOST_KK, target: "_blank", rel: "noopener", onclick: function (e) { e.preventDefault(); if (IN_KAKAO) location.href = HOST_KK; else openOut(HOST_KK); } }, [h("span", { text: "💬" }), h("b", { text: "카톡 대화" })]) : null
       ])
     ]);
     return box;
