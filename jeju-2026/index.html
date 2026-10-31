@@ -2859,7 +2859,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var rs = ix.map(function (i) { return S.prayers[i]; }).filter(Boolean); if (!rs.length) return null;
     var lab = rs[0].k.replace(/ 🚌 버스$| 🚐 쏠라티$/, "").replace(/ 기도$/, "") + " 기도";
     return h("div", { cls: "prayline" }, [h("b", { text: "🙏 " + lab }), h("span", null, rs.map(function (r) {
-      var car = / 🚌 버스$/.test(r.k) ? "🚌 " : / 🚐 쏠라티$/.test(r.k) ? "🚐 " : "";
+      var car = / 🚌 버스$/.test(r.k) ? "🚌 버스 - " : / 🚐 쏠라티$/.test(r.k) ? "🚐 솔라티 - " : "";
       return h("span", { cls: r.v ? "" : "soft", text: car + (r.v || "미정") });
     }))]);
   }
