@@ -28,8 +28,20 @@
   .b2 { background: #fff; color: #3A1D1D; }
   .st { margin-top: 10px; font-weight: 700; color: #c2410c; min-height: 1.5em; }
   .tip { margin-top: 22px; padding: 14px; background: rgba(255,255,255,.75); border-radius: 14px; text-align: left; font-size: 14px; }
-  .tip b { display: block; margin-bottom: 4px; }
+  .tip > b { display: block; margin-bottom: 4px; }
   .tip ol { margin: 4px 0 0; padding-left: 20px; }
+  [hidden] { display: none !important; }
+  .mock { margin-top: 12px; display: grid; gap: 8px; font-size: 14px; }
+  .mock i { font-style: normal; color: #e03131; font-weight: 900; margin-left: 4px; }
+  .mbar { display: flex; align-items: center; gap: 6px; background: #f1f3f4; border-radius: 999px; padding: 8px 12px; }
+  .murl { flex: 1; color: #555; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .mdots { font-size: 20px; font-weight: 900; border: 3px solid #e03131; border-radius: 10px; padding: 0 8px; }
+  .mmenu { display: grid; background: #fff; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.18); margin-left: 30%; }
+  .mmenu span { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  .mmenu .hl { background: #fff3bf; font-weight: 800; outline: 3px solid #e03131; outline-offset: -3px; }
+  .mpop { display: grid; gap: 8px; background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+  .mic { display: flex; align-items: center; gap: 8px; } .mic img { width: 32px; height: 32px; border-radius: 8px; }
+  .mbtn { justify-self: end; color: #1a73e8; font-weight: 800; border: 3px solid #e03131; border-radius: 8px; padding: 4px 10px; }
 </style>
 </head>
 <body>
@@ -43,6 +55,11 @@
   <div class="tip" id="manual" hidden>
     <b>버튼이 안 되면 이렇게 해 주세요</b>
     <ol id="steps"></ol>
+    <div class="mock" id="mock" aria-hidden="true">
+      <div class="mbar"><span class="murl">dongjin0191.github.io/jeju-talk</span><span class="mdots">⋮<i>①</i></span></div>
+      <div class="mmenu"><span>새 탭</span><span>북마크</span><span>방문 기록</span><span class="hl">홈 화면에 추가 · 앱 설치<i>②</i></span><span>설정</span></div>
+      <div class="mpop"><b>홈 화면에 추가</b><span class="mic"><img src="icon-192.png" alt=""> 수양회 단톡</span><span class="mbtn">추가 · 설치<i>③</i></span></div>
+    </div>
   </div>
 </main>
 <script>
@@ -52,7 +69,8 @@
   var steps = document.getElementById("steps");
   var S = ios ? ["사파리(Safari)로 이 페이지를 엽니다", "아래 가운데 공유 버튼(□↑)을 누릅니다", "<b>홈 화면에 추가</b>를 누릅니다"]
     : kakao ? ["오른쪽 아래(또는 위) ⋮ 메뉴 → <b>다른 브라우저로 열기</b>", "크롬에서 위 노란 버튼을 다시 누릅니다"]
-    : ["오른쪽 위 ⋮ 메뉴를 누릅니다", "<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다"];
+    : ["오른쪽 위 ⋮ 메뉴를 누릅니다 ①", "<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다 ②", "<b>추가</b>(설치)를 누르면 끝 ③"];
+  if (ios || kakao) document.getElementById("mock").hidden = true;
   steps.innerHTML = S.map(function (s) { return "<li>" + s + "</li>"; }).join("");
   // 카톡·앱 안 창(안드로이드)으로 열렸으면 누르지 않아도 곧바로 크롬으로 넘깁니다(설치 창은 크롬에서만 뜸).
   var inApp = kakao || /; wv\)|NAVER|Instagram|FBAN|FBAV|Line\//i.test(ua);
@@ -63,6 +81,7 @@
   // 아이폰 카톡 안 창: 사파리로 열어야 홈 화면에 추가가 됩니다 → 카톡 '사파리로 열기' 주소로 넘깁니다.
   if (ios && kakao) { document.getElementById("manual").hidden = false; st.textContent = "사파리에서 열어야 홈 화면에 추가할 수 있습니다 👇"; }
   addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; st.textContent = ""; });
+  if (/[?&]chrome=1/.test(location.search) && !ios) setTimeout(function () { if (!dp) { document.getElementById("manual").hidden = false; st.textContent = "노란 버튼이 안 되면 아래 그림대로 ⋮ → '홈 화면에 추가'를 눌러 주세요"; } }, 2500);
   addEventListener("appinstalled", function () { st.textContent = "✅ 홈 화면에 아이콘이 생겼습니다. (어플방에만 보이면 길게 눌러 홈에 추가)"; });
   function fallback() {
     // 안드로이드인데 지금 화면이 크롬 본 창이 아니면(앱 안 창 등) 크롬으로 다시 열어 설치 창을 띄웁니다.
@@ -77,6 +96,11 @@
     if (ios) { st.textContent = "아이폰은 사파리 공유(□↑) → '홈 화면에 추가'로 만듭니다 👇"; var m = document.getElementById("manual"); m.hidden = false; m.scrollIntoView({ behavior: "smooth" }); return; }
     var ask = function () { dp.prompt(); dp.userChoice.then(function (r) { if (r.outcome !== "accepted") st.textContent = "취소되었습니다. 다시 누르셔도 됩니다."; dp = null; }); };
     if (dp) return ask();
+    // 안드로이드: 설치 창이 아직 없고 크롬 본 창이 아니면(클로드 앱·카톡에서 연 창 등) 누른 그 순간 크롬으로 넘깁니다.
+    if (/Android/i.test(ua) && !samsung && !/[?&]chrome=1/.test(location.search)) {
+      st.textContent = "크롬으로 여는 중… 크롬에서 이 버튼을 한 번 더 눌러 주세요";
+      location.href = "intent://" + location.host + location.pathname + "?chrome=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(location.href.split("?")[0] + "?chrome=1") + ";end"; return;
+    }
     // 크롬 설치 창 준비가 조금 늦게 오는 경우 잠시 기다립니다.
     st.textContent = "설치 창을 여는 중…";
     var t = 0, iv = setInterval(function () {
