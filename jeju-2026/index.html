@@ -888,6 +888,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .fruit-b.on .fruit-top i { color: #15803d; }
 .fwrow { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
 .fwrow.nolab { grid-template-columns: 1fr; }
+.appshare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 8px; } .appshare .btn { font-size: 16px; padding: 12px 6px; font-weight: 800; } .kakaoshare { background: #fee500; color: #191919; border-color: #fee500; }
 .bingo h3 { margin-bottom: 8px; } .bgset { width: 100%; margin-bottom: 8px; }
 .bgtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .bgtabs button, .bgmode button { min-width: 0; border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 4px; font: inherit; font-size: 15px; font-weight: 800; color: var(--navy); cursor: pointer; }
@@ -1430,6 +1431,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         h("p", { cls: "what", text: nx ? fmtWhen(nx.t) + " " + nx.w : "모든 일정이 끝났습니다" }),
         nx ? h("p", { cls: "lbl", text: nx.s }) : null])
     ]));
+    w.appendChild(appShareRow());
     w.appendChild(installCard());
     w.appendChild(groupChatCard());
     if (HOSTED) w.appendChild(weatherCard());
@@ -1735,6 +1737,18 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       box.appendChild(gi);
     }
     return box;
+  }
+  // 설치 버튼 바로 앞: 앱 주소 복사 · 카톡 공유 (카톡 공유는 휴대폰 공유창에서 카카오톡을 고른다)
+  function appShareRow() {
+    var msg = "시화산노회 제주 부부수양회 가이드북 앱\n" + APP_URL;
+    return h("div", { cls: "appshare" }, [
+      h("button", { cls: "btn solid", type: "button", text: "🔗 앱 주소 복사", onclick: function (e) { copy(APP_URL, e.currentTarget); } }),
+      h("button", { cls: "btn kakaoshare", type: "button", text: "💬 카톡 공유", onclick: function (e) {
+        var b = e.currentTarget;
+        if (navigator.share) { navigator.share({ title: "제주수양회 가이드북", text: "시화산노회 제주 부부수양회 가이드북 앱", url: APP_URL }).catch(function () {}); return; }
+        copy(msg, b); alert("주소를 복사했습니다. 카카오톡 대화방에 붙여 넣어 보내 주세요.");
+      } })
+    ]);
   }
   function installCard() {
     if (HOSTED) return hostedInstall();
