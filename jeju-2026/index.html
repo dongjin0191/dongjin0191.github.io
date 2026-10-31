@@ -3066,6 +3066,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (x) {}
       if (fsEl()) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (x) {} }
       ov.remove(); document.body.classList.remove("pf-on");
+      if (L === INTRO) bgmStop();  // ✕로 닫으면 반주 멈춤
     };
     var close = function () { ovClose(shut); };
     document.addEventListener("keydown", key);
@@ -3102,6 +3103,10 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   // 친교의 시간 1 자기소개 PPT (10/31 총무 제작 28장). 앱은 jeju-2026/intro/ 그림, 대시보드는 용량(16MB) 때문에 앱으로 연결
   var INTRO = ["intro/i-01.jpg", "intro/i-02.jpg", "intro/i-03.jpg", "intro/i-04.jpg", "intro/i-05.jpg", "intro/i-06.jpg", "intro/i-07.jpg", "intro/i-08.jpg", "intro/i-09.jpg", "intro/i-10.jpg", "intro/i-11.jpg", "intro/i-12.jpg", "intro/i-13.jpg", "intro/i-14.jpg", "intro/i-15.jpg", "intro/i-16.jpg", "intro/i-17.jpg", "intro/i-18.jpg", "intro/i-19.jpg", "intro/i-20.jpg", "intro/i-21.jpg", "intro/i-22.jpg", "intro/i-23.jpg", "intro/i-24.jpg", "intro/i-25.jpg", "intro/i-26.jpg", "intro/i-27.jpg", "intro/i-28.jpg"], INTRO_BGM = INTRO.length ? "intro/bgm.mp3" : "", APP_URL = "https://dongjin0191.github.io/jeju-2026/";
   var bgmAu = null, bgmBtns = [];
+  // 반주는 ✕로 닫거나, 다른 탭·다른 앱으로 가거나, 자기소개 칸을 벗어나 스크롤하면 멈춘다
+  function bgmStop() { if (bgmAu && !bgmAu.paused) { bgmAu.pause(); bgmAu.currentTime = 0; } }
+  document.addEventListener("visibilitychange", function () { if (document.hidden) bgmStop(); });
+  var bgmIO = window.IntersectionObserver ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting && !document.querySelector(".pptfull")) bgmStop(); }); }) : null;
   function bgmPaint() { var on = bgmAu && !bgmAu.paused; bgmBtns.forEach(function (b) { b.textContent = on ? "🎵 반주 끄기" : "🎵 반주 켜기"; b.classList.toggle("on", !!on); }); }
   function bgmBtn(cls) {
     var b = h("button", { type: "button", cls: "btn bgmbtn " + (cls || ""), text: "🎵 반주 켜기", onclick: function (e) {
@@ -3112,7 +3117,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     bgmBtns = bgmBtns.filter(function (x) { return document.body.contains(x); }); bgmBtns.push(b); setTimeout(bgmPaint, 0); return b;
   }
   function introCard() {
-    if (INTRO.length) return pptCard(INTRO, "자기소개 PPT", "📽 자기소개 PPT · 친교의 시간 1", "서로 인사해요 화면", h("div", { cls: "bgmrow" }, [bgmBtn(""), h("span", { cls: "muted", text: "찬송 305장 · 64장 반주" })]));
+    if (INTRO.length) { var ic = pptCard(INTRO, "자기소개 PPT", "📽 자기소개 PPT · 친교의 시간 1", "서로 인사해요 화면", h("div", { cls: "bgmrow" }, [bgmBtn(""), h("span", { cls: "muted", text: "찬송 305장 · 64장 반주" })]));
+      bgmStop(); if (bgmIO) setTimeout(function () { bgmIO.observe(ic); }, 0); return ic; }
     return h("div", { cls: "card glass" }, [h("h3", { text: "📽 자기소개 PPT · 친교의 시간 1" }), h("p", { cls: "muted", text: "서로 인사해요 화면 28장 + 찬양 반주 · 그림이 커서 앱에서 열립니다" }),
       h("a", { cls: "btn solid pptfs", href: APP_URL + "?intro=1#sched", target: "_blank", rel: "noopener", text: "📽 자기소개 PPT 열기 (앱)" })]);
   }
@@ -4494,6 +4500,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     go(VIEWS.indexOf(t) >= 0 ? t : "home", false, "pop");
   });
   function go(t, keepScroll, how) {
+    bgmStop();  // 다른 탭으로 옮기면 반주 멈춤
     if (VIEWS.indexOf(t) < 0) t = "home";
     if (how !== "pop") {
       var hs = hstate();
