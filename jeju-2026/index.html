@@ -74,6 +74,12 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .save.ro { cursor: pointer; background: #ffd43b; color: #1b2a6b; font-weight: 700; }
 
 /* bottom tabs */
+/* 폰 가로: 내리면 위·아래 막대 숨김, 올리면 다시 보임 */
+@media (orientation: landscape) and (max-height: 560px) {
+  .topbar, .tabs { transition: transform .25s ease; will-change: transform; }
+  body.barhide .topbar { transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 4px)); }
+  body.barhide .tabs { transform: translateY(calc(100% + 4px)); }
+}
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: 0 -4px 18px rgba(20,33,61,.08); }
 .tabs .wrap { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 .tabs a[hidden] { display: none; }
@@ -1431,6 +1437,20 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function parseNum(s) { var n = parseInt(String(s).replace(/[^\d-]/g, ""), 10); return isNaN(n) ? 0 : n; }
   // 전화·문자·앱 열기 링크(tel:, sms:, tmap:, intent: …) 공통 처리.
   // 대시보드(claude.ai 안 액자 화면)는 그 자리 이동이 막혀 눌러도 아무 일이 없으므로 새 창으로 열어 폰이 전화·앱으로 넘기게 한다.
+  // 폰 가로 화면: 아래로 내리면 위(제목)·아래(메뉴) 막대를 숨기고, 위로 올리거나 맨 위·화면 위 가장자리를 누르면 다시 보임
+  (function () {
+    var mq = window.matchMedia ? window.matchMedia("(orientation: landscape) and (max-height: 560px)") : null, lastY = window.scrollY || 0, acc = 0;
+    var set = function (hide) { document.body.classList.toggle("barhide", !!hide); };
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY || 0, dy = y - lastY; lastY = y;
+      if (!mq || !mq.matches) { set(false); return; }
+      if (y < 40) { set(false); acc = 0; return; }
+      acc = (acc > 0) === (dy > 0) ? acc + dy : dy;
+      if (acc > 24) set(true); else if (acc < -24) set(false);
+    }, { passive: true });
+    document.addEventListener("click", function (e) { if (document.body.classList.contains("barhide") && (e.clientY < 48 || e.clientY > window.innerHeight - 48)) set(false); }, true);
+    if (mq) { var ch = function () { if (!mq.matches) set(false); }; if (mq.addEventListener) mq.addEventListener("change", ch); else if (mq.addListener) mq.addListener(ch); }
+  })();
   var FRAMED = (function () { try { return window.top !== window; } catch (e) { return true; } })();
   document.addEventListener("click", function (e) {
     var a = e.target && e.target.closest ? e.target.closest("a[href]") : null; if (!a) return;
