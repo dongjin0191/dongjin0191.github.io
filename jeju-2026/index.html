@@ -863,6 +863,12 @@ a.instbtn { color: inherit; text-decoration: none; }
   .dchips.big .dchip { font-size: 16px; padding: 6px 10px; border-radius: 7px; }
   li.leg .dchips { margin-top: 4px; }
   @media (min-width: 900px) { .wrap.dutyv { max-width: 1400px; } }
+  .droles ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+  @media (min-width: 900px) { .droles ul { grid-template-columns: repeat(3, 1fr); } }
+  .drole { width: 100%; text-align: left; display: grid; gap: 2px; background: #fff; border: 2px solid var(--c); border-left-width: 8px; border-radius: 10px; padding: 9px 12px; font: inherit; cursor: pointer; }
+  .drole b { color: var(--c); font-size: 17px; }
+  .drole span { font-size: 15px; font-weight: 700; color: #1c2735; line-height: 1.45; word-break: keep-all; }
+  .drole[aria-pressed="true"] { background: var(--c); } .drole[aria-pressed="true"] b, .drole[aria-pressed="true"] span { color: #fff; }
   .dutyv .dutyh { margin: 4px 0 8px; font-size: 22px; }
   .dbtns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .dbtns button { border: 2px solid #cbd4df; border-radius: 9px; background: #fff; color: #1c2735; font-size: 15px; font-weight: 800; padding: 9px 12px; min-height: 44px; }
@@ -3485,7 +3491,12 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     return c;
   }
   /* ---------- 임무표 (교육친교부 임원 6명 · 사람마다 색) ---------- */
-  var DUTYP = [{ name: "강명우", color: "#d932a8" }, { name: "이동진", color: "#db2638" }, { name: "김선민", color: "#164cce" }, { name: "안상천", color: "#16813b" }, { name: "김동석", color: "#0086aa" }, { name: "손병민", color: "#8423a6" }];
+  var DUTYP = [{ name: "강명우", color: "#d932a8", role: "부장", job: "분위기 조성, 명설교, 현장 후원, 시종기도" },
+    { name: "이동진", color: "#db2638", role: "총무", job: "인솔, 인원 파악, 안내, 소개, 버스레크, 친교 1·2·3" },
+    { name: "김선민", color: "#164cce", role: "부총무", job: "뒷수습, 정리, 인원 돌봄, 안전" },
+    { name: "안상천", color: "#16813b", role: "회계", job: "선발대 (사전 점검: 식사·과일·객실·장소), 회계" },
+    { name: "김동석", color: "#0086aa", role: "임사1", job: "행사 준비, 현장 도우미, 촬영, 과일" },
+    { name: "손병민", color: "#8423a6", role: "임사2", job: "찬양, 촬영, 버스 짐, 현수막, 과일" }];
   // 키 = 일정 칸(d1-0 …), 끝에 L = 그 칸으로 가는 이동 구간. 값 = 위 6명 순서의 임무
   var DUTY = { "d1-0": ["인사", "", "", "사진객실", "상품", ""], "d1-1": ["", "출석", "등록", "", "", "등록"], "d1-2": ["", "", "탐나", "", "", "탐나"], "d1-3": ["", "수령", "", "인솔", "짐정리", "짐정리"], "d1-4": ["", "", "", "사전", "", ""], "d1-5": ["", "드론", "", "", "사진", "현수막"], "d1-6L": ["", "주문 · 버스레크1 OT", "", "어플", "어플", ""], "d1-6": ["", "", "", "배대기", "", ""], "d1-7": ["", "드론", "", "사전", "", ""], "d1-8": ["", "", "", "", "", "현수막"], "d1-9": ["", "노래", "커피", "커피", "자전거", "자전거"], "d1-10": ["", "", "", "배대기", "", ""], "d1-11L": ["", "버스레크2", "", "", "", ""], "d1-11": ["", "안내", "", "사전", "사진", "사진"], "d1-12": ["", "드론", "", "안내/탐", "사진", "현수막"], "d1-13": ["", "", "", "사전", "", ""], "d1-14": ["명설교", "촬영", "현수막", "예배", "PPT", "찬양"], "d1-15": ["", "친교1", "도움1", "도움2", "도움3", "도움4"], "d1-16L": ["", "버스레크3", "", "", "", ""], "d1-16": ["객실", "광고", "파악", "객실", "짐정리", "짐정리"], "d1-17": ["", "", "과일", "", "과일", "과일"], "d2-0": ["", "인원파악", "", "", "", ""], "d2-1L": ["주문", "", "", "", "", ""], "d2-1": ["", "", "", "사전", "", "현수막"], "d2-2": ["", "안내·드론", "", "사전", "사진", "현수막"], "d2-3L": ["", "버스레크4", "", "", "", ""], "d2-3": ["", "", "", "사전", "", ""], "d2-4": ["", "", "어르신", "", "사진", "사진"], "d2-5": ["", "친교2", "", "음향", "사진", "현수막"], "d2-6": ["", "드론", "커피", "버스", "사진", "사진"], "d2-7L": ["", "버스레크5", "", "", "", ""], "d2-7": ["", "", "", "사전", "사진", ""], "d2-8L": ["", "버스레크6", "", "", "", ""], "d2-8": ["", "", "", "사전", "", ""], "d2-9": ["", "친교3", "도움1", "과일1", "도움2", "과일"], "d2-10": ["", "안전1", "안전2", "운전", "", ""], "d2-11": ["", "", "", "과일2", "과일", "과일"], "d3-0": ["", "", "체크아웃", "", "", ""], "d3-1L": ["주문", "", "", "", "", ""], "d3-1": ["", "", "", "사전", "", ""], "d3-2L": ["", "버스레크7", "", "", "", ""], "d3-2": ["", "드론", "", "사전", "사진", "현수막"], "d3-3L": ["", "버스레크8", "", "", "", ""], "d3-3": ["", "", "", "사전", "", ""], "d3-4": ["", "주문", "커피", "사전", "", ""], "d3-5": ["", "인솔", "인원파악", "인솔", "짐정리", "짐정리"], "d3-7": ["마침기도", "", "", "", "", ""] };
   var dutySel = -1, dutyDay = 0;
@@ -3507,6 +3518,10 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         return h("button", { type: "button", cls: "dmem", style: "--c:" + p.color, "aria-pressed": String(dutySel === i), text: p.name, onclick: function () { dutySel = dutySel === i ? -1 : i; renderDuty(); } }); }))),
       h("div", { cls: "dbtns days" }, [0, 1, 2, 3].map(function (d) { return h("button", { type: "button", "aria-pressed": String(dutyDay === d), text: d ? d + "일차" : "전체", onclick: function () { dutyDay = d; renderDuty(); } }); })),
       h("p", { cls: "muted", text: "전체동시: 모든 담당자 · 이름: 그 사람 임무만 · 일정 탭의 각 칸에도 같은 색으로 표시됩니다." })]));
+    // 맡은 역할 한눈에 (누르면 그 사람만)
+    w.appendChild(h("div", { cls: "card glass droles" }, [h("h3", { text: "임원별 맡은 역할" }), h("ul", null, DUTYP.map(function (p, i) {
+      return h("li", null, [h("button", { type: "button", cls: "drole", style: "--c:" + p.color, "aria-pressed": String(dutySel === i), onclick: function () { dutySel = dutySel === i ? -1 : i; renderDuty(); } }, [
+        h("b", { text: "● " + p.role + " " + p.name + " 목사" }), h("span", { text: p.job })])]); }))]));
     var cols = dutySel < 0 ? DUTYP.map(function (_, i) { return i; }) : [dutySel];
     var thead = h("tr", null, [h("th", { cls: "dwhen", text: "언제" }), h("th", { cls: "dwhat", text: "무엇 · 장소" })].concat(cols.map(function (i) { return h("th", { cls: "dph", style: "--c:" + DUTYP[i].color, text: DUTYP[i].name }); })));
     var trs = [], mob = h("div", { cls: "dmob" });
