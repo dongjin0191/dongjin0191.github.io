@@ -195,6 +195,15 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .ntag { background: #e8590c; color: #fff; font-size: 11.5px; padding: 1px 7px; border-radius: 99px; }
 .ntx { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 16px; line-height: 1.6; }
 .nbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.npick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.npick label { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 1.5px dashed #adb5bd; border-radius: 12px; background: #f8f9fa; font-weight: 800; cursor: pointer; text-align: center; padding: 6px; }
+.npick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.nprev { position: relative; }
+.nprev img { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; border: 1px solid var(--line); background: #f1f3f5; }
+.nprev button { position: absolute; top: 6px; right: 6px; min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 0; background: rgba(0,0,0,.65); color: #fff; font-weight: 800; }
+.nphotos { display: grid; gap: 6px; }
+.nphoto { margin: 0; }
+.nphoto img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
 .nbase h4 { margin: 14px 0 4px; color: #1e3a8a; font-size: 17px; }
 .nbase h5 { margin: 10px 0 2px; color: #c2185b; font-size: 15.5px; }
 .nbase p { margin: 4px 0; line-height: 1.7; }
@@ -2158,7 +2167,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   // 실시간 안내: 편집 화면(S.notices)과 앱의 notices.json(GitHub '안내' 이슈를 1~2분 안에 모음)을 합쳐 최신순으로 보여 준다
   var ANNIMG = ["ann/a1.jpg", "ann/a2.jpg", "ann/a3.jpg", "ann/a4.jpg", "ann/a5.jpg", "ann/a6.jpg", "ann/a7.jpg", "ann/a8.jpg"];
   var BYIMG = ["by/b1.jpg", "by/b2.jpg", "by/b3.jpg", "by/b4.jpg"];
-  var GHN = [], ndraft = "", nposted = "";
+  var GHN = [], ndraft = "", nposted = "", nimg = "", npostedImg = "", NFILE = {};
   var GH_NEW = "https://github.com/dongjin0191/dongjin0191.github.io/issues/new";
   if (/[?&]admin=1/.test(location.search)) lsSet(LS + "-admin", "1");
   function nAdmin() { return canWrite || (HOSTED && lsGet(LS + "-admin") === "1"); }
@@ -2179,11 +2188,57 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     return out;
   }
   // 오픈채팅방에 보내기: 휴대폰 공유창(카카오톡 → 단톡방 선택), 안 되면 글을 복사하고 단톡방을 연다
-  function sendToChat(tx, btn) {
+  // 사진이 있으면 사진 파일과 글을 함께 공유한다(카톡이 사진만 받는 휴대폰도 있어 글은 미리 복사해 둔다)
+  function sendToChat(tx, btn, img) {
     var gl = (S.links && S.links.group) || "";
     var fb = function () { copy(tx, btn); if (gl) setTimeout(function () { window.open(gl, "_blank"); }, 400); };
+    var f = img && NFILE[img];
+    if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
+      try { navigator.clipboard.writeText(tx); } catch (e) {}
+      navigator.share({ files: [f], text: tx }).catch(function (e) { if (!e || e.name !== "AbortError") fb(); });
+      return;
+    }
     if (navigator.share) navigator.share({ text: tx }).catch(function (e) { if (!e || e.name !== "AbortError") fb(); });
     else fb();
+  }
+  // 공유할 사진을 미리 파일로 만들어 둔다(누르는 순간 바로 공유창을 열어야 해서)
+  function prepFile(src) {
+    if (!src || NFILE[src]) return;
+    fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+      var ext = (b.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      NFILE[src] = new File([b], "제주수양회_안내." + ext, { type: b.type || "image/jpeg" });
+    }).catch(function () {});
+  }
+  function nImgs(n) { return n.img ? [n.img] : (n.imgs || []); }
+  // 사진을 긴 변 1280px JPEG 로 줄인다(휴대폰 원본 그대로 두면 너무 크다)
+  function shrinkImg(file, cb) {
+    var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image();
+      im.onload = function () {
+        var k = Math.min(1, 1280 / Math.max(im.width, im.height)), c = document.createElement("canvas");
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+        cb(c.toDataURL("image/jpeg", 0.82));
+      };
+      im.onerror = function () { cb(""); };
+      im.src = rd.result;
+    };
+    rd.onerror = function () { cb(""); };
+    rd.readAsDataURL(file);
+  }
+  // GitHub 글칸에 바로 붙여넣을 수 있게 사진을 클립보드에 넣는다(PC 크롬·엣지·사파리)
+  function copyImg(src) {
+    try {
+      if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) return;
+      var png = fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+        return new Promise(function (ok) {
+          var im = new Image(); im.onload = function () { var c = document.createElement("canvas"); c.width = im.width; c.height = im.height; c.getContext("2d").drawImage(im, 0, 0); c.toBlob(ok, "image/png"); };
+          im.src = URL.createObjectURL(b);
+        });
+      });
+      navigator.clipboard.write([new ClipboardItem({ "image/png": png })]).catch(function () {});
+    } catch (e) {}
   }
   function ghUrl(tx) { return GH_NEW + "?labels=notice&title=" + encodeURIComponent("[안내] " + tx.split("\n")[0].slice(0, 60)) + "&body=" + encodeURIComponent(tx); }
   function loadNotices() {
@@ -2209,17 +2264,37 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var ta = h("textarea", { cls: "field", rows: "5", id: "ntx", placeholder: "새 안내를 적으세요 (예: 내일 05:30 김포공항 국내선 3층 이스타 카운터 앞 집결)", "aria-label": "새 안내" });
     ta.value = ndraft; ta.addEventListener("input", function () { ndraft = ta.value; });
     var msg = h("p", { cls: "muted" });
+    // 사진 첨부: 📷 카메라로 바로 찍기 / 🖼 앨범·PC 에서 고르기
+    var onPick = function (e) {
+      var f = e.target.files && e.target.files[0]; e.target.value = "";
+      if (!f) return;
+      msg.textContent = "사진을 준비하는 중…";
+      shrinkImg(f, function (d) {
+        if (!d) { msg.textContent = "이 사진은 열 수 없습니다. JPG·PNG 사진으로 다시 골라 주세요."; return; }
+        nimg = d; prepFile(d); renderNotice();
+      });
+    };
+    var pick = h("div", { cls: "npick" }, [
+      h("label", {}, [h("input", { type: "file", accept: "image/*", capture: "environment", "aria-label": "카메라로 사진 찍기", onchange: onPick }), "📷 카메라로 찍기"]),
+      h("label", {}, [h("input", { type: "file", accept: "image/*", "aria-label": "사진 파일 고르기", onchange: onPick }), "🖼 앨범·PC 사진"])]);
+    var prev = nimg ? h("div", { cls: "nprev" }, [h("img", { src: nimg, alt: "첨부할 사진" }),
+      h("button", { type: "button", text: "✕ 사진 빼기", onclick: function () { nimg = ""; renderNotice(); } })]) : null;
     var post = function () {
       var tx = ta.value.trim(); if (!tx) { msg.textContent = "안내 내용을 적어 주세요."; return; }
-      if (canWrite) { S.notices = S.notices || []; S.notices.unshift({ id: uid("n"), at: new Date().toISOString(), tx: tx }); changed(); }
+      if (canWrite) {
+        var n = { id: uid("n"), at: new Date().toISOString(), tx: tx }; if (nimg) n.img = nimg;
+        S.notices = S.notices || []; S.notices.unshift(n); changed();
+      }
+      if (nimg) copyImg(nimg);
       window.open(ghUrl(tx), "_blank");
-      ndraft = ""; nposted = tx; renderNotice();
+      ndraft = ""; nposted = tx; npostedImg = nimg; nimg = ""; renderNotice();
     };
-    var kids = [h("h3", { text: "✏️ 새 안내 올리기 (총무·임원)" }), ta,
+    var kids = [h("h3", { text: "✏️ 새 안내 올리기 (총무·임원)" }), ta, pick, prev,
       h("button", { cls: "btn solid", type: "button", text: "📢 ① 안내 올리기", onclick: post })];
-    if (nposted) kids.push(h("div", { cls: "nsent" }, [h("p", { text: "✅ 올렸습니다. 열린 GitHub 화면에서 'Create'(Submit new issue)를 누르면 1~2분 안에 모든 분 앱의 안내 탭 맨 위에 뜹니다." }),
-      h("button", { cls: "btn kakaobtn", type: "button", text: "💬 ② 오픈채팅방에도 보내기", onclick: function (e) { sendToChat(nposted, e.currentTarget); } })]));
-    kids.push(h("p", { cls: "muted", text: "카카오톡은 다른 앱이 단톡방에 글을 자동으로 올리는 기능을 열어 두지 않았습니다. 그래서 ②를 누르면 휴대폰 공유창이 열리고, 카카오톡 → '26년부부수양회(제주)'를 고르면 같은 글이 단톡방에 올라가 모두의 폰이 울립니다." }));
+    if (nposted) kids.push(h("div", { cls: "nsent" }, [h("p", { text: (canWrite ? "✅ 안내방 맨 위에 올렸습니다. " : "✅ 거의 다 됐습니다. ") + "열린 GitHub 화면에서 'Create'(Submit new issue)를 누르면 1~2분 안에 모든 분 앱의 안내 탭 맨 위에 뜹니다." }),
+      npostedImg ? h("p", { cls: "muted", text: "📎 사진도 앱에 보이려면 GitHub 글칸에 같은 사진을 붙여 주세요. PC는 글칸을 누르고 Ctrl+V(사진이 복사돼 있습니다), 휴대폰은 글칸 아래 'Paste, drop, or click to add files'를 눌러 사진을 고르면 됩니다." }) : null,
+      h("button", { cls: "btn kakaobtn", type: "button", text: npostedImg ? "💬 ② 오픈채팅방에도 보내기 (사진+글)" : "💬 ② 오픈채팅방에도 보내기", onclick: function (e) { sendToChat(nposted, e.currentTarget, npostedImg); } })]));
+    kids.push(h("p", { cls: "muted", text: "카카오톡은 다른 앱이 단톡방에 글을 자동으로 올리는 기능을 열어 두지 않았습니다. 그래서 ②를 누르면 휴대폰 공유창이 열리고, 카카오톡 → '26년부부수양회(제주)'를 고르면 같은 글(사진이 있으면 사진도)이 단톡방에 올라가 모두의 폰이 울립니다. 사진만 올라가고 글이 빠지면 글은 이미 복사돼 있으니 입력칸을 길게 눌러 붙여넣기 하세요." }));
     kids.push(msg);
     return h("div", { cls: "card ncompose" }, kids);
   }
@@ -2238,8 +2313,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       box.appendChild(h("article", { cls: "nitem" + (i === 0 ? " top" : "") }, [
         h("div", { cls: "nmeta" }, [h("span", { cls: "num", text: whenTxt(n.at) }), i === 0 ? h("b", { cls: "ntag", text: "최신" }) : null]),
         h("p", { cls: "ntx" }, linkify(n.tx)),
+        nImgs(n).length ? h("div", { cls: "nphotos" }, nImgs(n).map(function (src) { if (nAdmin()) prepFile(src); return h("figure", { cls: "nphoto" }, [h("img", { src: src, alt: "안내 사진", loading: "lazy" })]); })) : null,
         nAdmin() || mine ? h("div", { cls: "nbtns" }, [
-          nAdmin() ? h("button", { cls: "btn", type: "button", text: "💬 오픈채팅방에 보내기", onclick: function (e) { sendToChat(n.tx, e.currentTarget); } }) : null,
+          nAdmin() ? h("button", { cls: "btn", type: "button", text: nImgs(n).length ? "💬 오픈채팅방에 보내기 (사진+글)" : "💬 오픈채팅방에 보내기", onclick: function (e) { sendToChat(n.tx, e.currentTarget, nImgs(n)[0]); } }) : null,
           mine ? h("button", { cls: "btn", type: "button", text: "삭제", onclick: function () { if (confirm("이 안내를 지울까요? (앱 쪽은 GitHub 이슈를 닫으면 사라집니다)")) { S.notices.splice(S.notices.indexOf(n), 1); changed(); renderNotice(); } } }) : null]) : null]));
     });
     w.appendChild(box);

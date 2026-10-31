@@ -29,7 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 바뀐 것이 있으면 저장
         run: |
-          git add jeju-2026/notices.json
+          git add jeju-2026/notices.json jeju-2026/nimg 2>/dev/null || git add jeju-2026/notices.json
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
