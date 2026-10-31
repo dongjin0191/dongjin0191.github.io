@@ -18,4 +18,60 @@
   document.getElementById("fabAns").onclick=function(){var b=find(/정답/);if(b)b.click();};
 })();
 </script>
+<!-- 1분 타이머 (10/31 총무 요청): ▶ 시작을 누르면 60초 카운트다운 + 째깍째깍 소리 -->
+<style>
+  .tmr{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 0}
+  .tmr #time{min-width:2.4em;text-align:center;font-size:clamp(44px,9vw,72px);font-weight:900;line-height:1;color:#3158bd;font-variant-numeric:tabular-nums}
+  .tmr #time.warn{color:#e03131;animation:tpulse .5s ease-in-out infinite alternate}
+  .tmr #time.end{color:#e03131;font-size:clamp(30px,6vw,46px)}
+  .tmr button.go{background:#2f9e44;color:#fff;font-size:18px;padding:12px 20px}
+  .tmr .tsc{font-weight:800;color:#68758a}.tmr .tsc:not(:empty){color:#e03131;font-size:20px}
+  @keyframes tpulse{to{transform:scale(1.12)}}
+  /* 폰을 눕혔을 때: 남은 시간을 왼쪽 위에 크게 고정 */
+  @media (orientation:landscape) and (max-height:600px){
+    .tmr #time{position:fixed;left:max(10px,env(safe-area-inset-left));top:10px;z-index:9998;background:rgba(255,255,255,.95);border-radius:18px;padding:6px 14px;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:56px}
+  }
+</style>
+<script>
+(function(){
+  var card=document.querySelector("section.card");if(!card)return;
+  var w=document.createElement("div");w.className="tmr";
+  w.innerHTML='<div id="time">60</div><button type="button" class="go" id="tstart">▶ 시작 (1분)</button><button type="button" id="tpause" disabled>⏸ 멈춤</button><span class="tsc" id="tres"></span>';
+  card.parentNode.insertBefore(w,card);
+  var T=document.getElementById("time"),bs=document.getElementById("tstart"),bp=document.getElementById("tpause"),res=document.getElementById("tres");
+  var left=60,iv=null,paused=false,sc=document.getElementById("score"),base=0;
+  function show(){T.textContent=left;T.className=left<=10?"warn":"";}
+  function end(){clearInterval(iv);iv=null;T.textContent="0";T.className="warn";bs.textContent="▶ 다시 시작 (1분)";bp.disabled=true;
+    var got=(+sc.textContent||0)-base;res.textContent="⏰ 시간 종료! 이번 1분: "+got+"점";}
+  bs.onclick=function(){clearInterval(iv);left=60;paused=false;base=+sc.textContent||0;res.textContent="";bs.textContent="↺ 처음부터 1분";bp.disabled=false;bp.textContent="⏸ 멈춤";show();
+    iv=setInterval(function(){if(paused)return;left--;if(left<=0){T.textContent="0";end();}else show();},1000);};
+  bp.onclick=function(){paused=!paused;bp.textContent=paused?"▶ 계속":"⏸ 멈춤";};
+})();
+</script>
+<!-- 째깍째깍 효과음 (Web Audio로 직접 만듦, 파일·인터넷 필요 없음) -->
+<style>
+  #sndBtn{position:fixed;top:10px;right:10px;z-index:9999;width:48px;height:48px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:24px;line-height:48px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer}
+</style>
+<button type="button" id="sndBtn" aria-label="효과음 켜기/끄기">🔊</button>
+<script>
+(function(){
+  var on=true,ctx=null,last=null,el=document.getElementById("time"),btn=document.getElementById("sndBtn");
+  try{on=localStorage.getItem("charades-snd")!=="0";}catch(e){}
+  function paint(){btn.textContent=on?"🔊":"🔇";}
+  paint();
+  function ac(){if(!ctx){var A=window.AudioContext||window.webkitAudioContext;if(!A)return null;ctx=new A();}if(ctx.state==="suspended")ctx.resume();return ctx;}
+  // 폰은 화면을 한 번 눌러야 소리가 나므로, 첫 터치(▶ 시작 등)에서 소리를 깨운다
+  ["pointerdown","touchstart","click","keydown"].forEach(function(t){document.addEventListener(t,function(){ac();},{capture:true,passive:true});});
+  btn.onclick=function(){on=!on;try{localStorage.setItem("charades-snd",on?"1":"0");}catch(e){}paint();if(on)beep(0,1200,.05,.25,"square");};
+  function beep(at,f,d,v,type){var c=ac();if(!c)return;var t=c.currentTime+at,o=c.createOscillator(),g=c.createGain();o.type=type||"square";o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+0.02);}
+  function tick(n){
+    if(!on)return;
+    if(n<=0){beep(0,180,.9,.5,"sawtooth");beep(0,240,.9,.35,"square");return;}   // 종료 부저
+    if(n<=10){beep(0,1500,.06,.35);beep(.5,1500,.06,.35);return;}                   // 마지막 10초: 빠르고 높게 (째깍째깍)
+    var hi=(n%2===0);beep(0,hi?1100:800,.045,.25);                                  // 평소: 째-깍
+  }
+  if(!el)return;
+  new MutationObserver(function(){var n=parseInt(el.textContent,10);if(isNaN(n))return;if(last!==null&&n<last)tick(n);last=n;}).observe(el,{childList:true,characterData:true,subtree:true});
+})();
+</script>
 </body></html>
