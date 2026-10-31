@@ -1050,6 +1050,10 @@ li.evli { display: block !important; grid-template-columns: none !important; }
 .btable td.baddr { white-space: normal; min-width: 180px; font-size: 12px; }
 
   .totop{display:block;width:100%;max-width:520px;margin:18px auto 8px;padding:16px;border:0;border-radius:16px;background:var(--magenta,#d0135f);color:#fff;font:inherit;font-size:19px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}
+  .bgmrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .bgmbtn.on { background: var(--magenta, #d0135f); color: #fff; }
+  .pptfull .pf-bgm { position: absolute; top: max(8px, env(safe-area-inset-top)); right: 66px; height: 48px; border-radius: 999px; border: 0; padding: 0 14px; background: rgba(0,0,0,.55); color: #fff; font-weight: 800; }
+  .pptfull .pf-bgm.on { background: var(--magenta, #d0135f); }
 </style>
 
 <header class="topbar">
@@ -3020,17 +3024,19 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   // 예배순서 PPT: 슬라이드를 위아래로 넘겨 보고 ▲▼로 한 장씩 이동
   var PPT = ["ppt/s-01.jpg", "ppt/s-02.jpg", "ppt/s-03.jpg", "ppt/s-04.jpg", "ppt/s-05.jpg", "ppt/s-06.jpg", "ppt/s-07.jpg", "ppt/s-08.jpg", "ppt/s-09.jpg", "ppt/s-10.jpg", "ppt/s-11.jpg", "ppt/s-12.jpg", "ppt/s-13.jpg", "ppt/s-14.jpg", "ppt/s-15.jpg", "ppt/s-16.jpg", "ppt/s-17.jpg", "ppt/s-18.jpg", "ppt/s-19.jpg", "ppt/s-20.jpg", "ppt/s-21.jpg", "ppt/s-22.jpg", "ppt/s-23.jpg", "ppt/s-24.jpg", "ppt/s-25.jpg", "ppt/s-26.jpg", "ppt/s-27.jpg", "ppt/s-28.jpg", "ppt/s-29.jpg", "ppt/s-30.jpg", "ppt/s-31.jpg", "ppt/s-32.jpg", "ppt/s-33.jpg", "ppt/s-34.jpg", "ppt/s-35.jpg", "ppt/s-36.jpg", "ppt/s-37.jpg", "ppt/s-38.jpg", "ppt/s-39.jpg", "ppt/s-40.jpg", "ppt/s-41.jpg", "ppt/s-42.jpg", "ppt/s-43.jpg", "ppt/s-44.jpg", "ppt/s-45.jpg", "ppt/s-46.jpg", "ppt/s-47.jpg", "ppt/s-48.jpg", "ppt/s-49.jpg", "ppt/s-50.jpg", "ppt/s-51.jpg", "ppt/s-52.jpg"];
   // PPT 전체화면: 누르면 화면 꽉 차게(가능하면 진짜 전체화면), ◀▶·밀기로 넘기기, 두 손가락 확대, 두 번 톡 2배, × 닫기
-  function pptFull(start) {
-    var i = start || 0, n = PPT.length, sc = 1, tx = 0, ty = 0, t0 = null, pinch = null, lastTap = 0;
+  function pptFull(start, L, NM) {
+    L = L || PPT; NM = NM || "예배순서 PPT";
+    var i = start || 0, n = L.length, sc = 1, tx = 0, ty = 0, t0 = null, pinch = null, lastTap = 0;
     var img = h("img", { alt: "" }), cnt = h("span", { cls: "pf-n num" });
     var apply = function () { img.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + sc + ")"; };
-    var show = function () { img.src = PPT[i]; img.alt = "예배순서 PPT " + (i + 1) + "번째 장"; cnt.textContent = (i + 1) + " / " + n; sc = 1; tx = ty = 0; apply(); };
+    var show = function () { img.src = L[i]; img.alt = NM + " " + (i + 1) + "번째 장"; cnt.textContent = (i + 1) + " / " + n; sc = 1; tx = ty = 0; apply(); };
     var go = function (d) { var j = Math.max(0, Math.min(n - 1, i + d)); if (j !== i) { i = j; show(); } };
-    var ov = h("div", { cls: "pptfull", role: "dialog", "aria-label": "예배순서 PPT 전체화면" }, [
+    var ov = h("div", { cls: "pptfull", role: "dialog", "aria-label": NM + " 전체화면" }, [
       h("div", { cls: "pf-stage" }, [img]), cnt,
       h("button", { type: "button", cls: "pf-nav prev", "aria-label": "이전 장", text: "◀", onclick: function (e) { e.stopPropagation(); go(-1); } }),
       h("button", { type: "button", cls: "pf-nav next", "aria-label": "다음 장", text: "▶", onclick: function (e) { e.stopPropagation(); go(1); } }),
-      h("button", { type: "button", cls: "pf-x", "aria-label": "닫기", text: "✕", onclick: function (e) { e.stopPropagation(); close(); } })]);
+      h("button", { type: "button", cls: "pf-x", "aria-label": "닫기", text: "✕", onclick: function (e) { e.stopPropagation(); close(); } }),
+      L === INTRO && INTRO_BGM ? bgmBtn("pf-bgm") : null]);
     var dist = function (t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); };
     ov.addEventListener("touchstart", function (e) {
       if (e.touches.length === 2) { pinch = { d: dist(e.touches), s: sc }; t0 = null; }
@@ -3071,27 +3077,47 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         if (pr && pr.then) pr.then(after).catch(function () {}); else after(); }
     } catch (x) {}
   }
-  function pptCard() {
-    var box = h("div", { cls: "pptbox", tabindex: "0", "aria-label": "예배순서 PPT, 위아래로 넘겨 보세요" });
-    PPT.forEach(function (src, i) { box.appendChild(h("img", { src: src, alt: "예배순서 PPT " + (i + 1) + "번째 장", loading: "lazy", width: "720", height: "405", role: "button", tabindex: "0", onclick: function () { pptFull(i); } })); });
-    var cnt = h("span", { cls: "pptcnt num", text: "1 / " + PPT.length });
+  function pptCard(L, NM, title, desc, extra) {
+    L = L || PPT; NM = NM || "예배순서 PPT";
+    var box = h("div", { cls: "pptbox", tabindex: "0", "aria-label": NM + ", 위아래로 넘겨 보세요" });
+    L.forEach(function (src, i) { box.appendChild(h("img", { src: src, alt: NM + " " + (i + 1) + "번째 장", loading: "lazy", width: "720", height: "405", role: "button", tabindex: "0", onclick: function () { pptFull(i, L, NM); } })); });
+    var cnt = h("span", { cls: "pptcnt num", text: "1 / " + L.length });
     var idx = function () {
       var k = 0; for (var i = 0; i < box.children.length; i++) if (box.children[i].offsetTop - 2 <= box.scrollTop) k = i;
       return k;
     };
     var pos = 0, moving = 0;
     var to = function (dlt) {
-      pos = Math.max(0, Math.min(PPT.length - 1, pos + dlt)); cnt.textContent = (pos + 1) + " / " + PPT.length;
+      pos = Math.max(0, Math.min(L.length - 1, pos + dlt)); cnt.textContent = (pos + 1) + " / " + L.length;
       clearTimeout(moving); moving = setTimeout(function () { moving = 0; }, 700);
       box.scrollTo({ top: box.children[pos].offsetTop - 6, behavior: "smooth" });
     };
-    box.addEventListener("scroll", function () { if (moving) return; pos = idx(); cnt.textContent = (pos + 1) + " / " + PPT.length; }, { passive: true });
-    return h("div", { cls: "card glass" }, [h("h3", { text: "📽 예배순서 PPT" }), h("p", { cls: "muted", text: "개회예배 화면 " + PPT.length + "장 · 위아래로 밀거나 ▲▼ · 화면을 누르면 전체화면" }),
-      h("button", { type: "button", cls: "btn solid pptfs", text: "⛶ 전체화면으로 보기", onclick: function () { pptFull(pos); } }),
+    box.addEventListener("scroll", function () { if (moving) return; pos = idx(); cnt.textContent = (pos + 1) + " / " + L.length; }, { passive: true });
+    return h("div", { cls: "card glass" }, [h("h3", { text: title || "📽 예배순서 PPT" }), h("p", { cls: "muted", text: (desc || "개회예배 화면") + " " + L.length + "장 · 위아래로 밀거나 ▲▼ · 화면을 누르면 전체화면" }), extra || null,
+      h("button", { type: "button", cls: "btn solid pptfs", text: "⛶ 전체화면으로 보기", onclick: function () { pptFull(pos, L, NM); } }),
       h("div", { cls: "pptwrap" }, [box, cnt, h("div", { cls: "pptnav" }, [
         h("button", { type: "button", "aria-label": "이전 장", text: "▲", onclick: function () { to(-1); } }),
         h("button", { type: "button", "aria-label": "다음 장", text: "▼", onclick: function () { to(1); } })])])]);
   }
+  // 친교의 시간 1 자기소개 PPT (10/31 총무 제작 28장). 앱은 jeju-2026/intro/ 그림, 대시보드는 용량(16MB) 때문에 앱으로 연결
+  var INTRO = ["intro/i-01.jpg", "intro/i-02.jpg", "intro/i-03.jpg", "intro/i-04.jpg", "intro/i-05.jpg", "intro/i-06.jpg", "intro/i-07.jpg", "intro/i-08.jpg", "intro/i-09.jpg", "intro/i-10.jpg", "intro/i-11.jpg", "intro/i-12.jpg", "intro/i-13.jpg", "intro/i-14.jpg", "intro/i-15.jpg", "intro/i-16.jpg", "intro/i-17.jpg", "intro/i-18.jpg", "intro/i-19.jpg", "intro/i-20.jpg", "intro/i-21.jpg", "intro/i-22.jpg", "intro/i-23.jpg", "intro/i-24.jpg", "intro/i-25.jpg", "intro/i-26.jpg", "intro/i-27.jpg", "intro/i-28.jpg"], INTRO_BGM = INTRO.length ? "intro/bgm.mp3" : "", APP_URL = "https://dongjin0191.github.io/jeju-2026/";
+  var bgmAu = null, bgmBtns = [];
+  function bgmPaint() { var on = bgmAu && !bgmAu.paused; bgmBtns.forEach(function (b) { b.textContent = on ? "🎵 반주 끄기" : "🎵 반주 켜기"; b.classList.toggle("on", !!on); }); }
+  function bgmBtn(cls) {
+    var b = h("button", { type: "button", cls: "btn bgmbtn " + (cls || ""), text: "🎵 반주 켜기", onclick: function (e) {
+      e.stopPropagation();
+      if (!bgmAu) { bgmAu = new Audio(INTRO_BGM); bgmAu.loop = true; bgmAu.addEventListener("play", bgmPaint); bgmAu.addEventListener("pause", bgmPaint); }
+      if (bgmAu.paused) bgmAu.play().catch(function () {}); else bgmAu.pause();
+    } });
+    bgmBtns = bgmBtns.filter(function (x) { return document.body.contains(x); }); bgmBtns.push(b); setTimeout(bgmPaint, 0); return b;
+  }
+  function introCard() {
+    if (INTRO.length) return pptCard(INTRO, "자기소개 PPT", "📽 자기소개 PPT · 친교의 시간 1", "서로 인사해요 화면", h("div", { cls: "bgmrow" }, [bgmBtn(""), h("span", { cls: "muted", text: "찬송 305장 · 64장 반주" })]));
+    return h("div", { cls: "card glass" }, [h("h3", { text: "📽 자기소개 PPT · 친교의 시간 1" }), h("p", { cls: "muted", text: "서로 인사해요 화면 28장 + 찬양 반주 · 그림이 커서 앱에서 열립니다" }),
+      h("a", { cls: "btn solid pptfs", href: APP_URL + "?intro=1#sched", target: "_blank", rel: "noopener", text: "📽 자기소개 PPT 열기 (앱)" })]);
+  }
+  // 대시보드의 "자기소개 PPT 열기"로 들어오면 앱에서 바로 전체화면으로
+  if (INTRO.length && /[?&]intro=1/.test(location.search)) setTimeout(function () { try { history.replaceState(null, "", location.pathname + location.hash); } catch (x) {} pptFull(0, INTRO, "자기소개 PPT"); }, 700);
   // 일정 칸 → 총무 탭 코스 멘트
   // 일정 칸마다 총무 멘트 연결 (이동 중에도 그 구간 멘트를 바로 연다)
   var HOSTAT = { "d1-0": "c0a", "d1-1": "c0a", "d1-2": "c0a", "d1-3": "c0", "d1-4": "c0", "d1-5": "c1", "d1-6": "c2", "d1-7": "c2", "d1-8": "c2", "d1-9": "c2", "d1-10": "c2",
@@ -3360,6 +3386,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       // 1일차 17:00 메모: 김지수 목사 부부는 석식 장소로 바로 합류
       if (day.key === "d1" && si === 14) worshipLi().forEach(function (x) { items.push(x); });
       if (day.key === "d1" && si === 15) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow1", "🤝 친교의 시간 1 · 자기소개 + 선물 수집"])]));
+      if (day.key === "d1" && si === 15) items.push(h("li", { cls: "tlcard" }, [introCard()]));
       if (day.key === "d1" && si === 16) items.push(h("li", { cls: "tlcard" }, [lodgeCard()]));
       if (day.key === "d1" && si === 12) items.push(h("li", { cls: "memoli" }, [h("p", { cls: "rednote", text: "📝 17:00 메모 · 김지수 목사 · 이주은 사모 → 석식 장소(늘봄흑돼지)로 합류 · 픽업 / 택시 · 제주공항 → 늘봄식당 약 4.5km · 약 14분" }),
         h("a", { cls: "btn memogo", href: "https://map.kakao.com/?sName=" + encodeURIComponent("제주국제공항") + "&eName=" + encodeURIComponent("늘봄흑돼지 제주"), target: "_blank", rel: "noopener", text: "🗺 길찾기 · 제주공항 → 늘봄 (카카오맵)" })]));
