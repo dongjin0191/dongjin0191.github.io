@@ -196,6 +196,9 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .ntx { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 16px; line-height: 1.6; }
 .nbtns { display: flex; gap: 6px; flex-wrap: wrap; }
 .nbtns .ndel { color: #c92a2a; }
+.npost2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.npost2 .btn { min-height: 56px; padding: 8px; line-height: 1.3; }
+.npost2 .btn.done { opacity: .75; }
 .nbtns .ndel.sure { background: #c92a2a; color: #fff; border-color: #c92a2a; }
 .nitem.nediting { border: 2px solid #1971c2; background: #f3f9ff; }
 .npick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -2176,7 +2179,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   // 실시간 안내: 편집 화면(S.notices)과 앱의 notices.json(GitHub '안내' 이슈를 1~2분 안에 모음)을 합쳐 최신순으로 보여 준다
   var ANNIMG = ["ann/a1.jpg", "ann/a2.jpg", "ann/a3.jpg", "ann/a4.jpg", "ann/a5.jpg", "ann/a6.jpg", "ann/a7.jpg", "ann/a8.jpg"];
   var BYIMG = ["by/b1.jpg", "by/b2.jpg", "by/b3.jpg", "by/b4.jpg"];
-  var GHN = [], ndraft = "", nposted = "", nimg = "", npostedImg = "", nghDone = false, nshareFail = false, nedit = null, ndelId = null, NFILE = {};
+  var GHN = [], ndraft = "", nposted = "", nimg = "", npostedImg = "", nghDone = false, nshareFail = false, nedit = null, ndelId = null, nup = false, ncopied = false, NFILE = {};
   var IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   // 글 복사: 카톡 안 브라우저처럼 clipboard 가 막힌 곳도 되도록 예전 방식(execCommand)을 먼저 쓴다
   function copyText(tx) {
@@ -2333,16 +2336,29 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       h("div", { cls: "ndrop", text: "🖱 PC: 사진을 여기(이 칸 어디든)로 끌어다 놓거나 Ctrl+V 하면 바로 붙습니다" })]);
     var prev = nimg ? h("div", { cls: "nprev" }, [h("img", { src: nimg, alt: "첨부할 사진" }),
       h("button", { type: "button", text: "✕ 사진 빼기", onclick: function () { nimg = ""; renderNotice(); } })]) : null;
-    var post = function () {
-      var tx = ta.value.trim(); if (!tx) { msg.textContent = "안내 내용을 적어 주세요."; return false; }
-      if (canWrite) {
+    // 저장은 한 번만(두 버튼을 다 눌러도 안내방에 두 번 올라가지 않게)
+    var saveOnce = function () {
+      var tx = ta.value.trim(); if (!tx) { msg.textContent = "안내 내용을 적어 주세요."; return ""; }
+      var top = (S.notices || [])[0];
+      if (canWrite && !(top && top.tx === tx)) {
         var n = { id: uid("n"), at: new Date().toISOString(), tx: tx }; if (nimg) n.img = nimg;
         S.notices = S.notices || []; S.notices.unshift(n); changed();
       }
-      // 저장하고 바로 공유창(휴대폰) 또는 오픈채팅방(PC)을 연다. 앱용 GitHub 은 아래 버튼으로 이어서.
-      var im = nimg;
-      ndraft = ""; nposted = tx; npostedImg = im; nimg = ""; nghDone = false;
-      copyText(tx); setTimeout(renderNotice, 300);
+      nposted = tx; npostedImg = nimg;
+      return tx;
+    };
+    // ✅ 안내 업로드 완료: 안내방 저장 + 참석자 앱(GitHub 안내 글) 화면 열기 → 'Create' 한 번이면 1~2분 뒤 모든 폰 앱에 뜸
+    var upload = function (e) {
+      var tx = saveOnce(); if (!tx) return false;
+      if (npostedImg) copyImg(npostedImg);
+      e.currentTarget.href = ghUrl(tx); nghDone = true; nup = true;
+      setTimeout(renderNotice, 300);
+    };
+    // 📋 글 복사하기: 안내방 저장 + 글 복사 + 오픈채팅방 열기
+    var post = function () {
+      var tx = saveOnce(); if (!tx) return false;
+      copyText(tx); ncopied = true;
+      setTimeout(renderNotice, 300);
     };
     // 끌어다 놓기·붙여넣기: 카드 어디에 놓아도 바로 첨부
     var imgOf = function (dt) { var fs = dt && dt.files ? [].slice.call(dt.files) : []; for (var i = 0; i < fs.length; i++) if (/^image\//.test(fs[i].type)) return fs[i]; return null; };
@@ -2356,13 +2372,13 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       onpaste: function (e) { var it = e.clipboardData && e.clipboardData.items ? [].slice.call(e.clipboardData.items) : []; for (var i = 0; i < it.length; i++) if (it[i].kind === "file" && /^image\//.test(it[i].type)) { e.preventDefault(); useFile(it[i].getAsFile()); return; } }
     };
     var kids = [h("h3", { text: "✏️ 새 안내 올리기 (총무·임원)" }), ta, pick, prev,
-      chatA("btn solid", "📋 글 복사하기 - 오픈채팅방에 붙이기", post)];
-    if (nposted) kids.push(h("div", { cls: "nsent" }, [
-      h("p", { text: (canWrite ? "✅ 안내방에 올리고 " : "✅ ") + "글을 복사했습니다. 오픈채팅방 입력칸에 붙여넣고 보내세요." }),
-      chatA("btn", "📋 다시 복사하고 오픈채팅방 열기", function () { copyText(nposted); }),
-      h("button", { cls: "btn solid", type: "button", text: (nghDone ? "✔ " : "") + "📱 ② 참석자 앱에도 올리기 (GitHub)", onclick: function () { if (npostedImg) copyImg(npostedImg); window.open(ghUrl(nposted), "_blank"); nghDone = true; renderNotice(); } }),
-      h("p", { cls: "muted", text: "②를 누르면 GitHub 화면이 열립니다. 'Create'(Submit new issue)를 누르면 1~2분 안에 모든 분 앱의 안내 탭 맨 위에 뜹니다." + (npostedImg ? " 사진은 GitHub 글칸에 붙여 주세요(PC는 Ctrl+V, 휴대폰은 글칸 아래 'Paste, drop, or click to add files')." : "") }),
-      null]));
+      h("div", { cls: "npost2" }, [
+        h("a", { cls: "btn solid" + (nup ? " done" : ""), href: GH_NEW, target: "_blank", rel: "noopener", text: nup ? "✔ 안내 업로드 완료" : "✅ 안내 업로드 완료", onclick: upload }),
+        chatA("btn kakaobtn" + (ncopied ? " done" : ""), (ncopied ? "✔ " : "") + "📋 글 복사하기 - 오픈채팅방에 붙이기", post)])];
+    if (nup || ncopied) kids.push(h("div", { cls: "nsent" }, [
+      nup ? h("p", { text: "✅ 열린 GitHub 화면에서 초록 'Create' 버튼을 누르면 1~2분 뒤 모든 분 폰 앱의 안내 탭 맨 위에 뜹니다." + (npostedImg ? " 사진은 글칸에 붙여 주세요(PC Ctrl+V, 폰은 글칸 아래 'Paste, drop, or click to add files')." : "") }) : null,
+      ncopied ? h("p", { text: "✅ 글을 복사했습니다. 오픈채팅방 입력칸에 붙여넣고 보내세요." }) : null,
+      h("button", { cls: "btn", type: "button", text: "새 안내 쓰기 (칸 비우기)", onclick: function () { ndraft = ""; nimg = ""; nposted = ""; npostedImg = ""; nup = false; ncopied = false; renderNotice(); } })]));
     kids.push(msg);
     cardEl = h("div", { cls: "card ncompose" }, kids);
     for (var k in dz) cardEl.addEventListener(k.slice(2), dz[k]);
