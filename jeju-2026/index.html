@@ -197,6 +197,10 @@ h3 { margin: 0; font-size: 16px; font-weight: 900; color: var(--navy); }
 .nbtns { display: flex; gap: 6px; flex-wrap: wrap; }
 .npick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .npick label { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 1.5px dashed #adb5bd; border-radius: 12px; background: #f8f9fa; font-weight: 800; cursor: pointer; text-align: center; padding: 6px; }
+.ndrop { grid-column: 1 / -1; padding: 10px; border-radius: 10px; background: #f1f3f5; color: #495057; font-size: .9rem; font-weight: 700; text-align: center; }
+@media (hover: none) { .ndrop { display: none; } }
+.ncompose.ndragging { outline: 3px dashed #1971c2; outline-offset: -3px; background: #e7f5ff; }
+.ncompose.ndragging .ndrop { display: block; background: #1971c2; color: #fff; }
 .npick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .nprev { position: relative; }
 .nprev img { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; border: 1px solid var(--line); background: #f1f3f5; }
@@ -2265,18 +2269,20 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     ta.value = ndraft; ta.addEventListener("input", function () { ndraft = ta.value; });
     var msg = h("p", { cls: "muted" });
     // 사진 첨부: 📷 카메라로 바로 찍기 / 🖼 앨범·PC 에서 고르기
-    var onPick = function (e) {
-      var f = e.target.files && e.target.files[0]; e.target.value = "";
+    var useFile = function (f) {
       if (!f) return;
+      if (f.type && f.type.indexOf("image/") !== 0) { msg.textContent = "사진 파일만 올릴 수 있습니다."; return; }
       msg.textContent = "사진을 준비하는 중…";
       shrinkImg(f, function (d) {
         if (!d) { msg.textContent = "이 사진은 열 수 없습니다. JPG·PNG 사진으로 다시 골라 주세요."; return; }
         nimg = d; prepFile(d); renderNotice();
       });
     };
+    var onPick = function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ""; useFile(f); };
     var pick = h("div", { cls: "npick" }, [
       h("label", {}, [h("input", { type: "file", accept: "image/*", capture: "environment", "aria-label": "카메라로 사진 찍기", onchange: onPick }), "📷 카메라로 찍기"]),
-      h("label", {}, [h("input", { type: "file", accept: "image/*", "aria-label": "사진 파일 고르기", onchange: onPick }), "🖼 앨범·PC 사진"])]);
+      h("label", {}, [h("input", { type: "file", accept: "image/*", "aria-label": "사진 파일 고르기", onchange: onPick }), "🖼 앨범·PC 사진"]),
+      h("div", { cls: "ndrop", text: "🖱 PC: 사진을 여기(이 칸 어디든)로 끌어다 놓거나 Ctrl+V 하면 바로 붙습니다" })]);
     var prev = nimg ? h("div", { cls: "nprev" }, [h("img", { src: nimg, alt: "첨부할 사진" }),
       h("button", { type: "button", text: "✕ 사진 빼기", onclick: function () { nimg = ""; renderNotice(); } })]) : null;
     var post = function () {
@@ -2289,6 +2295,17 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       window.open(ghUrl(tx), "_blank");
       ndraft = ""; nposted = tx; npostedImg = nimg; nimg = ""; renderNotice();
     };
+    // 끌어다 놓기·붙여넣기: 카드 어디에 놓아도 바로 첨부
+    var imgOf = function (dt) { var fs = dt && dt.files ? [].slice.call(dt.files) : []; for (var i = 0; i < fs.length; i++) if (/^image\//.test(fs[i].type)) return fs[i]; return null; };
+    var cardEl;
+    var dragOn = function (on) { if (cardEl) cardEl.classList.toggle("ndragging", on); };
+    var dz = {
+      ondragenter: function (e) { e.preventDefault(); dragOn(true); },
+      ondragover: function (e) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; dragOn(true); },
+      ondragleave: function (e) { if (!cardEl.contains(e.relatedTarget)) dragOn(false); },
+      ondrop: function (e) { e.preventDefault(); dragOn(false); var f = imgOf(e.dataTransfer); if (f) useFile(f); else msg.textContent = "사진 파일을 끌어다 놓아 주세요."; },
+      onpaste: function (e) { var it = e.clipboardData && e.clipboardData.items ? [].slice.call(e.clipboardData.items) : []; for (var i = 0; i < it.length; i++) if (it[i].kind === "file" && /^image\//.test(it[i].type)) { e.preventDefault(); useFile(it[i].getAsFile()); return; } }
+    };
     var kids = [h("h3", { text: "✏️ 새 안내 올리기 (총무·임원)" }), ta, pick, prev,
       h("button", { cls: "btn solid", type: "button", text: "📢 ① 안내 올리기", onclick: post })];
     if (nposted) kids.push(h("div", { cls: "nsent" }, [h("p", { text: (canWrite ? "✅ 안내방 맨 위에 올렸습니다. " : "✅ 거의 다 됐습니다. ") + "열린 GitHub 화면에서 'Create'(Submit new issue)를 누르면 1~2분 안에 모든 분 앱의 안내 탭 맨 위에 뜹니다." }),
@@ -2296,7 +2313,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       h("button", { cls: "btn kakaobtn", type: "button", text: npostedImg ? "💬 ② 오픈채팅방에도 보내기 (사진+글)" : "💬 ② 오픈채팅방에도 보내기", onclick: function (e) { sendToChat(nposted, e.currentTarget, npostedImg); } })]));
     kids.push(h("p", { cls: "muted", text: "카카오톡은 다른 앱이 단톡방에 글을 자동으로 올리는 기능을 열어 두지 않았습니다. 그래서 ②를 누르면 휴대폰 공유창이 열리고, 카카오톡 → '26년부부수양회(제주)'를 고르면 같은 글(사진이 있으면 사진도)이 단톡방에 올라가 모두의 폰이 울립니다. 사진만 올라가고 글이 빠지면 글은 이미 복사돼 있으니 입력칸을 길게 눌러 붙여넣기 하세요." }));
     kids.push(msg);
-    return h("div", { cls: "card ncompose" }, kids);
+    cardEl = h("div", { cls: "card ncompose" }, kids);
+    for (var k in dz) cardEl.addEventListener(k.slice(2), dz[k]);
+    return cardEl;
   }
   function renderNotice() {
     var v = document.getElementById("v-prep"); v.textContent = "";
