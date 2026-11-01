@@ -3923,7 +3923,14 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   var ORD_RENAME = { "소고기국밥": "고사리육내탕(얼큰)", "고사리육내탕": "고사리육내탕(얼큰)", "해장국 (선지 포함)": "소고기해장국(선지 O)", "해장국 (선지 없음)": "소고기해장국(선지 X)" };
   // 메뉴 사진(메뉴 이름 → 사진). 사진이 있는 메뉴는 고르기 칸에 사진과 함께 보인다.
   var MENUIMG = {"고사리육내탕(얼큰)": "a/d51ac52eb4fd.jpg", "소고기해장국(선지 O)": "a/4b8dbab00e10.jpg", "소고기해장국(선지 X)": "a/b29e73985964.jpg", "돼지국밥": "a/951bb950e26c.jpg"};
-  function myLocal(m) { try { var r = JSON.parse(lsGet(LS + "-ord-" + m.id) || "null"); if (r && ORD_RENAME[r.menu]) r.menu = ORD_RENAME[r.menu]; return r; } catch (e) { return null; } }
+  // 11/1: 이 폰에서 고른 주문은 사람별로 모두 남긴다 (예전엔 한 사람만 남아 다른 이름을 고르면 앞 주문이 지워졌음)
+  function localAll(m) {
+    var o = {}; try { var r = JSON.parse(lsGet(LS + "-ord-" + m.id) || "null"); if (r && r.name) { o[r.name] = r; } else if (r && typeof r === "object") o = r; } catch (e) {}
+    Object.keys(o).forEach(function (k) { if (!o[k] || !o[k].menu) delete o[k]; else if (ORD_RENAME[o[k].menu]) o[k].menu = ORD_RENAME[o[k].menu]; });
+    return o;
+  }
+  function myLocal(m) { return localAll(m)[ordMe] || null; }
+  function localSet(m, rec, on) { var o = localAll(m); if (on) o[rec.name] = rec; else delete o[rec.name]; lsSet(LS + "-ord-" + m.id, JSON.stringify(o)); }
   function loadOrders(cb) {
     var u = orderUrl(); if (!u) { if (cb) cb(); return; }
     fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) { ORD = (d && d.orders) || []; if (cb) cb(); }).catch(function () { if (cb) cb(); });
@@ -3936,6 +3943,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       var mine = OL && ordMe ? OL.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
       if (!mine && simpleOrd()) { var lc = myLocal(m); if (lc && lc.name === ordMe) mine = lc; }
       var cnt = OL ? OL.filter(function (o) { return o.place === m.title; }).length : null;
+      if (cnt != null && simpleOrd()) { var la0 = localAll(m); cnt += Object.keys(la0).filter(function (k) { return !OL.some(function (o) { return o.place === m.title && o.name === k; }); }).length; }
       var sub = m.optout ? (mine ? "✔ 선지 없음으로 신청함" : (cnt ? "선지 없음 " + cnt + "명 · " : "") + "기본은 선지 넣음 · 빼실 분만 누르기") : mine ? "✔ 내 선택: " + mine.menu + (mine.opt ? " · " + mine.opt : "") : (cnt != null ? cnt + "명 고름 · 눌러서 고르기" : "눌러서 고르기");
       var go = function (e) { e.preventDefault(); orderSheet(m); };
       box.appendChild(h("a", { cls: "ordbtn", href: "#", onclick: go }, [h("span", null, [h("b", { text: m.title }), h("small", { text: (m.when ? m.when + " · " : "") + sub })]), h("i", { text: "›" })]));
@@ -3998,7 +4006,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
             changed(); msg.textContent = menu ? "✔ " + ordMe + " 님 주문을 기록했습니다." : "✔ " + ordMe + " 님 주문을 지웠습니다."; draw(); renderHome(); return;
           }
           // 총무에게 따로 보내지 않는다: 고른 것은 아래 '모인 주문'에 바로 쌓인다
-          lsSet(LS + "-ord-" + m.id, menu ? JSON.stringify(rec) : "");
+          localSet(m, rec, !!menu);
           draw(); msg.textContent = menu ? "✔ " + ordMe + " 님: " + pick.menu + (pick.opt ? " · " + pick.opt : "") + " 골랐습니다." : "주문을 취소했습니다.";
           return;
         }
@@ -4012,7 +4020,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       body.appendChild(msg);
       // 모인 주문
       var list = ordList().filter(function (o) { return o.place === m.title; });
-      if (simpleOrd()) { var lc2 = myLocal(m); if (lc2 && lc2.name && lc2.menu && !list.some(function (o) { return o.name === lc2.name; })) list = list.concat([lc2]); }
+      if (simpleOrd()) { var la = localAll(m); Object.keys(la).forEach(function (k) { if (!list.some(function (o) { return o.name === k; })) list = list.concat([la[k]]); }); }
       var tally = {}; list.forEach(function (o) { var k = o.menu + (o.opt ? " · " + o.opt : ""); (tally[k] = tally[k] || []).push(o.name); });
       var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: m.optout ? "선지 없음 신청 " + list.length + "명 (나머지는 선지 넣음)" : "모인 주문 " + list.length + " / " + S.people.length + "명" })]);
       Object.keys(tally).sort().forEach(function (k) { sum.appendChild(h("div", { cls: "ordrow" }, [h("b", { text: k }), h("span", { cls: "num", text: tally[k].length + "개" }), h("small", { text: tally[k].join(", ") })])); });
