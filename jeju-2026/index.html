@@ -1072,6 +1072,12 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   .nearl .nh { display: flex; align-items: center; gap: 6px; } .nearl .nst { margin-left: auto; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: #f1f3f5; color: #6b7280; }
   .nearl .nst.ok { background: #dcfce7; color: #15803d; } .nearl .nst.far { background: #fee2e2; color: #b91c1c; }
   .nearl .nr { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 14px; } .nearl .nr span { white-space: nowrap; }
+  .gatesum { font-size: 17px; margin: 4px 0; } .gatesum .ok { color: #15803d; } .gatesum .no { color: #b91c1c; }
+  .gatel { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+  .gatel li { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 10px; background: #f8f9fa; }
+  .gatel li.in { background: #dcfce7; } .gatel li.out { background: #fee2e2; } .gatel .gn { font-size: 16px; font-weight: 700; }
+  .gatel .gb { font-size: 15px; font-weight: 800; padding: 8px 12px; border-radius: 10px; border: 1px solid #ced4da; background: #fff; color: #495057; min-width: 64px; }
+  .gatel .gb.ok[aria-pressed=true] { background: #16a34a; color: #fff; border-color: #16a34a; } .gatel .gb.no[aria-pressed=true] { background: #dc2626; color: #fff; border-color: #dc2626; }
   .bpdf { margin: 14px 0 6px; padding: 12px; border-radius: 14px; background: #eef4ff; display: grid; gap: 8px; }
   .bpdfb { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .bpdfb .btn { justify-content: center; text-align: center; }
   .bpdfb .kk:last-child { grid-column: 1 / -1; } .bpdfb .kk { background: #fee500; color: #3a1d1d; border-color: #fee500; }
@@ -1730,8 +1736,41 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       h("p", { cls: "muted", text: "아름다운 수양회를 위해 후원해 주셔서 감사합니다. 합계 " + man(pledged) + (chkById("p70").ok ? " (최종 확인 " + (chkById("p70").at || "").slice(5, 10).replace("-", "/") + ")" : " (10월 20일 현재)") }), sp,
       h("p", { cls: "spnote big", text: "※ 현지에서 어떤 방법으로든 추가 후원 및 물품, 상품, 카페, 공동연합 섬김으로 섬기실 분들은 총무 이동진 목사에게 미리 알려 주세요." }),
       contactBox([["총무 이동진 목사", "010-2540-0533"]], " big")]));
+    w.appendChild(gateCard());
     w.appendChild(h("p", { cls: "foot", text: "대한예수교장로회 시화산노회 제19회기 목사·장로 부부 수양회" }));
     v.appendChild(w);
+  }
+  // 11/2 김포 11번 탑승구 모임 확인: 이름마다 왔다/안 왔다. 주문과 같은 구글 시트에 '탑승구 11번 출석'으로 저장 → 다른 폰에도 보인다
+  var GATE = "탑승구 11번 출석", GATELS = LS + "-gate";
+  function gateMap() {
+    var o = {}; try { o = JSON.parse(lsGet(GATELS) || "{}") || {}; } catch (e) {}
+    (ORD || []).forEach(function (r) { if (r.place === GATE) o[r.name] = r.menu; });
+    return o;
+  }
+  function gateCard() {
+    var G = gateMap(), come = S.people.filter(function (p) { return G[p.name] === "왔다"; }).length, no = S.people.filter(function (p) { return G[p.name] === "안왔다"; }).length;
+    var box = h("div", { cls: "card gatec", id: "gatecard" }, [h("h3", { text: "✈ 11번 탑승구 모임 확인" }),
+      h("p", { cls: "gatesum" }, [h("b", { cls: "ok", text: "왔다 " + come }), " · ", h("b", { cls: "no", text: "안 왔다 " + no }), " · 미확인 " + (S.people.length - come - no) + " / " + S.people.length + "명"]),
+      h("p", { cls: "muted", text: orderUrl() ? "누르면 바로 저장되고, 다른 임원 폰에도 보입니다. (새로고침 ↻)" : "누르면 이 폰에 저장됩니다." })]);
+    var set = function (p, val) {
+      var cur0 = gateMap()[p.name], v = cur0 === val ? "" : val;
+      var o = {}; try { o = JSON.parse(lsGet(GATELS) || "{}") || {}; } catch (e) {}
+      if (v) o[p.name] = v; else delete o[p.name]; lsSet(GATELS, JSON.stringify(o));
+      if (ORD) { ORD = ORD.filter(function (r) { return !(r.place === GATE && r.name === p.name); }); if (v) ORD.push({ place: GATE, name: p.name, menu: v, opt: "" }); }
+      redraw();
+      if (orderUrl()) ordPost({ place: GATE, name: p.name, menu: v, opt: "" }).then(function (L) { ORD = L; }).catch(function () {});
+    };
+    var ul = h("ul", { cls: "gatel" });
+    var redraw = function () { var y = window.scrollY; var nb = gateCard(); box.replaceWith(nb); window.scrollTo(0, y); };
+    S.people.forEach(function (p, i) {
+      var s = G[p.name] || "";
+      ul.appendChild(h("li", { cls: s === "왔다" ? "in" : s === "안왔다" ? "out" : "" }, [h("span", { cls: "gn", text: (i + 1) + ". " + p.name }),
+        h("button", { type: "button", cls: "gb ok", "aria-pressed": String(s === "왔다"), text: "왔다", onclick: function () { set(p, "왔다"); } }),
+        h("button", { type: "button", cls: "gb no", "aria-pressed": String(s === "안왔다"), text: "안 왔다", onclick: function () { set(p, "안왔다"); } })]));
+    });
+    box.appendChild(ul);
+    box.appendChild(h("button", { cls: "btn", type: "button", text: "↻ 새로고침 (다른 폰 확인 반영)", onclick: function () { ORD = null; loadOrders(redraw); } }));
+    return box;
   }
   var instOpen = false, instOS = null;
   function detectOS() { var u = navigator.userAgent || ""; if (/iPhone|iPad|iPod|Macintosh/.test(u) && "ontouchend" in document) return "ios"; if (/Android/.test(u)) return "android"; return /iPhone|iPad/.test(u) ? "ios" : "android"; }
