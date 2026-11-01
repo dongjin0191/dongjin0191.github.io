@@ -1,0 +1,62 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>주문 모으기 코드</title>
+<style>body{margin:0;font-family:sans-serif;background:#f5f7fb;color:#1d2b6b;padding:16px}h1{font-size:20px}ol{padding-left:20px;line-height:1.6}button,a.b{display:block;width:100%;box-sizing:border-box;font-size:18px;font-weight:800;padding:14px;border:0;border-radius:12px;background:#d0135f;color:#fff;margin:10px 0;text-align:center;text-decoration:none}a.b{background:#1d4ed8}pre{background:#fff;border:1px solid #dde;border-radius:10px;padding:10px;font-size:11px;overflow:auto;max-height:40vh}</style></head><body>
+<h1>📋 주문 모으기 (총무용)</h1>
+<button id="c">① 코드 복사</button>
+<a class="b" href="https://script.new" target="_blank" rel="noopener">② script.new 열기</a>
+<ol><li>크롬 메뉴(⋮) → <b>데스크톱 사이트</b> 체크</li><li>있던 코드를 모두 지우고 <b>붙여넣기</b> → 💾 저장</li><li><b>배포 → 새 배포</b> → 톱니 → <b>웹 앱</b> → 액세스 <b>모든 사용자</b> → 배포</li><li>권한 승인: 고급 → (안전하지 않음)으로 이동 → 허용</li><li>나온 <b>웹 앱 URL</b>(…/exec)을 복사해 Claude에게 보내기</li></ol>
+<pre id="s">// 제주 부부수양회 메뉴 주문 받기
+// 폰: 크롬에서 script.new 열기(메뉴 ⋮ &gt; 데스크톱 사이트) → 코드 지우고 통째로 붙여넣기 → 저장
+// PC: 구글 시트 &gt; 확장 프로그램 &gt; Apps Script 에 붙여넣어도 된다 (어느 쪽이든 &#x27;제주수양회 주문&#x27; 시트에 쌓인다)
+// 배포 &gt; 새 배포 &gt; 유형: 웹 앱 / 실행: 나 / 액세스 권한: 모든 사용자 → 나온 웹 앱 URL을 Claude에게 보내 주세요.
+var SHEET = &#x27;주문&#x27;;
+
+function book_() {
+  var ss = null;
+  try { ss = SpreadsheetApp.getActive(); } catch (e) {}
+  if (ss) return ss;
+  var pr = PropertiesService.getScriptProperties(), id = pr.getProperty(&#x27;SHEET_ID&#x27;);
+  if (id) { try { return SpreadsheetApp.openById(id); } catch (e) {} }
+  ss = SpreadsheetApp.create(&#x27;제주수양회 주문&#x27;);   // 내 구글 드라이브에 새로 만든다
+  pr.setProperty(&#x27;SHEET_ID&#x27;, ss.getId());
+  return ss;
+}
+
+function sheet_() {
+  var ss = book_();
+  var sh = ss.getSheetByName(SHEET) || ss.insertSheet(SHEET);
+  if (sh.getLastRow() === 0) sh.appendRow([&#x27;시각&#x27;, &#x27;장소&#x27;, &#x27;이름&#x27;, &#x27;메뉴&#x27;, &#x27;선택&#x27;, &#x27;메모&#x27;]);
+  return sh;
+}
+
+function json_(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function rows_() {
+  var v = sheet_().getDataRange().getValues();
+  v.shift();
+  return v.map(function (r) { return { at: r[0], place: r[1], name: r[2], menu: r[3], opt: r[4], memo: r[5] }; });
+}
+
+function doGet() {
+  return json_({ ok: true, orders: rows_() });
+}
+
+// 같은 장소·같은 이름이면 새로 고른 것으로 바꿔 적는다 (메뉴가 비어 있으면 취소)
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var d = JSON.parse(e.postData.contents || &#x27;{}&#x27;);
+    var place = String(d.place || &#x27;&#x27;).slice(0, 40), name = String(d.name || &#x27;&#x27;).slice(0, 20);
+    if (!place || !name) return json_({ ok: false, error: &#x27;장소와 이름이 필요합니다&#x27; });
+    var sh = sheet_(), v = sh.getDataRange().getValues();
+    for (var i = v.length - 1; i &gt;= 1; i--) if (v[i][1] === place &amp;&amp; v[i][2] === name) sh.deleteRow(i + 1);
+    if (d.menu) sh.appendRow([new Date(), place, name, String(d.menu).slice(0, 40), String(d.opt || &#x27;&#x27;).slice(0, 40), String(d.memo || &#x27;&#x27;).slice(0, 100)]);
+    return json_({ ok: true, orders: rows_() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+</pre>
+<script>document.getElementById("c").onclick=function(){var t=document.getElementById("s").textContent,b=this;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent="✔ 복사됨"},function(){var r=document.createRange();r.selectNodeContents(document.getElementById("s"));var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand("copy");b.textContent="✔ 복사됨"})}</script></body></html>
