@@ -1145,7 +1145,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   ];
   // [시각, 이름, 설명, 종류, 지도검색어, 끝 시각, 앞 구간 이동, 확정(1)]
   // 확정이 아닌 시각은 거리·관람 시간으로 계산한 예상 시각
-  // 일정 문구 규칙(기본값): 식사는 "조식/중식/석식 · 식당 이름 · 음식", 호텔 조식은 "조식 · 라마다호텔 (자율)".
+  // 일정 문구 규칙(기본값): 식사는 "조식/중식/석식 · 식당 이름 · 음식", 2·3일차 조식은 라마다 옆 서우봉비치호텔(도보 1분, 11/1 변경).
   // 제목은 짧게(장소·할 일만), 시각·가격·준비물은 아래 작은 줄에 한 번만. 끝나는 시각은 따로 적지 않는다(오른쪽에 자동 표시). 영어 병기 없음.
   var DAYS = [
     { key: "d1", label: "1일차", date: "11/2 (월)", ymd: "2026-11-02", stops: [
@@ -1169,7 +1169,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       ["22:20", "🛏 숙소 · 🍊 과일 봉지 수령", "", "rest", "라마다 제주함덕호텔", "", ""]
     ] },
     { key: "d2", label: "2일차", date: "11/3 (화)", ymd: "2026-11-03", stops: [
-      ["07:00", "조식 · 라마다호텔 (자율)", "08:20 호텔 앞 버스 탑승 · 08:30 출발", "meal", "", "08:30", ""],
+      ["07:00", "조식 · 서우봉비치호텔", "라마다 옆 도보 1분 · 대문을 둘러 갑니다 · 08:20 라마다 앞 버스 탑승 · 08:30 출발", "meal", "서우봉비치호텔", "08:30", "🚶 도보 약 1분 · 라마다→서우봉비치호텔 140m"],
       ["09:15", "스카이 워터쇼", "09:30 공연 · 1인 20,000원", "sight", "스카이워터쇼 제주", "10:20", "버스 약 30분 · 함덕→구좌 18km (발권 여유 포함 45분)"],
       ["10:45", "동화마을", "입장 무료", "sight", "제주 동화마을", "11:45", "버스 약 25분 · 15km"],
       ["12:25", "중식 · 성산바다 · 해산물 요리", "", "meal", "성산바다 성산읍", "13:25", "버스 약 40분 · 성산 방면 30km"],
@@ -1183,7 +1183,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       ["21:45", "🛏 숙소 · 🍊 과일 봉지 수령", "", "rest", "라마다 제주함덕호텔", "", "🚶 해안길 도보 약 14분 · 델문도→호텔 1.0km · 다리가 힘드신 분은 🚐 쏠라티"]
     ] },
     { key: "d3", label: "3일차", date: "11/4 (수)", ymd: "2026-11-04", stops: [
-      ["07:00", "조식 · 라마다호텔 (자율) · 체크아웃", "08:10까지 체크아웃 · 08:20 버스 탑승 · 08:30 출발", "meal", "", "08:30", ""],
+      ["07:00", "조식 · 서우봉비치호텔 · 체크아웃", "라마다 옆 도보 1분 · 08:10까지 체크아웃 · 08:20 라마다 앞 버스 탑승 · 08:30 출발", "meal", "서우봉비치호텔", "08:30", "🚶 도보 약 1분 · 라마다→서우봉비치호텔 140m"],
       ["09:05", "쇼핑 · 본제주", "", "rest", "본제주 연북로", "09:45", "버스 약 35분 · 함덕→연북로 20km"],
       ["10:20", "돌문화공원", "입장 무료", "sight", "제주돌문화공원", "11:50", "버스 약 35분 · 연북로→교래 22km"],
       ["12:30", "중식 · 해녀잠수촌 · 전복뚝배기", "1인 15,000원", "meal", "해녀잠수촌 제주", "13:20", "버스 약 40분 · 교래→공항 근처 30km"],
@@ -1372,7 +1372,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     "d1-15": { q: "스타즈호텔 헤리티지", addr: "제주시 관덕로 26 스타즈호텔 헤리티지 2층 세미나실", tel: "064-757-7111", ok: 1 },
     "d1-16": { q: "라마다 제주함덕호텔", addr: "제주시 조천읍 신북로 470", tel: "064-793-5500", ok: 1 },
     "d1-17": { q: "라마다 제주함덕호텔", addr: "제주시 조천읍 신북로 470", tel: "064-793-5500", ok: 1 },
-    "d2-0": { q: "라마다 제주함덕호텔", addr: "제주시 조천읍 신북로 470", tel: "064-793-5500", ok: 1 },
+    "d2-0": { q: "서우봉비치호텔", addr: "제주시 조천읍 함덕6길 10", tel: "", ok: 1 },
     "d2-1": { q: "제주 스카이워터쇼", addr: "제주시 구좌읍 번영로 2172-80", tel: "064-782-7870", ok: 1 },
     "d2-2": { q: "제주 동화마을" },
     "d2-3": { q: "성산바다 성산읍", addr: "서귀포시 성산읍 신양로 29-2", tel: "064-783-4646" },
@@ -1384,7 +1384,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     "d2-9": { q: "제주 삼다온 갈치조림", addr: "제주시 조천읍 남조로 2190 1층 (와흘리 165-60) · 삼다온 홀", tel: "064-722-9823" },
     "d2-10": { q: "카페 델문도 함덕", addr: "제주시 조천읍 조함해안로 519-10", tel: "064-702-0007" },
     "d2-11": { q: "라마다 제주함덕호텔", addr: "제주시 조천읍 신북로 470", tel: "064-793-5500", ok: 1 },
-    "d3-0": { q: "라마다 제주함덕호텔", addr: "제주시 조천읍 신북로 470", tel: "064-793-5500", ok: 1 },
+    "d3-0": { q: "서우봉비치호텔", addr: "제주시 조천읍 함덕6길 10", tel: "", ok: 1 },
     "d3-1": { q: "본제주 연북로", addr: "제주시 연북로 377 (주식회사 본제주)", tel: "064-723-1616" },
     "d3-2": { q: "제주돌문화공원", addr: "제주시 조천읍 남조로 2023 (63345)", tel: "064-710-7732", ok: 1 },
     "d3-3": { q: "해녀잠수촌 제주", addr: "제주시 서해안로 498 (63114)", tel: "064-743-0733" },
@@ -1716,7 +1716,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         h("li", { text: "9층 루프탑 정원, 카페·레스토랑(조식), 피트니스, 편의점" }),
         h("li", { text: "제주공항에서 차로 약 20분 · 2박 (11/2~11/4)" })
       ]),
-      placeBox("d3-0", "라마다 제주함덕호텔"),
+      placeBox("d1-16", "라마다 제주함덕호텔"),
       h("div", { cls: "vbtns" }, [
         h("a", { cls: "vbtn yt", href: hvu, target: "_blank", rel: "noopener", text: "▶ 유튜브로 보기" }),
         h("a", { cls: "vbtn", href: "#people", onclick: goRooms, text: "방배정표" })
@@ -3138,6 +3138,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     } });
     bgmBtns = bgmBtns.filter(function (x) { return document.body.contains(x); }); bgmBtns.push(b); setTimeout(bgmPaint, 0); return b;
   }
+  var BFIMG = "a/e0ed863d0efd.jpg";
   function introCard() {
     if (INTRO.length) { var ic = pptCard(INTRO, "자기소개 PPT", "📽 자기소개 PPT · 친교의 시간 1", "서로 인사해요 화면", h("div", { cls: "bgmrow" }, [bgmBtn(""), h("span", { cls: "muted", text: "찬송 305장 · 64장 반주" })]));
       bgmStop(); if (bgmIO) setTimeout(function () { bgmIO.observe(ic); }, 0); return ic; }
@@ -3380,7 +3381,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var items = [];
     function lodgeCard() { return h("div", { cls: "card glass" }, [h("h3", { text: "숙소 · 라마다 제주함덕호텔" }),
       h("p", { text: "제주시 조천읍 신북로 470 · 2인 1실 · 2박" }),
-      placeBox("d3-0", "라마다 제주함덕호텔"),
+      placeBox("d1-16", "라마다 제주함덕호텔"),
       h("a", { cls: "btn solid", href: "#people", onclick: goRooms, text: "🛏 숙소 방배정표 보기 (" + roomLabel() + ")" })]); }
     // 예배 순서
     var ord = h("div", { cls: "order" });
@@ -3416,6 +3417,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       if (day.key === "d1" && si === 15) items.push(h("li", { cls: "fellowli" }, [fellowCard(["fellow1", "🤝 친교의 시간 1 · 자기소개 + 선물 수집"])]));
       if (day.key === "d1" && si === 15) items.push(h("li", { cls: "tlcard" }, [introCard()]));
       if (day.key === "d1" && si === 16) items.push(h("li", { cls: "tlcard" }, [lodgeCard()]));
+      // 11/1 2·3일차 조식 = 서우봉비치호텔: 가는 길 안내 그림을 조식과 다음 일정 사이에
+      if ((day.key === "d2" || day.key === "d3") && si === 0) items.push(h("li", { cls: "tlcard" }, [h("figure", { cls: "thanksimg" }, [h("img", { src: BFIMG, alt: "조식 안내 · 라마다 제주함덕호텔에서 서우봉비치호텔까지 도보 약 1분 140m · 옆집인데 대문을 둘러갑니다", loading: "lazy" })])]));
       if (day.key === "d1" && si === 12) items.push(h("li", { cls: "memoli" }, [h("p", { cls: "rednote", text: "📝 17:00 메모 · 김지수 목사 · 이주은 사모 → 석식 장소(늘봄흑돼지)로 합류 · 픽업 / 택시 · 제주공항 → 늘봄식당 약 4.5km · 약 14분" }),
         h("a", { cls: "btn memogo", href: "https://map.kakao.com/?sName=" + encodeURIComponent("제주국제공항") + "&eName=" + encodeURIComponent("늘봄흑돼지 제주"), target: "_blank", rel: "noopener", text: "🗺 길찾기 · 제주공항 → 늘봄 (카카오맵)" })]));
       if (day.key === "d2" && si === 10) items.push(h("li", { cls: "walkli" }, [h("figure", { cls: "walkimg" }, [h("img", { src: "a/0ce27e83963d.jpg", alt: "델문도에서 라마다 제주함덕호텔까지 해안길 도보 약 14분, 1.0km. 다리가 힘드신 분은 쏠라티 차량으로 이동", loading: "lazy" })])]));
