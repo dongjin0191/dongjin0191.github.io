@@ -3972,7 +3972,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   /* ---------- 메뉴 고르기 (로그인 없이, 구글 시트로 모음) ---------- */
   // 11/2 총무 구글 시트 웹 앱 주소. 사진에서 옮겨 적어 헷갈리는 글자(1/l/I, 0/O) 후보를 차례로 열어 보고, 답하는 주소를 쓴다(폰에 기억)
   var ORDER_CANDS = ["https://script.google.com/macros/s/AKfycbyNUVYkwHz1U0GSbKjsfcdlw4huZFCzsx4sc5FNPgcPmkJ-OD3YQ70ADdoi9llRhrWd/exec"];
-  var ORDER_URL = lsGet(LS + "-ordurl") || "";
+  var ORDER_URL = lsGet(LS + "-ordurl") || (HOSTED ? ORDER_CANDS[0] : "");
   var ORDER_PROBE = null;
   function probeOrderUrl() {
     if (ORDER_URL || !HOSTED) return Promise.resolve(ORDER_URL);
@@ -4017,7 +4017,42 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     });
   }
   // 주문 하나 보내기 (같은 장소·이름은 새로 고른 것으로 바뀌고, 메뉴가 비면 취소)
+  // 11/2 주문이 '초기화'되어 보이지 않게: 시트에서 받은 마지막 목록을 폰에 늘 보관(지우지 않음)하고,
+  // 인터넷이 끊겨 못 받으면 그 보관본을 보여 준다. 보내기에 실패한 주문은 '보낼 줄'에 남겨 두었다가 다시 보낸다.
+  var OMIRROR = LS + "-ordsrv", OQUEUE = LS + "-ordq", OLOG = LS + "-ordlog";
+  function ordMirror() { try { var m = JSON.parse(lsGet(OMIRROR) || "null"); return m && m.orders ? m : null; } catch (e) { return null; } }
+  function ordQueue() { try { return JSON.parse(lsGet(OQUEUE) || "[]") || []; } catch (e) { return []; } }
+  function ordApplyQueue(L) {
+    L = (L || []).slice();
+    ordQueue().forEach(function (q) { L = L.filter(function (o) { return !(o.place === q.place && o.name === q.name); }); if (q.menu) L.push({ place: q.place, name: q.name, menu: q.menu, opt: q.opt || "", pending: 1 }); });
+    return L;
+  }
+  function ordKeep(L) { if (L && L.length) lsSet(OMIRROR, JSON.stringify({ at: Date.now(), orders: L })); return L; }
   function ordPost(rec) {
+    var q = ordQueue().filter(function (x) { return !(x.place === rec.place && x.name === rec.name); }); q.push(rec); lsSet(OQUEUE, JSON.stringify(q));
+    try { var lg = JSON.parse(lsGet(OLOG) || "[]"); lg.push([Date.now(), rec.place, rec.name, rec.menu || "(취소)", rec.opt || ""]); lsSet(OLOG, JSON.stringify(lg.slice(-500))); } catch (e) {}
+    return ordFlush().then(function (L) { if (ordQueue().some(function (x) { return x.place === rec.place && x.name === rec.name; })) throw 0; return L; });
+  }
+  var FLUSHING = null;
+  function ordFlush() {
+    if (FLUSHING) return FLUSHING;
+    var u = orderUrl(); if (!u) return Promise.resolve(ordApplyQueue((ordMirror() || {}).orders));
+    var last = null;
+    var step = function () {
+      var q = ordQueue(); if (!q.length) return Promise.resolve(last);
+      var rec = q[0];
+      return fetch(u, { method: "POST", body: JSON.stringify(rec) }).then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.ok) throw 0;
+        last = ordKeep(d.orders || []);
+        lsSet(OQUEUE, JSON.stringify(ordQueue().filter(function (x) { return !(x.place === rec.place && x.name === rec.name && x.menu === rec.menu && (x.opt || "") === (rec.opt || "")); })));
+        return step();
+      });
+    };
+    FLUSHING = step().then(function (L) { FLUSHING = null; return ordApplyQueue(L || ORD || (ordMirror() || {}).orders); }, function () { FLUSHING = null; return ordApplyQueue(ORD || (ordMirror() || {}).orders); });
+    return FLUSHING;
+  }
+  window.addEventListener("online", function () { if (ordQueue().length) ordFlush().then(function (L) { ORD = L; if (cur === "home") renderHome(); }); });
+  function ordPostRaw(rec) {
     if (!ORDER_NTFY) return fetch(orderUrl(), { method: "POST", body: JSON.stringify(rec) }).then(function (r) { return r.json(); }).then(function (d) { return (d && d.orders) || []; });
     return ntfySend({ k: "o", p: rec.place, n: rec.name, m: rec.menu || "", o: rec.opt || "" }).then(function (r) { if (!r.ok) throw 0; return new Promise(function (ok) { setTimeout(ok, 400); }); }).then(ordGet);
   }
@@ -4032,7 +4067,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   var ORD = null, ordMe = lsGet(LS + "-me") || "";
   var ORD_PHONE = "01025400533";  // 간편 방식: 참석자 선택은 총무 문자로, 총무가 편집 화면에서 기록
   function simpleOrd() { return !orderUrl(); }
-  function ordList() { return simpleOrd() ? (S.orders || []) : (ORD || []); }
+  function ordList() { return simpleOrd() ? (S.orders || []) : (ORD || ordApplyQueue((ordMirror() || {}).orders)); }
   // 10/31 해장국 메뉴 이름 변경: 예전에 고른 것은 새 이름으로 옮긴다
   var ORD_RENAME = { "소고기국밥": "고사리육내탕(얼큰)", "고사리육내탕": "고사리육내탕(얼큰)", "해장국 (선지 포함)": "소고기해장국(선지 O)", "해장국 (선지 없음)": "소고기해장국(선지 X)" };
   // 메뉴 사진(메뉴 이름 → 사진). 사진이 있는 메뉴는 고르기 칸에 사진과 함께 보인다.
@@ -4048,10 +4083,11 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function loadOrders(cb) {
     if (!orderUrl() && HOSTED && !ORDER_PROBE) { probeOrderUrl().then(function (u) { if (u) { ORD = null; loadOrders(cb); } }); if (cb) cb(); return; }
     var u = orderUrl(); if (!u) { if (cb) cb(); return; }
-    ordGet().then(function (L) { ORD = L; syncLocal(); if (cb) cb(); }).catch(function () { if (cb) cb(); });
+    ordGet().then(function (L) { ORDOFF = 0; ORD = ordApplyQueue(ordKeep(L)); syncLocal(); if (ordQueue().length) ordFlush().then(function (L2) { ORD = L2; if (cb) cb(); }); if (cb) cb(); })
+      .catch(function () { var m = ordMirror(); if (m) { ORD = ordApplyQueue(m.orders); ORDOFF = m.at; } if (cb) cb(); });
   }
   // 11/2: 주문 모으는 주소가 생기면, 이 폰에만 있던 주문(예전 방식)과 총무 기록(S.orders)을 한 번씩 올려 보내 한곳에 모은다
-  var SYNCING = false;
+  var SYNCING = false, ORDOFF = 0;
   function syncLocal() {
     var u = orderUrl(); if (!u || SYNCING) return;
     var todo = [];
@@ -4132,6 +4168,9 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         if (!ordMe) { msg.textContent = "먼저 내 이름을 골라 주세요."; return; }
         if (menu && !pick.menu) { msg.textContent = "메뉴를 골라 주세요."; return; }
         if (menu && m.opts && m.opts.length && !pick.opt) { msg.textContent = "선택 사항을 골라 주세요."; return; }
+        if (!menu && !confirm(ordMe + " 님 주문을 정말 취소할까요?")) return;
+        var had = ordList().filter(function (o) { return o.place === m.title && o.name === ordMe; })[0];
+        if (menu && had && had.menu !== pick.menu && !confirm(ordMe + " 님은 이미 '" + had.menu + "'(으)로 주문되어 있습니다. '" + pick.menu + "'(으)로 바꿀까요?")) return;
         if (simpleOrd()) {
           var rec = { place: m.title, name: ordMe, menu: menu ? pick.menu : "", opt: menu ? pick.opt : "" };
           if (canWrite) {
@@ -4147,7 +4186,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         msg.textContent = "보내는 중…";
         ordPost({ place: m.title, name: ordMe, menu: menu ? pick.menu : "", opt: menu ? pick.opt : "" })
           .then(function (L) { ORD = L; msg.textContent = menu ? "✔ 주문이 접수되었습니다. 바꾸려면 다시 고르고 보내면 됩니다." : "주문을 취소했습니다."; draw(); renderHome(); })
-          .catch(function () { msg.textContent = "보내지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요."; });
+          .catch(function () { ORD = ordApplyQueue(ORD || (ordMirror() || {}).orders); draw(); msg.textContent = "📶 인터넷이 약해 아직 시트에 못 올렸습니다. 이 폰에 보관했고, 연결되면 자동으로 다시 보냅니다."; });
       };
       body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: simpleOrd() && canWrite ? (mine ? "바꿔서 기록 (총무)" : "기록하기 (총무)") : simpleOrd() ? "고르기 완료" : m.optout ? (mine ? "다시 보내기" : "선지 없음으로 보내기") : mine ? "바꿔서 보내기" : "보내기", onclick: function () { send(true); } }));
       if (mine) body.appendChild(h("button", { cls: "linkish", type: "button", text: m.optout ? "취소 (선지 넣어서 먹기)" : "내 주문 취소", onclick: function () { send(false); } }));
@@ -4156,7 +4195,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       var list = ordList().filter(function (o) { return o.place === m.title; });
       if (simpleOrd()) { var la = localAll(m); Object.keys(la).forEach(function (k) { if (!list.some(function (o) { return o.name === k; })) list = list.concat([la[k]]); }); }
       var tally = {}; list.forEach(function (o) { var k = o.menu + (o.opt ? " · " + o.opt : ""); (tally[k] = tally[k] || []).push(o.name); });
-      var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: m.optout ? "선지 없음 신청 " + list.length + "명 (나머지는 선지 넣음)" : "모인 주문 " + list.length + " / " + S.people.length + "명" })]);
+      var sum = h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: m.optout ? "선지 없음 신청 " + list.length + "명 (나머지는 선지 넣음)" : "모인 주문 " + list.length + " / " + S.people.length + "명" + (ORDOFF ? " · 📶 연결 안 됨: " + new Date(ORDOFF).toTimeString().slice(0, 5) + " 보관본" : "") + (list.some(function (o) { return o.pending; }) ? " · ⏳ 보낼 줄 있음" : "") })]);
       Object.keys(tally).sort().forEach(function (k) { sum.appendChild(h("div", { cls: "ordrow" }, [h("b", { text: k }), h("span", { cls: "num", text: tally[k].length + "개" }), h("small", { text: tally[k].join(", ") })])); });
       var none = S.people.filter(function (p) { return !list.some(function (o) { return o.name === p.name; }); });
       if (!m.optout && none.length && list.length) sum.appendChild(h("p", { cls: "muted", text: "아직 안 고른 분: " + none.map(function (p) { return p.name; }).join(", ") }));
