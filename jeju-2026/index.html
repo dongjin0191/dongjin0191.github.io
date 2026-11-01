@@ -3626,6 +3626,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var v = document.getElementById("v-host"); v.textContent = "";
     var w = h("div", { cls: "wrap sec" });
     w.appendChild(h("h2", { text: "총무 진행 노트" }));
+    w.appendChild(globalSearch());  // 11/1: 진행 노트 바로 밑 검색
     w.appendChild(dutyCard());
     // 총무가 위임 가능한 대상 및 업무 (1~7번): 이름 칸 + 업무 칸, 편집 화면에서 적는다
     if (!S.delegate) S.delegate = [1, 2, 3, 4, 5, 6, 7].map(function () { return { who: "", job: "" }; });
