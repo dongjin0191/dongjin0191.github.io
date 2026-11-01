@@ -1056,6 +1056,16 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   .pptfull .pf-bgm.on { background: var(--magenta, #d0135f); }
   .tabs a.ordtab { color: #dc2626; }
   #ordercard { scroll-margin-top: calc(70px + env(safe-area-inset-top, 0px)); }
+  .tkgrid { display: grid; gap: 10px; }
+  .tkg { background: var(--c); border-radius: 14px; padding: 10px 12px; }
+  .tkgh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .tkgh small { color: #475569; font-weight: 700; } .tkgh b { font-size: 19px; letter-spacing: .06em; color: #1d4ed8; }
+  .tkgnote { background: #c2410c; color: #fff; font-weight: 800; font-size: 12.5px; padding: 2px 8px; border-radius: 999px; }
+  .tkgn { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  .tkgn li { display: flex; align-items: baseline; gap: 3px; background: rgba(255,255,255,.75); border-radius: 8px; padding: 5px 6px; min-width: 0; white-space: nowrap; }
+  .tkgn i { font-style: normal; font-size: 11px; color: #64748b; } .tkgn b { font-size: 15px; } .tkgn small { font-size: 11.5px; color: #475569; }
+  @media (max-width: 380px) { .tkg { padding: 8px 8px; } .tkgn li { padding: 5px 4px; gap: 2px; } .tkgn b { font-size: 14px; } .tkgn small { font-size: 10.5px; } .tkgn i { font-size: 10px; } }
+  @media (max-width: 330px) { .tkgn { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
 <header class="topbar">
@@ -4471,6 +4481,20 @@ li.evli { display: block !important; grid-template-columns: none !important; }
               /^01/.test(tel) ? kkBtn("btn kakaobtn pnrcopy", p.phone, p.kakao || "", p.name + " 카톡", p.name) : null]) : null]); }))
       ]));
     });
+    // 11/1 총무 표: 예약번호별 탑승자 한눈에 (이름·직분만, 신상정보 없음)
+    var TKG = [
+      { k: "PFFZSR", c: "#fde2cf", n: ["박흥열 목사", "양금숙 사모", "강명우 목사", "김명덕 사모", "신동열 목사", "최장자 사모", "박현정 목사", "엄현숙 사모", "김성중 목사"] },
+      { k: "Z579XV", c: "#dcefd5", n: ["유정자 사모", "서용호 목사", "김성경 사모", "이재용 목사", "김명옥 사모", "전종호 목사", "박정숙 사모", "김영돈 목사", "신현주 사모"] },
+      { k: "NBV96K", c: "#d6e6f2", n: ["김운갑 목사", "전효진 사모", "권병렬 목사", "이미경 사모", "김지수 목사", "이주은 사모", "문태환 목사", "남현정 사모", "이동진 목사"] },
+      { k: "KB6BFN", c: "#c9dbf6", n: ["백유미 사모", "신용화 장로", "차영선 권사", "장명국 장로", "손영 권사", "김완수 장로", "최순영 권사", "김선민 목사", "오윤석 목사"] },
+      { k: "X7HM6Z", c: "#f3d6e2", n: ["정재영 장로", "유성준 목사", "명영석 목사", "손병민 목사", "김충현 목사", "고석진 장로", "박영수 장로", "김종수 목사"] },
+      { k: "I9BRPT", c: "#fdf0b8", n: ["박양수 목사", "신은주 사모"], note: "리턴 11/6(금) 10:00" }
+    ];
+    var no = 0;
+    w.appendChild(h("div", { cls: "card tkgrid" }, [h("h3", { text: "📋 예약번호별 탑승자 (" + TKG.reduce(function (a, g) { return a + g.n.length; }, 0) + "명)" })].concat(TKG.map(function (g) {
+      return h("div", { cls: "tkg", style: "--c:" + g.c }, [
+        h("div", { cls: "tkgh" }, [h("small", { text: "왕복 예약번호" }), h("b", { text: g.k }), h("button", { cls: "btn pnrcopy", type: "button", text: "복사", onclick: function (e) { copy(g.k, e.currentTarget); } }), g.note ? h("span", { cls: "tkgnote", text: g.note }) : null]),
+        h("ol", { cls: "tkgn", start: String(no + 1) }, g.n.map(function (x) { no++; var sp = x.lastIndexOf(" "); return h("li", null, [h("i", { text: no }), h("b", { text: x.slice(0, sp) }), h("small", { text: x.slice(sp + 1) })]); }))]); }))));
     v.appendChild(w);
   }
   // 부부는 한 줄에 남편 왼쪽·아내 오른쪽, 혼자 오신 분은 왼쪽 한 칸
