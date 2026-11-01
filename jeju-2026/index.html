@@ -3354,7 +3354,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     w.appendChild(tabs);
     w.appendChild(globalSearch());
     var day = DAYS.filter(function (d) { return d.key === dayKey; })[0];
-    w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "dchip", style: "--c:#db2638", text: "이름 임무" }), " 임원 임무(임무 탭과 같은 색) ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
+    w.appendChild(h("p", { cls: "schednote" }, [h("span", { cls: "dchip", style: "--c:#db2638", text: "임무" }), " 임원 임무(담당자는 임무 탭과 같은 색) ", h("span", { cls: "stat st-alt", text: "예비" }), "상황 따라 가는 곳 ", h("span", { cls: "stat st-tbd", text: "확인 중" }), "아직 미정", h("br"), "시간 옆 '시각 확정'은 항공편·배 시각이고, '예상 시각'은 거리와 관람 시간으로 계산한 값입니다." + (canWrite ? " 편집 화면에서는 배지를 누르면 상태가 바뀝니다." : "")]));
     var items = [];
     function lodgeCard() { return h("div", { cls: "card glass" }, [h("h3", { text: "숙소 · 라마다 제주함덕호텔" }),
       h("p", { text: "제주시 조천읍 신북로 470 · 2인 1실 · 2박" }),
@@ -3564,7 +3564,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     [key, key2].forEach(function (k) { var t = k && DUTY[k]; if (t) t.forEach(function (x, i) { if (x) out.push([i, x]); }); });
     return out;
   }
-  function dutyChip(i, x) { return h("span", { cls: "dchip", style: "--c:" + DUTYP[i].color, text: DUTYP[i].name + " " + x }); }
+  function dutyChip(i, x) { return h("span", { cls: "dchip", style: "--c:" + DUTYP[i].color, text: x, title: DUTYP[i].name + " " + x }); }  // 11/1: 칸에는 임무만 (사람은 색으로 구분)
   function dutyChips(key, key2) {
     var L = dutyList(key, key2);
     return L.length ? h("div", { cls: "dchips" }, L.map(function (a) { return dutyChip(a[0], a[1]); })) : null;
@@ -3597,7 +3597,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
           var t = DUTY[r[0]] || [];
           if (r[3] && dutySel >= 0 && !t[dutySel]) return;
           trs.push(h("tr", { cls: r[3] ? "dmove" : "" }, [h("td", { cls: "dwhen", text: r[3] ? "" : r[2] }), h("td", { cls: "dwhat", text: r[1] })].concat(cols.map(function (i) {
-            return h("td", { cls: "dp", style: "--c:" + DUTYP[i].color }, t[i] ? [h("span", { text: DUTYP[i].name + " " + t[i] })] : []); }))));
+            return h("td", { cls: "dp", style: "--c:" + DUTYP[i].color }, t[i] ? [h("span", { text: t[i], title: DUTYP[i].name + " " + t[i] })] : []); }))));
           var have = cols.filter(function (i) { return t[i]; });
           if (r[3] && !have.length) return;
           mob.appendChild(h("article", { cls: "devent" + (r[3] ? " move" : "") }, [r[2] ? h("div", { cls: "dtime num", text: r[2] }) : null, h("div", { cls: "dtitle", text: r[1] }),
