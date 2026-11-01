@@ -3959,11 +3959,29 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function localSet(m, rec, on) { var o = localAll(m); if (on) o[rec.name] = rec; else delete o[rec.name]; lsSet(LS + "-ord-" + m.id, JSON.stringify(o)); }
   function loadOrders(cb) {
     var u = orderUrl(); if (!u) { if (cb) cb(); return; }
-    fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) { ORD = (d && d.orders) || []; if (cb) cb(); }).catch(function () { if (cb) cb(); });
+    fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) { ORD = (d && d.orders) || []; syncLocal(); if (cb) cb(); }).catch(function () { if (cb) cb(); });
+  }
+  // 11/2: 주문 모으는 주소가 생기면, 이 폰에만 있던 주문(예전 방식)과 총무 기록(S.orders)을 한 번씩 올려 보내 한곳에 모은다
+  var SYNCING = false;
+  function syncLocal() {
+    var u = orderUrl(); if (!u || SYNCING) return;
+    var todo = [];
+    menus().forEach(function (m) { var la = localAll(m); Object.keys(la).forEach(function (k) { todo.push([m, la[k]]); }); });
+    if (canWrite) (S.orders || []).forEach(function (o) { var m = menus().filter(function (x) { return x.title === o.place; })[0]; if (m) todo.push([m, o, 1]); });
+    todo = todo.filter(function (x) { var r = x[1]; return r.name && r.menu && !(ORD || []).some(function (o) { return o.place === x[0].title && o.name === r.name && o.menu === r.menu && (o.opt || "") === (r.opt || ""); }); });
+    if (!todo.length) { menus().forEach(function (m) { if (Object.keys(localAll(m)).length) lsSet(LS + "-ord-" + m.id, "{}"); }); return; }
+    SYNCING = true;
+    var next = function () {
+      var x = todo.shift();
+      if (!x) { SYNCING = false; menus().forEach(function (m) { lsSet(LS + "-ord-" + m.id, "{}"); }); if (cur === "home") renderHome(); return; }
+      fetch(u, { method: "POST", body: JSON.stringify({ place: x[0].title, name: x[1].name, menu: x[1].menu, opt: x[1].opt || "" }) })
+        .then(function (r) { return r.json(); }).then(function (d) { if (d && d.orders) ORD = d.orders; next(); }, function () { SYNCING = false; });
+    };
+    next();
   }
   function orderCard() {
     var box = h("div", { cls: "card order", id: "ordercard" }, [h("h3", { text: "🍽 메뉴 고르기" }),
-      h("p", { cls: "muted", text: simpleOrd() ? "이름과 메뉴를 고르고 '고르기 완료'를 누르면 끝입니다. 메뉴별 개수와 이름이 '모인 주문'에 쌓이고, 총무가 그대로 복사해 식당·카페에 주문합니다." : "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
+      h("p", { cls: "muted", text: simpleOrd() ? "⚠ 지금은 고른 주문이 이 폰에만 저장됩니다(한곳에 모으는 주소 연결 전). 이름과 메뉴를 고르고 '고르기 완료'를 누르면 끝입니다. 메뉴별 개수와 이름이 '모인 주문'에 쌓이고, 총무가 그대로 복사해 식당·카페에 주문합니다." : "해장국과 카페 메뉴를 미리 고르면 총무가 모아서 한 번에 주문합니다. 로그인 없이 내 이름만 누르면 돼요." })]);
     var ready = true, OL = simpleOrd() || ORD ? ordList() : null;
     menus().forEach(function (m) {
       var mine = OL && ordMe ? OL.filter(function (o) { return o.place === m.title && o.name === ordMe; })[0] : null;
