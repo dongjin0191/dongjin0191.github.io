@@ -1083,6 +1083,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   .scrow .sct { margin-left: auto; font-size: 13px; font-weight: 800; color: #1d4ed8; }
   .scbtns { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 6px; } .scbtns button { padding: 8px 0; font-size: 14px; font-weight: 800; border: 1px solid #ced4da; border-radius: 8px; background: #fff; }
   .scbtns button[aria-pressed=true] { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+  .evres figcaption { font-weight: 800; font-size: 16px; margin: 10px 0 6px; color: #b45309; } .evres img { cursor: zoom-in; }
   .bpdf { margin: 14px 0 6px; padding: 12px; border-radius: 14px; background: #eef4ff; display: grid; gap: 8px; }
   .bpdfb { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .bpdfb .btn { justify-content: center; text-align: center; }
   .bpdfb .kk:last-child { grid-column: 1 / -1; } .bpdfb .kk { background: #fee500; color: #3a1d1d; border-color: #fee500; }
@@ -2878,6 +2879,8 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function evMate(name) { var p = S.people.filter(function (x) { return x.name === name; })[0], sp = p ? spouseOf(p) : null; return sp ? sp.name : ""; }
   function evName(i, r) { if (i !== 1) return r.name; var m = evMate(r.name); if (!m) return r.name; var p = S.people.filter(function (x) { return x.name === r.name; })[0]; return (isSp(p) ? m + " · " + r.name : r.name + " · " + m) + " 부부"; }
   function evHas(i, L, name) { return L.some(function (r) { return r.name === name || (i === 1 && evMate(r.name) === name); }); }
+  // 11/2 이벤트 결과 포스터 (2: 엄복동 자전거 대회, 3: 노래자랑)
+  var EVRES = { 2: ["a/1cb899028fbc.jpg", "엄복동을 찾아라 · 스피드 자전거 대회"], 3: ["a/6fc46a45f36b.jpg", "전국노래자랑 시화산편 수상"] };
   function byEvItem(i) {
     var e = BYEV[i], list = BYIMG.map(function (s, k) { return { src: s, cap: BYEV[k][1] }; });
     if (i) evLoad();
@@ -2893,8 +2896,10 @@ li.evli { display: block !important; grid-template-columns: none !important; }
           : [h("li", { cls: "soft", text: "아직 신청자가 없습니다" })])
       ]);
     }
+    var res = EVRES[i];
     return h("li", { cls: "evli" }, [h("div", { cls: "evhead" }, [h("span", { cls: "when num", text: e[0] }), h("div", { cls: "evbody" }, [h("b", { text: e[1] }), i ? h("small", { text: e[2] }) : null])]),
-      h("div", { cls: "evgrid" }, [poster, side])]);
+      h("div", { cls: "evgrid" }, [poster, side]),
+      res ? h("figure", { cls: "thanksimg evres" }, [h("figcaption", { text: "🏆 결과 · " + res[1] }), h("img", { src: res[0], alt: res[1] + " 결과 · 1등 2등 3등", loading: "lazy", onclick: function () { openPhoto(0, [{ src: res[0], cap: res[1] + " 결과" }]); } })]) : null]);
   }
   // 신청서: 이름은 목록에서 스크롤해 누르기. 총무 화면은 바로 기록, 참석자는 총무에게 문자
   function evSheet(i) {
