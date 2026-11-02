@@ -1078,6 +1078,11 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   .gatel li.in { background: #dcfce7; } .gatel li.out { background: #fee2e2; } .gatel .gn { font-size: 16px; font-weight: 700; }
   .gatel .gb { font-size: 15px; font-weight: 800; padding: 8px 12px; border-radius: 10px; border: 1px solid #ced4da; background: #fff; color: #495057; min-width: 64px; }
   .gatel .gb.ok[aria-pressed=true] { background: #16a34a; color: #fff; border-color: #16a34a; } .gatel .gb.no[aria-pressed=true] { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .evscore { margin-top: 6px; width: 100%; font-weight: 800; background: #fff7d6; border-color: #f5c400; }
+  .scrow { border: 1px solid #e5e7eb; border-radius: 12px; padding: 8px; margin: 8px 0; } .scrow .sch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+  .scrow .sct { margin-left: auto; font-size: 13px; font-weight: 800; color: #1d4ed8; }
+  .scbtns { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 6px; } .scbtns button { padding: 8px 0; font-size: 14px; font-weight: 800; border: 1px solid #ced4da; border-radius: 8px; background: #fff; }
+  .scbtns button[aria-pressed=true] { background: #f59e0b; color: #fff; border-color: #f59e0b; }
   .bpdf { margin: 14px 0 6px; padding: 12px; border-radius: 14px; background: #eef4ff; display: grid; gap: 8px; }
   .bpdfb { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .bpdfb .btn { justify-content: center; text-align: center; }
   .bpdfb .kk:last-child { grid-column: 1 / -1; } .bpdfb .kk { background: #fee500; color: #3a1d1d; border-color: #fee500; }
@@ -2849,8 +2854,18 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function evSec(t) { var m = /(\d+)\s*분/.exec(t || ""), x = /(\d+(?:\.\d+)?)\s*초/.exec(t || ""), c = /^(\d+):(\d{1,2}(?:\.\d+)?)$/.exec((t || "").trim()); if (c) return +c[1] * 60 + +c[2]; if (!m && !x) return null; return (m ? +m[1] * 60 : 0) + (x ? +x[1] : 0); }
   function evFmt(sec) { var m = Math.floor(sec / 60), x = Math.round((sec - m * 60) * 10) / 10; return (m ? m + "분 " : "") + x + "초"; }
   // 보이는 목록 = 총무 기록 + 내 폰 신청(아직 없으면). 엄복동(2번)은 기록이 있으면 빠른 순
+  // 11/2 이벤트 신청도 주문과 같은 구글 시트에 '비양도 이벤트 N'으로 쌓는다 (모든 폰에서 누적·보관·재전송)
+  function evPlace(i) { return "비양도 이벤트 " + i; }
+  function evServer(i) {
+    var f = EVF[i], src = ORD || ordApplyQueue((ordMirror() || {}).orders);
+    return (src || []).filter(function (o) { return o.place === evPlace(i) && o.menu; }).map(function (o) { var r = { name: o.name, srv: 1 }; if (f && o.opt) r[f.k] = o.opt; return r; });
+  }
+  var EVLOAD = false;
+  function evLoad() { if (EVLOAD || ORD || !orderUrl()) return; EVLOAD = true; loadOrders(function () { if (cur === "sched") { var y = window.scrollY; renderSched(); window.scrollTo(0, y); } }); }
   function evList(i) {
     var L = evSigns(i).slice(), mine = canWrite ? null : evMine(i);
+    evServer(i).forEach(function (r) { var k = -1; L.forEach(function (x, j) { if (x.name === r.name) k = j; }); if (k < 0) L.push(r); else if (!canWrite) { var f = EVF[i]; if (f && r[f.k] && !L[k][f.k]) L[k] = Object.assign({}, L[k], r); } });
+    if (mine && mine.name && evServer(i).some(function (r) { return r.name === mine.name; })) mine = null;
     if (mine && mine.name && !evHas(i, L, mine.name)) L.push(Object.assign({ local: 1 }, mine));
     if (i === 2) {
       var timed = L.filter(function (r) { return evSec(r.t) != null; }).sort(function (a, b) { return evSec(a.t) - evSec(b.t); });
@@ -2865,6 +2880,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
   function evHas(i, L, name) { return L.some(function (r) { return r.name === name || (i === 1 && evMate(r.name) === name); }); }
   function byEvItem(i) {
     var e = BYEV[i], list = BYIMG.map(function (s, k) { return { src: s, cap: BYEV[k][1] }; });
+    if (i) evLoad();
     var poster = h("button", { type: "button", cls: "bythumb big", "aria-label": e[1] + " 포스터 크게 보기", onclick: function () { openPhoto(i, list); } }, [h("img", { src: BYIMG[i], alt: e[1] }), h("span", { text: String(i) })]);
     var side;
     if (i === 0) side = h("div", { cls: "evside" }, [h("p", { cls: "evinfo", text: e[2] }), h("small", { cls: "muted", text: "포스터를 누르면 크게 봅니다" })]);
@@ -2872,6 +2888,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       var L = evList(i), f = EVF[i];
       side = h("div", { cls: "evside" }, [
         h("button", { type: "button", cls: "btn solid evsign", onclick: function () { evSheet(i); } }, ["✋ 신청", h("small", { text: L.length ? L.length + "명" : "" })]),
+        i === 3 ? h("button", { type: "button", cls: "btn evscore", onclick: function () { scoreSheet(); } }, ["⭐ 점수 주기 · 합계"]) : null,
         h("ol", { cls: "evlist" }, L.length ? L.map(function (r, k) { return h("li", null, [h("b", { text: (i === 2 && evSec(r.t) != null && k < 3 ? ["🥇", "🥈", "🥉"][k] + " " : (k + 1) + ". ") + evName(i, r) + (r.local ? " (내 폰)" : "") }), f && r[f.k] ? h("small", { text: (f.k === "song" ? "🎵 " : "⏱ ") + r[f.k] }) : null]); })
           : [h("li", { cls: "soft", text: "아직 신청자가 없습니다" })])
       ]);
@@ -2917,13 +2934,22 @@ li.evli { display: block !important; grid-template-columns: none !important; }
         // 한 번에: 내 폰 목록에 바로 저장 + 총무에게 문자 창 열기
         var rec = { name: me }; if (f && inp && v) rec[f.k] = v;
         lsSet(LS + "-ev-" + i, on ? JSON.stringify(rec) : "");
+        if (orderUrl()) {
+          if (!on && !confirm(me + " 님 신청을 정말 취소할까요?")) return;
+          msg.textContent = "저장하는 중…";
+          ordPost({ place: evPlace(i), name: me, menu: on ? "신청" : "", opt: v }).then(function (L) { ORD = L; val = ""; draw(); msg.textContent = on ? "✔ " + me + " 님 신청이 저장되었습니다. 모든 폰 목록에 함께 보입니다." : "신청을 취소했습니다."; },
+            function () { ORD = ordApplyQueue(ORD || (ordMirror() || {}).orders); val = ""; draw(); msg.textContent = "📶 인터넷이 약해 이 폰에 보관했습니다. 연결되면 자동으로 저장됩니다."; });
+          return;
+        }
         if (ev && ev.currentTarget) ev.currentTarget.href = smsHref;
         setTimeout(function () { val = ""; draw(); msg.textContent = on ? "✔ " + me + " 님 신청이 아래 목록에 올라갔습니다. 문자 창에서 '전송'을 누르면 총무에게도 갑니다." : "신청을 취소했습니다. 문자 '전송'을 누르면 총무에게도 알려집니다."; }, 300);
       };
       if (canWrite) body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: mine ? "바꿔서 기록 (총무)" : "신청 기록 (총무)", onclick: function () { send(true); } }));
+      else if (orderUrl()) body.appendChild(h("button", { cls: "btn solid ordsend", type: "button", text: "✋ 신청하기 (바로 저장)", onclick: function () { send(true); } }));
       else body.appendChild(h("a", { cls: "btn solid ordsend", href: "sms:" + ORD_PHONE, text: "✋ 신청하기 (목록 저장 + 총무에게 문자)", onclick: function (ev) { send(true, ev); } }));
       if (canWrite && mine) body.appendChild(h("button", { cls: "linkish", type: "button", text: "이 분 신청 지우기", onclick: function () { send(false); } }));
-      if (!canWrite && me && evMine(i)) body.appendChild(h("a", { cls: "linkish", href: "sms:" + ORD_PHONE, text: "신청 취소 (총무에게 문자)", onclick: function (ev) { send(false, ev); } }));
+      if (!canWrite && me && orderUrl() && evList(i).some(function (r) { return r.name === me; })) body.appendChild(h("button", { cls: "linkish", type: "button", text: "내 신청 취소", onclick: function () { send(false); } }));
+      else if (!canWrite && me && evMine(i)) body.appendChild(h("a", { cls: "linkish", href: "sms:" + ORD_PHONE, text: "신청 취소 (총무에게 문자)", onclick: function (ev) { send(false, ev); } }));
       body.appendChild(msg);
       // 신청자 목록(누적): 번호 · 이름 · 노래/기록. 총무는 ▲▼ 순서 바꾸기 · × 지우기, 엄복동은 ⏱ 시계로 기록
       var Ls = evList(i), arr = evSigns(i);
@@ -2953,6 +2979,54 @@ li.evli { display: block !important; grid-template-columns: none !important; }
       body.appendChild(sum);
     };
     draw(); document.body.appendChild(ov); ovOpen(shut);
+  }
+  // 11/2 노래자랑 점수: 듣는 사람 누구나 내 이름으로 노래마다 1~10점. 시트에 '노래자랑 점수 · 가수'로 저장, 합계·평균·순위 자동
+  function scorePlace(n) { return "노래자랑 점수 · " + n; }
+  function scoreRows() {
+    var src = ORD || ordApplyQueue((ordMirror() || {}).orders) || [], f = EVF[3];
+    return evList(3).map(function (r) {
+      var v = src.filter(function (o) { return o.place === scorePlace(r.name) && o.menu; }).map(function (o) { return { by: o.name, s: +o.menu || 0 }; });
+      var sum = v.reduce(function (a, x) { return a + x.s; }, 0);
+      return { name: r.name, song: r[f.k] || "", votes: v, sum: sum, avg: v.length ? Math.round(sum / v.length * 10) / 10 : 0 };
+    });
+  }
+  function scoreSheet() {
+    var ov = h("div", { cls: "ordsheet", role: "dialog", "aria-label": "노래자랑 점수" });
+    var shut = function () { ov.remove(); if (cur === "sched") { var y = window.scrollY; renderSched(); window.scrollTo(0, y); } };
+    var body = h("div", { cls: "ordin" }); ov.appendChild(body);
+    var msg = h("p", { cls: "ordmsg" });
+    var draw = function () {
+      body.textContent = "";
+      body.appendChild(h("div", { cls: "ordtop" }, [h("b", { text: "⭐ 전국노래자랑 시화산편 · 점수" }), h("button", { cls: "lb-x", type: "button", "aria-label": "닫기", text: "×", onclick: function () { ovClose(shut); } })]));
+      var sel = h("select", { cls: "field", "aria-label": "점수 주는 내 이름" }, [h("option", { value: "", text: "1. 점수 주는 내 이름 고르기" })].concat(S.people.map(function (p) { return h("option", { value: p.name, text: p.name + " " + p.role }); })));
+      sel.value = ordMe; sel.addEventListener("change", function () { ordMe = sel.value; lsSet(LS + "-me", ordMe); draw(); });
+      body.appendChild(sel);
+      body.appendChild(h("p", { cls: "muted", text: "2. 노래가 끝나면 그 가수 칸에서 점수(1~10)를 누르세요. 다시 누르면 바뀝니다. 한 사람이 한 가수에게 한 번만 들어갑니다." }));
+      var rows = scoreRows();
+      if (!rows.length) body.appendChild(h("p", { cls: "muted", text: "아직 노래자랑 신청자가 없습니다." }));
+      rows.forEach(function (r, k) {
+        var myv = r.votes.filter(function (x) { return x.by === ordMe; })[0];
+        body.appendChild(h("div", { cls: "scrow" }, [
+          h("div", { cls: "sch" }, [h("b", { text: (k + 1) + ". " + r.name }), r.song ? h("small", { text: " 🎵 " + r.song }) : null, h("span", { cls: "sct num", text: "합계 " + r.sum + "점 · " + r.votes.length + "명 · 평균 " + r.avg })]),
+          h("div", { cls: "scbtns" }, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (s) {
+            return h("button", { type: "button", "aria-pressed": String(!!myv && myv.s === s), text: String(s), onclick: function () {
+              if (!ordMe) { msg.textContent = "먼저 맨 위에서 내 이름을 골라 주세요."; sel.focus(); return; }
+              if (!orderUrl()) { msg.textContent = "점수 저장 주소가 없습니다."; return; }
+              msg.textContent = "저장하는 중…";
+              var rec = { place: scorePlace(r.name), name: ordMe, menu: String(s), opt: "" };
+              ORD = ordApplyQueue((ORD || (ordMirror() || {}).orders || []).filter(function (o) { return !(o.place === rec.place && o.name === rec.name); }).concat([rec]));
+              draw();
+              ordPost(rec).then(function (L) { ORD = L; draw(); msg.textContent = "✔ " + r.name + " 님께 " + s + "점 저장"; }, function () { msg.textContent = "📶 인터넷이 약해 이 폰에 보관했습니다. 연결되면 자동 저장됩니다."; });
+            } }); }))]));
+      });
+      body.appendChild(msg);
+      var rank = rows.filter(function (r) { return r.votes.length; }).sort(function (a, b) { return b.sum - a.sum || b.avg - a.avg; });
+      if (rank.length) body.appendChild(h("div", { cls: "ordsum" }, [h("p", { cls: "ordlbl", text: "🏆 순위 (합계 점수)" })].concat(rank.map(function (r, k) {
+        return h("div", { cls: "ordrow" }, [h("b", { text: (["🥇", "🥈", "🥉"][k] || (k + 1) + ".") + " " + r.name }), h("span", { cls: "num", text: r.sum + "점" }), h("small", { text: r.votes.length + "명 · 평균 " + r.avg + (r.song ? " · " + r.song : "") })]); }))));
+      body.appendChild(h("button", { cls: "btn", type: "button", text: "↻ 새로고침 (다른 폰 점수 반영)", onclick: function () { ORD = null; loadOrders(draw); } }));
+    };
+    draw(); document.body.appendChild(ov); ovOpen(shut);
+    loadOrders(draw);
   }
   function stopExtra(key) {
     var out = [];
@@ -4092,6 +4166,7 @@ li.evli { display: block !important; grid-template-columns: none !important; }
     var u = orderUrl(); if (!u || SYNCING) return;
     var todo = [];
     menus().forEach(function (m) { var la = localAll(m); Object.keys(la).forEach(function (k) { todo.push([m, la[k]]); }); });
+    [1, 2, 3].forEach(function (i) { var me0 = evMine(i), f = EVF[i]; if (me0 && me0.name && !(ORD || []).some(function (o) { return o.place === evPlace(i) && o.name === me0.name; })) todo.push([{ title: evPlace(i) }, { name: me0.name, menu: "신청", opt: f ? me0[f.k] || "" : "" }]); });
     if (canWrite) (S.orders || []).forEach(function (o) { var m = menus().filter(function (x) { return x.title === o.place; })[0]; if (m) todo.push([m, o, 1]); });
     todo = todo.filter(function (x) { var r = x[1]; return r.name && r.menu && !(ORD || []).some(function (o) { return o.place === x[0].title && o.name === r.name && o.menu === r.menu && (o.opt || "") === (r.opt || ""); }); });
     if (!todo.length) { menus().forEach(function (m) { if (Object.keys(localAll(m)).length) lsSet(LS + "-ord-" + m.id, "{}"); }); return; }
