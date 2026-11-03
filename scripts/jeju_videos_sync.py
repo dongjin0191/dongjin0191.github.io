@@ -16,7 +16,12 @@ def get(url):
 
 def wanted(title):
     s = re.sub(r'[\s,.\-_/·|]+', '', title)
-    return '26년' in s and '제주' in s and '수양회' in s
+    # 11/3: 제목에 '부부수양회'가 들어가면 모두 (예전 기준 '26년+제주+수양회'도 그대로)
+    return '부부수양회' in s or ('26년' in s and '제주' in s and '수양회' in s)
+
+
+# 총무가 링크로 보낸 영상(채널 목록에 안 잡혀도 넣는다)
+EXTRA = ['0Sobi93p7ro']
 
 
 def main():
@@ -37,6 +42,17 @@ def main():
         old.append({'id': vid, 't': title, 'u': 'https://youtu.be/' + vid, 'd': pub.strftime('%Y-%m-%dT%H:%M'),
                     'th': 'https://i.ytimg.com/vi/%s/hqdefault.jpg' % vid})
         print('새 영상', title)
+    for vid in EXTRA:
+        if vid in {v['id'] for v in old}:
+            continue
+        try:
+            o = json.loads(get('https://www.youtube.com/oembed?format=json&url=' + urllib.parse.quote('https://youtu.be/' + vid)))
+            title = o.get('title') or '부부수양회 영상'
+        except Exception as ex:
+            print('제목을 못 읽음', vid, ex); title = '부부수양회 영상'
+        old.append({'id': vid, 't': title, 'u': 'https://youtu.be/' + vid, 'd': datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=9))).strftime('%Y-%m-%dT%H:%M'),
+                    'th': 'https://i.ytimg.com/vi/%s/hqdefault.jpg' % vid})
+        print('추가 영상', title)
     old.sort(key=lambda v: v['d'])
     json.dump(old, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
