@@ -22,6 +22,7 @@ for F in folders:
         files = gdown.download_folder(id=F, output='/tmp/list', skip_download=True, quiet=True) or []
     except Exception as e:
         print('목록 실패', F, e); continue
+    print('폴더', F, '파일', len(files), [(getattr(x, 'path', ''), getattr(x, 'local_path', '')) for x in files[:2]])
     for f in files:
         full = (getattr(f, 'local_path', '') or '') + '/' + (getattr(f, 'path', '') or '')
         parts = full.replace('\\', '/').split('/')
