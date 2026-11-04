@@ -39,14 +39,17 @@ for F in folders:
         todo.append((day, f.id, name, cap))
 print('새 사진', len(todo), {d: sum(1 for t in todo if t[0] == d) for d in (1, 2, 3)})
 todo.sort(key=lambda t: (-t[0], t[2]))   # 최근 날(3일차→2일차→1일차) 먼저
-n = 0
+n = 0; fails = 0
 for day, fid, name, cap in todo[:MAX_NEW]:
+    if fails >= 8:
+        print('구글이 잠시 막음(접속 많음) → 다음 실행에서 이어서'); break
     tmp = os.path.join(tempfile.gettempdir(), 'dl_' + fid + '.' + name.rsplit('.', 1)[-1])
     try:
         gdown.download(id=fid, output=tmp, quiet=True)
         im = ImageOps.exif_transpose(Image.open(tmp)).convert('RGB')
     except Exception as e:
-        print('skip', name, e); continue
+        print('skip', name, str(e)[:60]); fails += 1; continue
+    fails = 0
     im.thumbnail((1080, 1080))
     k = f'd{day}'
     d = os.path.join(OUT, k); os.makedirs(d, exist_ok=True)
