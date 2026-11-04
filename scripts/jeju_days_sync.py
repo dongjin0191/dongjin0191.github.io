@@ -19,7 +19,7 @@ have = {(k, r['cap']) for k in res for r in res[k]}
 todo = []
 for F in folders:
     try:
-        files = gdown.download_folder(id=F, output='/tmp/list', skip_download=True, quiet=True, remaining_ok=True) or []
+        files = gdown.download_folder(id=F, output='/tmp/list', skip_download=True, quiet=True) or []
     except Exception as e:
         print('목록 실패', F, e); continue
     for f in files:
