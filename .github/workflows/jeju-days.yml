@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - '.github/workflows/jeju-days.yml'
+      - 'scripts/jeju_days_sync.py'
 
 permissions:
   contents: write
@@ -16,6 +17,10 @@ permissions:
 env:
   # 1·2·3일차 드라이브 폴더 ID. 어느 날 칸에 넣을지는 드라이브 폴더 이름('1일차' 등)으로 정합니다.
   DRIVE_FOLDERS: '1k65Q-M3WpKGcdbCLZNBCkteCBXVb8FNP 1jWjJUUJHrsGIBvb2UBs3cC65s49y2Uvw 1YktY8A_5ybxP9Q4eJSWfbI-ebtWLmdZ3'
+
+concurrency:
+  group: jeju-days
+  cancel-in-progress: false
 
 jobs:
   days:
@@ -26,39 +31,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install gdown pillow pillow-heif
-      - name: 드라이브 폴더 내려받기
-        run: |
-          for F in $DRIVE_FOLDERS; do gdown "https://drive.google.com/drive/folders/$F" -O /tmp/drive/ || true; done
-          find /tmp/drive -maxdepth 3 -type d || true
-      - name: 날짜별로 줄이기
-        run: |
-          python - <<'PY'
-          import os, json
-          from PIL import Image, ImageOps
-          from pillow_heif import register_heif_opener
-          register_heif_opener()
-          src, out = "/tmp/drive", "jeju-2026/days"
-          os.makedirs(out, exist_ok=True)
-          res = {"d1": [], "d2": [], "d3": []}
-          ext = ("jpg", "jpeg", "png", "heic", "heif", "webp")
-          for root, _, names in os.walk(src):
-              rel = os.path.relpath(root, src)
-              top = rel.split(os.sep)[0]
-              day = next((k for k in (1, 2, 3) if f"{k}일차" in top), None)
-              if not day: continue
-              for n in sorted(names):
-                  if n.lower().rsplit(".", 1)[-1] not in ext: continue
-                  f = os.path.join(root, n)
-                  try: im = ImageOps.exif_transpose(Image.open(f)).convert("RGB")
-                  except Exception as e: print("skip", f, e); continue
-                  im.thumbnail((1280, 1280))
-                  d = os.path.join(out, f"d{day}"); os.makedirs(d, exist_ok=True)
-                  name = "%03d.jpg" % (len(res[f"d{day}"]) + 1)
-                  im.save(os.path.join(d, name), quality=78, optimize=True)
-                  res[f"d{day}"].append({"src": f"d{day}/{name}", "cap": os.path.splitext(n)[0]})
-          json.dump(res, open(os.path.join(out, "days.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-          print({k: len(v) for k, v in res.items()})
-          PY
+      - name: 새 사진만 받아서 이어 붙이기
+        run: python scripts/jeju_days_sync.py
       - name: 저장
         run: |
           git add jeju-2026/days
