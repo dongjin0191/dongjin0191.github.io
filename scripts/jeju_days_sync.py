@@ -11,6 +11,8 @@ OUT = 'jeju-2026/days'
 EXT = ('jpg', 'jpeg', 'png', 'heic', 'heif', 'webp')
 MAX_NEW = int(os.environ.get('MAX_NEW', '200'))
 folders = os.environ['DRIVE_FOLDERS'].split()
+# 폴더 ID → 날짜 (드라이브 목록에는 폴더 이름이 안 나온다)
+DAYOF = {'1YktY8A_5ybxP9Q4eJSWfbI-ebtWLmdZ3': 1, '1jWjJUUJHrsGIBvb2UBs3cC65s49y2Uvw': 2, '1k65Q-M3WpKGcdbCLZNBCkteCBXVb8FNP': 3}
 path = os.path.join(OUT, 'days.json')
 res = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
 for k in ('d1', 'd2', 'd3'):
@@ -26,7 +28,7 @@ for F in folders:
     for f in files:
         full = (getattr(f, 'local_path', '') or '') + '/' + (getattr(f, 'path', '') or '')
         parts = full.replace('\\', '/').split('/')
-        day = next((k for k in (1, 2, 3) for p in parts if f'{k}일차' in p), None)
+        day = next((k for k in (1, 2, 3) for p in parts if f'{k}일차' in p), None) or DAYOF.get(F)
         name = os.path.basename(getattr(f, 'local_path', '') or f.path)
         if not day or name.lower().rsplit('.', 1)[-1] not in EXT:
             continue
@@ -45,12 +47,12 @@ for day, fid, name, cap in todo[:MAX_NEW]:
         im = ImageOps.exif_transpose(Image.open(tmp)).convert('RGB')
     except Exception as e:
         print('skip', name, e); continue
-    im.thumbnail((1280, 1280))
+    im.thumbnail((1080, 1080))
     k = f'd{day}'
     d = os.path.join(OUT, k); os.makedirs(d, exist_ok=True)
     num = max([int(r['src'].split('/')[-1][:3]) for r in res[k]] + [0]) + 1
     fn = '%03d.jpg' % num
-    im.save(os.path.join(d, fn), quality=78, optimize=True)
+    im.save(os.path.join(d, fn), quality=75, optimize=True)
     res[k].append({'src': f'{k}/{fn}', 'cap': cap})
     n += 1
     if n % 20 == 0:
