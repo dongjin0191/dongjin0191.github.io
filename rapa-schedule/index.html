@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>라파일정표</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="라파일정표"><meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 라파일정표 앱(PWA). 원본은 claude.ai 아티팩트 '라파일정표'이며, 일정은 아래 EV 배열에 있다. */
+:root{
+  color-scheme:dark;
+  --bg:#000;--card:#111317;--line:#262a31;--text:#f1f4f8;--muted:#8e98a8;
+  --cp:#ff5a5a;--cn:#4f9dff;--cd:#ffa63d;--ch:#3fd07a;--cg:#b583ff;
+  --sun:#ff8080;--sat:#82b4ff;--today:#fff;
+  --f:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+[hidden]{display:none!important}
+body{font-family:var(--f);font-size:17px;line-height:1.5;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-size:34px;font-weight:900;margin:0;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:10px}
+.today{color:var(--muted);font-size:15px}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,440px);gap:18px;align-items:start}
+.mnav{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.mnav h2{margin:0;min-width:7em;text-align:center}
+.nav{font:inherit;font-size:26px;line-height:1;width:44px;height:44px;border-radius:50%;border:1px solid #39404b;background:#1c2027;color:var(--text);cursor:pointer}
+.nav:hover{background:#262b34}
+.tag{font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:4px;background:#1c2027;color:var(--muted)}
+.tag.now{background:var(--today);color:#000}.tag.fut{background:#13301f;color:var(--ch)}
+.fold{width:100%;margin-top:12px;font:inherit;font-size:16px;font-weight:700;color:var(--text);background:#1c2027;border:1px dashed #4a5260;border-radius:12px;padding:10px;cursor:pointer}
+.fold:hover{background:#262b34}
+.cnt{color:var(--muted);font-weight:500;font-size:14px;margin-left:6px}
+.nextm{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.nextm h2{margin:0 0 8px;font-size:26px;font-weight:900}
+.agenda .hint{font-size:13px;color:var(--muted);font-weight:500;margin-left:6px}
+button.mh{display:flex;align-items:center;gap:6px;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:900;color:var(--text);background:#16191e;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:12px 0 4px;cursor:pointer}
+button.mh .cnt{margin-left:auto}button.mh .tag{margin-left:4px;vertical-align:0}
+button.mh.pastm{color:var(--muted)}
+.month,.agenda{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.month h2{margin:0 0 8px;font-size:26px;font-weight:900}
+.month h2 small{font-size:15px;color:var(--muted);font-weight:500;margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dow{text-align:center;color:var(--muted);font-size:14px;font-weight:700;padding-bottom:6px}
+.dow.s{color:var(--sun)}.dow.a{color:var(--sat)}
+.cell{border-top:1px solid var(--line);min-height:110px;padding:4px 3px;min-width:0}
+.cell .n{font-size:15px;font-weight:700;display:inline-block;min-width:26px;text-align:center;border-radius:99px}
+.cell.s .n{color:var(--sun)}.cell.a .n{color:var(--sat)}
+.cell.o .n{opacity:.25}
+.cell.t .n{background:var(--today);color:#000}
+.chip{display:block;margin-top:3px;border-radius:6px;padding:2px 5px;font-size:13px;font-weight:500;line-height:1.25;color:#08101c;word-break:keep-all;letter-spacing:-.03em}
+.chip.band{height:6px;padding:0;opacity:.35}
+.dots{display:none;gap:3px;justify-content:center;margin-top:2px}
+.dots i{width:7px;height:7px;border-radius:50%}
+.agenda h2{margin:0 0 4px;font-size:22px;font-weight:900}
+.row{display:grid;grid-template-columns:5px 6.2em 1fr auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.row .bar{align-self:stretch;border-radius:3px}
+.row .d{font-weight:700;font-variant-numeric:tabular-nums}
+.row .d small{color:var(--muted);font-weight:500;margin-left:3px}
+.row.sun .d{color:var(--sun)}.row.sat .d{color:var(--sat)}
+.row .e{min-width:0}
+.row .dd{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .dd.now{color:#000;background:var(--today);border-radius:99px;padding:1px 8px;font-weight:700}
+.row.past{opacity:.38}
+.tline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.act{font:inherit;font-size:14px;font-weight:700;color:var(--text);background:#1c2027;border:1px solid #39404b;border-radius:99px;padding:7px 14px;cursor:pointer;text-decoration:none}
+.act:hover{background:#262b34}.act:focus-visible{outline:2px solid var(--ch);outline-offset:2px}
+.act.ok{background:var(--ch);color:#000;border-color:var(--ch)}
+.act.sm{font-size:13px;padding:5px 12px;flex:none}
+.guide{background:var(--card);border:1px solid var(--ch);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.gh{display:flex;justify-content:space-between;align-items:center;font-size:18px}
+.x{font:inherit;font-size:22px;line-height:1;width:34px;height:34px;border-radius:50%;border:0;background:#1c2027;color:var(--text);cursor:pointer}
+.url{display:flex;gap:10px;align-items:center;background:#000;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.url span{flex:1;min-width:0;overflow-wrap:anywhere;user-select:all;font-size:14px;color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.steps h3{margin:0 0 4px;font-size:15px}
+.steps ol{margin:0;padding-left:20px;font-size:14.5px;color:#cfd6e0}
+.steps li{margin:3px 0}
+.note{margin:0;font-size:13px;color:var(--muted)}
+@media (display-mode:standalone){#install,#copy{display:none}}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+@media (max-width:1000px){.main{grid-template-columns:1fr}}
+@media (max-width:700px){
+  body{font-size:16px}
+  .main{grid-template-columns:1fr}
+  .cell{min-height:0;text-align:center;padding:6px 0}
+  .chip{display:none}.dots{display:flex}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="tline"><h1><img src="icon-192.png" alt="">라파일정표</h1>
+      <button class="act" id="copy" type="button">주소 복사</button>
+      <button class="act" id="install" type="button">홈 화면에 앱 설치</button></div>
+      <div class="today" id="today"></div></div>
+    <div class="legend" id="legend"></div>
+  </header>
+  <div class="guide" id="guide" hidden>
+    <div class="gh"><b>홈 화면에 앱으로 설치하기</b><button class="x" id="gclose" type="button" aria-label="닫기">×</button></div>
+    <div class="url"><span id="urltxt"></span><button class="act sm" id="copy2" type="button">주소 복사</button></div>
+    <div class="steps">
+      <div data-os="ios"><h3>아이폰 (Safari)</h3><ol><li>이 주소를 <b>Safari</b>에서 엽니다.</li><li>아래쪽 <b>공유 버튼(□↑)</b>을 누릅니다.</li><li><b>홈 화면에 추가</b> → <b>추가</b>.</li></ol></div>
+      <div data-os="android"><h3>갤럭시 (Chrome·삼성 인터넷)</h3><ol><li>이 주소를 <b>Chrome</b> 또는 <b>삼성 인터넷</b>에서 엽니다.</li><li>오른쪽 위 <b>⋮</b> (삼성 인터넷은 아래 <b>≡</b>)를 누릅니다.</li><li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b> → <b>설치</b>.</li></ol></div>
+      <div data-os="pc"><h3>PC (Chrome·Edge)</h3><ol><li>이 주소를 Chrome 또는 Edge에서 엽니다.</li><li>주소창 오른쪽 <b>설치 아이콘(⊕)</b> 또는 <b>⋮ → 앱 → 이 사이트를 앱으로 설치</b>.</li><li>바탕화면·작업표시줄에 ‘라파일정표’ 아이콘이 생깁니다.</li></ol></div>
+    </div>
+    <p class="note">로그인 없이 바로 열리고, 한 번 연 뒤에는 인터넷이 없어도 열립니다.</p>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<script>
+const C={p:'var(--cp)',n:'var(--cn)',d:'var(--cd)',h:'var(--ch)',g:'var(--cg)'};
+const CAT={p:'개인일정',n:'남부시찰·노회',d:'동기연',h:'화기총',g:'경조사'};
+const Y=2026;
+const EV=[
+ [11,3,'동기연 총회','d'],[11,5,'화기총 탁구대회','h'],[11,6,'설치 (밤 10:30)','p'],
+ [11,7,'서울람원교회 행사','p'],[11,7,'람원교회 놀이기구','p'],[11,7,'함께걷는교회 임직식','g'],
+ [11,8,'수원영문교회 연주','p'],[11,9,'화성축구 방문','p'],[11,10,'19기 종무식 식사모임','d'],
+ [11,13,'20기 임원부부 상견례','d'],[11,16,'남부시찰 당진','n'],[11,17,'화기총 나눔행사','h'],
+ [11,23,'동탄합동모임','d'],[11,24,'화기총 전형위원모임','h'],[11,29,'아내 세종교회 연주','p'],
+ [12,8,'동기연 조찬기도회','d'],[12,14,'화기총 총회','h'],[12,22,'동기연 송년회','d']];
+const WEEK={m:12,from:1,to:5,t:'화기총 감사',k:'h'};
+const DOW='일월화수목금토';
+const now=new Date();const T=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+const wd=(m,d)=>new Date(Y,m-1,d).getDay();
+const diff=(m,d)=>Math.round((new Date(Y,m-1,d)-T)/864e5);
+
+document.getElementById('today').textContent=`오늘 ${T.getMonth()+1}월 ${T.getDate()}일 (${DOW[T.getDay()]})`;
+document.getElementById('legend').innerHTML=Object.keys(CAT).map(k=>`<span><i style="background:${C[k]}"></i>${CAT[k]}</span>`).join('');
+
+const evOf=(y,m,d)=>y!=Y?[]:EV.filter(e=>e[0]==m&&e[1]==d);
+function month(y,m){
+  const first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),prev=new Date(y,m-1,0).getDate();
+  let h='<div class="grid">';
+  for(let i=0;i<7;i++)h+=`<div class="dow ${i==0?'s':i==6?'a':''}">${DOW[i]}</div>`;
+  const total=Math.ceil((first+days)/7)*7;
+  for(let i=0;i<total;i++){
+    const d=i-first+1,inM=d>=1&&d<=days,w=i%7,num=inM?d:(d<1?prev+d:d-days);
+    const evs=inM?evOf(y,m,d):[];
+    const wk=inM&&y==Y&&m==WEEK.m&&d>=WEEK.from&&d<=WEEK.to;
+    const td=inM&&T.getFullYear()==y&&T.getMonth()==m-1&&T.getDate()==d;
+    let chips=evs.map(e=>`<span class="chip" style="background:${C[e[3]]}">${e[2]}</span>`).join('');
+    let dots=evs.map(e=>`<i style="background:${C[e[3]]}"></i>`).join('');
+    if(wk){chips+=d==WEEK.from?`<span class="chip" style="background:${C.h}">${WEEK.t} (첫주 중)</span>`:`<span class="chip band" style="background:${C.h}"></span>`;dots+=`<i style="background:${C.h};opacity:.5"></i>`;}
+    h+=`<div class="cell ${w==0?'s':w==6?'a':''} ${inM?'':'o'} ${td?'t':''}"><span class="n">${num}</span>${chips}<div class="dots">${dots}</div></div>`;
+  }
+  return h+'</div>';
+}
+const TY=T.getFullYear(),TM=T.getMonth()+1;
+let cy=TY,cm=TM,showNext=false;
+const add=(y,m,k)=>{const t=new Date(y,m-1+k,1);return[t.getFullYear(),t.getMonth()+1]};
+const rel=(y,m)=>{const k=(y-TY)*12+(m-TM);return k<0?'지난 달':k==0?'이번 달':'다가올 달'};
+const relCls=(y,m)=>{const k=(y-TY)*12+(m-TM);return k<0?'past':k==0?'now':'fut'};
+function cal(){
+  const [ny,nm]=add(cy,cm,1);
+  return `<section class="month"><div class="mnav">
+    <button class="nav" id="prev" type="button" aria-label="이전 달">‹</button>
+    <h2>${cy!=Y?cy+'년 ':''}${cm}월<small class="tag ${relCls(cy,cm)}">${rel(cy,cm)}</small></h2>
+    <button class="nav" id="next" type="button" aria-label="다음 달">›</button>
+    ${(cy!=TY||cm!=TM)?'<button class="act sm" id="tonow" type="button">이번 달</button>':''}</div>
+    ${month(cy,cm)}
+    <button class="fold" id="fold" type="button" aria-expanded="${showNext}">${showNext?'▾':'▸'} ${nm}월 ${showNext?'접기':'펼쳐 보기'}<span class="cnt">${cntM(ny,nm)}</span></button>
+    ${showNext?`<div class="nextm"><h2>${nm}월<small class="tag ${relCls(ny,nm)}">${rel(ny,nm)}</small></h2>${month(ny,nm)}</div>`:''}
+  </section>`;
+}
+function cntM(y,m){if(y!=Y)return'';const n=EV.filter(e=>e[0]==m).length+(m==WEEK.m?1:0);return n?` · ${n}건`:''}
+let openM=new Set([TY*100+TM]);
+function agenda(){
+  const months=[...new Set(EV.map(e=>e[0]))].sort((a,b)=>a-b);
+  let h='<section class="agenda"><h2>주요일정 <small class="hint">‹ 과거 · 현재 · 미래 ›</small></h2>';
+  months.forEach(m=>{
+    const key=Y*100+m,open=openM.has(key),k=(Y-TY)*12+(m-TM);
+    const n=EV.filter(e=>e[0]==m).length+(m==WEEK.m?1:0);
+    h+=`<button class="mh ${k<0?'pastm':''}" data-m="${m}" type="button" aria-expanded="${open}"><span>${open?'▾':'▸'} ${m}월</span><span class="tag ${relCls(Y,m)}">${rel(Y,m)}</span><span class="cnt">${n}건</span></button>`;
+    if(!open)return;
+    const rows=EV.filter(e=>e[0]==m);
+    if(m==WEEK.m)rows.splice(rows.findIndex(e=>e[1]>WEEK.from)<0?rows.length:rows.findIndex(e=>e[1]>WEEK.from),0,'W');
+    rows.forEach(e=>{
+      if(e==='W'){const past=diff(WEEK.m,WEEK.to)<0;
+        h+=`<div class="row ${past?'past':''}"><span class="bar" style="background:${C.h}"></span><span class="d">첫주<small>12/1~5</small></span><span class="e">${WEEK.t}</span><span class="dd"></span></div>`;return;}
+      const w=wd(e[0],e[1]),df=diff(e[0],e[1]);
+      const dd=df==0?'<span class="dd now">오늘</span>':df>0?`<span class="dd">D-${df}</span>`:'<span class="dd"></span>';
+      h+=`<div class="row ${w==0?'sun':w==6?'sat':''} ${df<0?'past':''}"><span class="bar" style="background:${C[e[3]]}"></span><span class="d">${e[0]}/${e[1]}<small>(${DOW[w]})</small></span><span class="e">${e[2]}</span>${dd}</div>`;
+    });
+  });
+  return h+'</section>';
+}
+function render(){
+  document.getElementById('main').innerHTML=cal()+agenda();
+  const g=id=>document.getElementById(id);
+  g('prev').onclick=()=>{[cy,cm]=add(cy,cm,-1);render()};
+  g('next').onclick=()=>{[cy,cm]=add(cy,cm,1);render()};
+  if(g('tonow'))g('tonow').onclick=()=>{cy=TY;cm=TM;render()};
+  g('fold').onclick=()=>{showNext=!showNext;render()};
+  document.querySelectorAll('.mh').forEach(b=>b.onclick=()=>{const m=+b.dataset.m,k=Y*100+m;openM.has(k)?openM.delete(k):openM.add(k);if(openM.has(k)){cy=Y;cm=m;}render()});
+}
+render();
+let sx=null;const mainEl=document.getElementById('main');
+mainEl.addEventListener('touchstart',e=>{if(e.target.closest('.month'))sx=e.touches[0].clientX},{passive:true});
+mainEl.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>60){[cy,cm]=add(cy,cm,dx<0?1:-1);render()}});
+addEventListener('keydown',e=>{if(e.target.closest&&e.target.closest('input,textarea'))return;if(e.key==='ArrowLeft'){[cy,cm]=add(cy,cm,-1);render()}if(e.key==='ArrowRight'){[cy,cm]=add(cy,cm,1);render()}});
+const URL0='https://dongjin0191.github.io/rapa-schedule/';
+const $=id=>document.getElementById(id);
+$('urltxt').textContent=URL0;
+function copy(btn){
+  const done=()=>{const t=btn.textContent;btn.textContent='복사됨 ✓';btn.classList.add('ok');setTimeout(()=>{btn.textContent=t;btn.classList.remove('ok')},1800)};
+  const fallback=()=>{$('guide').hidden=false;const r=document.createRange();r.selectNodeContents($('urltxt'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
+    try{if(document.execCommand('copy')){done();return}}catch(e){}btn.textContent='주소를 길게 눌러 복사';};
+  try{navigator.clipboard.writeText(URL0).then(done,fallback)}catch(e){fallback()}
+}
+$('copy').onclick=()=>copy($('copy'));$('copy2').onclick=()=>copy($('copy2'));
+let deferred=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('install').classList.add('ok')});
+addEventListener('appinstalled',()=>{$('install').textContent='설치됨 ✓';deferred=null});
+$('install').onclick=async()=>{
+  if(deferred){deferred.prompt();try{await deferred.userChoice}catch(e){}deferred=null;return}
+  const ua=navigator.userAgent,os=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)?'ios':/Android/.test(ua)?'android':'pc';
+  document.querySelectorAll('.steps>div').forEach(d=>d.hidden=d.dataset.os!==os);
+  document.querySelector('.steps').style.gridTemplateColumns='1fr';
+  $('guide').hidden=false;$('guide').scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('gclose').onclick=()=>{$('guide').hidden=true};
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
+</script>
+</body>
+</html>
