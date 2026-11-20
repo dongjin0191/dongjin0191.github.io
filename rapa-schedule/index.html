@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* 라파일정표 앱(PWA). 원본은 claude.ai 아티팩트 '라파일정표'이며, 일정은 아래 EV 배열에 있다. */
+/* 라파일정표 앱(PWA). 일정 원본은 events.json 하나이며, 구독용 events.ics는 깃허브 작업이 자동으로 만든다. */
 :root{
   color-scheme:dark;
   --bg:#000;--card:#111317;--line:#262a31;--text:#f1f4f8;--muted:#8e98a8;
@@ -109,7 +109,8 @@ button.mh.pastm{color:var(--muted)}
   <header>
     <div><div class="tline"><h1><img src="icon-192.png" alt="">라파일정표</h1>
       <button class="act" id="copy" type="button">주소 복사</button>
-      <button class="act" id="install" type="button">홈 화면에 앱 설치</button></div>
+      <button class="act" id="install" type="button">홈 화면에 앱 설치</button>
+      <button class="act" id="subbtn" type="button">폰 캘린더에 구독</button></div>
       <div class="today" id="today"></div></div>
     <div class="legend" id="legend"></div>
   </header>
@@ -123,30 +124,35 @@ button.mh.pastm{color:var(--muted)}
     </div>
     <p class="note">로그인 없이 바로 열리고, 한 번 연 뒤에는 인터넷이 없어도 열립니다.</p>
   </div>
+  <div class="guide" id="sub" hidden>
+    <div class="gh"><b>폰 캘린더에 일정 구독하기</b><button class="x" id="sclose" type="button" aria-label="닫기">×</button></div>
+    <div class="url"><span id="icstxt">https://dongjin0191.github.io/rapa-schedule/events.ics</span><button class="act sm" id="copy3" type="button">주소 복사</button></div>
+    <div class="steps">
+      <div><h3>아이폰</h3><ol><li>아래 <b>구독 열기</b>를 누릅니다.</li><li><b>구독</b> → <b>추가</b>.</li></ol><a class="act sm" href="webcal://dongjin0191.github.io/rapa-schedule/events.ics">구독 열기</a></div>
+      <div><h3>갤럭시 (구글 캘린더)</h3><ol><li>PC에서 <b>calendar.google.com</b>을 엽니다.</li><li>왼쪽 <b>다른 캘린더 ＋</b> → <b>URL로 추가</b>에 위 주소를 붙여넣습니다.</li><li>폰의 구글·삼성 캘린더에 자동으로 나타납니다.</li></ol></div>
+      <div><h3>PC (Outlook)</h3><ol><li><b>캘린더 추가</b> → <b>웹에서 구독</b>.</li><li>위 주소를 붙여넣고 <b>가져오기</b>.</li></ol></div>
+    </div>
+    <p class="note">한 번만 구독해 두면 일정이 바뀔 때 캘린더에도 자동으로 반영됩니다. 캘린더 앱에 따라 반영까지 몇 시간 걸릴 수 있습니다.</p>
+  </div>
   <div class="main" id="main"></div>
 </div>
 
 <script>
+/* 일정 원본은 같은 폴더의 events.json 하나뿐이다. 앱은 열 때마다, 그리고 다시 화면에 돌아올 때마다 새로 읽는다. */
 const C={p:'var(--cp)',n:'var(--cn)',d:'var(--cd)',h:'var(--ch)',g:'var(--cg)'};
 const CAT={p:'개인일정',n:'남부시찰·노회',d:'동기연',h:'화기총',g:'경조사'};
-const Y=2026;
-const EV=[
- [11,3,'동기연 총회','d'],[11,5,'화기총 탁구대회','h'],[11,6,'설치 (밤 10:30)','p'],
- [11,7,'서울람원교회 행사','p'],[11,7,'람원교회 놀이기구','p'],[11,7,'함께걷는교회 임직식','g'],
- [11,8,'수원영문교회 연주','p'],[11,9,'화성축구 방문','p'],[11,10,'19기 종무식 식사모임','d'],
- [11,13,'20기 임원부부 상견례','d'],[11,16,'남부시찰 당진','n'],[11,17,'화기총 나눔행사','h'],
- [11,23,'동탄합동모임','d'],[11,24,'화기총 전형위원모임','h'],[11,29,'아내 세종교회 연주','p'],
- [12,8,'동기연 조찬기도회','d'],[12,14,'화기총 총회','h'],[12,22,'동기연 송년회','d']];
-const WEEK={m:12,from:1,to:5,t:'화기총 감사',k:'h'};
 const DOW='일월화수목금토';
-const now=new Date();const T=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-const wd=(m,d)=>new Date(Y,m-1,d).getDay();
-const diff=(m,d)=>Math.round((new Date(Y,m-1,d)-T)/864e5);
-
-document.getElementById('today').textContent=`오늘 ${T.getMonth()+1}월 ${T.getDate()}일 (${DOW[T.getDay()]})`;
-document.getElementById('legend').innerHTML=Object.keys(CAT).map(k=>`<span><i style="background:${C[k]}"></i>${CAT[k]}</span>`).join('');
-
-const evOf=(y,m,d)=>y!=Y?[]:EV.filter(e=>e[0]==m&&e[1]==d);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const ft=t=>{if(!t)return'';const [h,mi]=t.split(':').map(Number);return (h<12?'오전 ':h<18?'오후 ':'밤 ')+(h%12||12)+':'+String(mi).padStart(2,'0')};
+let EV=[],UPD='',T,TY,TM,cy,cm,showNext=false,openM=null;
+function setToday(){const n=new Date();T=new Date(n.getFullYear(),n.getMonth(),n.getDate());TY=T.getFullYear();TM=T.getMonth()+1;
+  document.getElementById('today').textContent=`오늘 ${TM}월 ${T.getDate()}일 (${DOW[T.getDay()]})`+(UPD?` · 일정 최종 수정 ${UPD}`:'');}
+function norm(list){return list.map(e=>{const s=pd(e.date),u=e.until?pd(e.until):s;
+  return {s,u,y:s.getFullYear(),m:s.getMonth()+1,d:s.getDate(),t:e.title+(e.time?` (${ft(e.time)})`:''),k:CAT[e.cat]?e.cat:'p',lab:e.label||'',multi:u>s}}).sort((a,b)=>a.s-b.s)}
+const diffD=x=>Math.round((x-T)/864e5);
+const onDay=dt=>EV.filter(e=>e.s<=dt&&dt<=e.u);
+const inMonth=(y,m)=>{const a=new Date(y,m-1,1),b=new Date(y,m,0);return EV.filter(e=>e.s<=b&&e.u>=a)};
 function month(y,m){
   const first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),prev=new Date(y,m-1,0).getDate();
   let h='<div class="grid">';
@@ -154,51 +160,47 @@ function month(y,m){
   const total=Math.ceil((first+days)/7)*7;
   for(let i=0;i<total;i++){
     const d=i-first+1,inM=d>=1&&d<=days,w=i%7,num=inM?d:(d<1?prev+d:d-days);
-    const evs=inM?evOf(y,m,d):[];
-    const wk=inM&&y==Y&&m==WEEK.m&&d>=WEEK.from&&d<=WEEK.to;
-    const td=inM&&T.getFullYear()==y&&T.getMonth()==m-1&&T.getDate()==d;
-    let chips=evs.map(e=>`<span class="chip" style="background:${C[e[3]]}">${e[2]}</span>`).join('');
-    let dots=evs.map(e=>`<i style="background:${C[e[3]]}"></i>`).join('');
-    if(wk){chips+=d==WEEK.from?`<span class="chip" style="background:${C.h}">${WEEK.t} (첫주 중)</span>`:`<span class="chip band" style="background:${C.h}"></span>`;dots+=`<i style="background:${C.h};opacity:.5"></i>`;}
+    const dt=new Date(y,m-1,d),evs=inM?onDay(dt):[];
+    const td=inM&&+dt==+T;
+    let chips='',dots='';
+    evs.forEach(e=>{const start=+e.s==+dt;
+      if(e.multi&&!start){chips+=`<span class="chip band" style="background:${C[e.k]}"></span>`;dots+=`<i style="background:${C[e.k]};opacity:.5"></i>`;return}
+      chips+=`<span class="chip" style="background:${C[e.k]}">${esc(e.t)}${e.multi&&e.lab?` (${esc(e.lab)} 중)`:''}</span>`;dots+=`<i style="background:${C[e.k]}"></i>`});
     h+=`<div class="cell ${w==0?'s':w==6?'a':''} ${inM?'':'o'} ${td?'t':''}"><span class="n">${num}</span>${chips}<div class="dots">${dots}</div></div>`;
   }
   return h+'</div>';
 }
-const TY=T.getFullYear(),TM=T.getMonth()+1;
-let cy=TY,cm=TM,showNext=false;
 const add=(y,m,k)=>{const t=new Date(y,m-1+k,1);return[t.getFullYear(),t.getMonth()+1]};
 const rel=(y,m)=>{const k=(y-TY)*12+(m-TM);return k<0?'지난 달':k==0?'이번 달':'다가올 달'};
 const relCls=(y,m)=>{const k=(y-TY)*12+(m-TM);return k<0?'past':k==0?'now':'fut'};
+const ym=(y,m)=>(y!=TY?y+'년 ':'')+m+'월';
+function cntM(y,m){const n=inMonth(y,m).length;return n?` · ${n}건`:''}
 function cal(){
   const [ny,nm]=add(cy,cm,1);
   return `<section class="month"><div class="mnav">
     <button class="nav" id="prev" type="button" aria-label="이전 달">‹</button>
-    <h2>${cy!=Y?cy+'년 ':''}${cm}월<small class="tag ${relCls(cy,cm)}">${rel(cy,cm)}</small></h2>
+    <h2>${ym(cy,cm)}<small class="tag ${relCls(cy,cm)}">${rel(cy,cm)}</small></h2>
     <button class="nav" id="next" type="button" aria-label="다음 달">›</button>
     ${(cy!=TY||cm!=TM)?'<button class="act sm" id="tonow" type="button">이번 달</button>':''}</div>
     ${month(cy,cm)}
-    <button class="fold" id="fold" type="button" aria-expanded="${showNext}">${showNext?'▾':'▸'} ${nm}월 ${showNext?'접기':'펼쳐 보기'}<span class="cnt">${cntM(ny,nm)}</span></button>
-    ${showNext?`<div class="nextm"><h2>${nm}월<small class="tag ${relCls(ny,nm)}">${rel(ny,nm)}</small></h2>${month(ny,nm)}</div>`:''}
+    <button class="fold" id="fold" type="button" aria-expanded="${showNext}">${showNext?'▾':'▸'} ${ym(ny,nm)} ${showNext?'접기':'펼쳐 보기'}<span class="cnt">${cntM(ny,nm)}</span></button>
+    ${showNext?`<div class="nextm"><h2>${ym(ny,nm)}<small class="tag ${relCls(ny,nm)}">${rel(ny,nm)}</small></h2>${month(ny,nm)}</div>`:''}
   </section>`;
 }
-function cntM(y,m){if(y!=Y)return'';const n=EV.filter(e=>e[0]==m).length+(m==WEEK.m?1:0);return n?` · ${n}건`:''}
-let openM=new Set([TY*100+TM]);
 function agenda(){
-  const months=[...new Set(EV.map(e=>e[0]))].sort((a,b)=>a-b);
+  const keys=[...new Set(EV.map(e=>e.y*100+e.m))].sort((a,b)=>a-b);
   let h='<section class="agenda"><h2>주요일정 <small class="hint">‹ 과거 · 현재 · 미래 ›</small></h2>';
-  months.forEach(m=>{
-    const key=Y*100+m,open=openM.has(key),k=(Y-TY)*12+(m-TM);
-    const n=EV.filter(e=>e[0]==m).length+(m==WEEK.m?1:0);
-    h+=`<button class="mh ${k<0?'pastm':''}" data-m="${m}" type="button" aria-expanded="${open}"><span>${open?'▾':'▸'} ${m}월</span><span class="tag ${relCls(Y,m)}">${rel(Y,m)}</span><span class="cnt">${n}건</span></button>`;
+  if(!keys.length)h+='<p class="note">등록된 일정이 없습니다.</p>';
+  keys.forEach(key=>{
+    const y=Math.floor(key/100),m=key%100,open=openM.has(key),k=(y-TY)*12+(m-TM);
+    const rows=EV.filter(e=>e.y==y&&e.m==m);
+    h+=`<button class="mh ${k<0?'pastm':''}" data-k="${key}" type="button" aria-expanded="${open}"><span>${open?'▾':'▸'} ${ym(y,m)}</span><span class="tag ${relCls(y,m)}">${rel(y,m)}</span><span class="cnt">${rows.length}건</span></button>`;
     if(!open)return;
-    const rows=EV.filter(e=>e[0]==m);
-    if(m==WEEK.m)rows.splice(rows.findIndex(e=>e[1]>WEEK.from)<0?rows.length:rows.findIndex(e=>e[1]>WEEK.from),0,'W');
     rows.forEach(e=>{
-      if(e==='W'){const past=diff(WEEK.m,WEEK.to)<0;
-        h+=`<div class="row ${past?'past':''}"><span class="bar" style="background:${C.h}"></span><span class="d">첫주<small>12/1~5</small></span><span class="e">${WEEK.t}</span><span class="dd"></span></div>`;return;}
-      const w=wd(e[0],e[1]),df=diff(e[0],e[1]);
-      const dd=df==0?'<span class="dd now">오늘</span>':df>0?`<span class="dd">D-${df}</span>`:'<span class="dd"></span>';
-      h+=`<div class="row ${w==0?'sun':w==6?'sat':''} ${df<0?'past':''}"><span class="bar" style="background:${C[e[3]]}"></span><span class="d">${e[0]}/${e[1]}<small>(${DOW[w]})</small></span><span class="e">${e[2]}</span>${dd}</div>`;
+      const w=e.s.getDay(),df=diffD(e.s),de=diffD(e.u),past=de<0;
+      const dd=df<=0&&de>=0?'<span class="dd now">오늘</span>':df>0?`<span class="dd">D-${df}</span>`:'<span class="dd"></span>';
+      const dl=e.multi?`${e.lab||e.m+'/'+e.d}<small>${e.m}/${e.d}~${e.u.getMonth()+1}/${e.u.getDate()}</small>`:`${e.m}/${e.d}<small>(${DOW[w]})</small>`;
+      h+=`<div class="row ${!e.multi&&w==0?'sun':!e.multi&&w==6?'sat':''} ${past?'past':''}"><span class="bar" style="background:${C[e.k]}"></span><span class="d">${dl}</span><span class="e">${esc(e.t)}</span>${dd}</div>`;
     });
   });
   return h+'</section>';
@@ -210,9 +212,19 @@ function render(){
   g('next').onclick=()=>{[cy,cm]=add(cy,cm,1);render()};
   if(g('tonow'))g('tonow').onclick=()=>{cy=TY;cm=TM;render()};
   g('fold').onclick=()=>{showNext=!showNext;render()};
-  document.querySelectorAll('.mh').forEach(b=>b.onclick=()=>{const m=+b.dataset.m,k=Y*100+m;openM.has(k)?openM.delete(k):openM.add(k);if(openM.has(k)){cy=Y;cm=m;}render()});
+  document.querySelectorAll('.mh').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;openM.has(k)?openM.delete(k):openM.add(k);if(openM.has(k)){cy=Math.floor(k/100);cm=k%100;}render()});
 }
-render();
+document.getElementById('legend').innerHTML=Object.keys(CAT).map(k=>`<span><i style="background:${C[k]}"></i>${CAT[k]}</span>`).join('');
+setToday();cy=TY;cm=TM;openM=new Set([TY*100+TM]);
+async function load(){
+  const oldT=TY*100+TM;setToday();
+  if(TY*100+TM!==oldT){cy=TY;cm=TM;openM.add(TY*100+TM)}
+  try{const r=await fetch('events.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();EV=norm(j.events||[]);UPD=j.updated||'';setToday()}
+  catch(e){if(!EV.length)document.getElementById('main').innerHTML='<section class="agenda"><p class="note">일정을 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.</p></section>'}
+  if(EV.length)render();
+}
+load();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load()});
 let sx=null;const mainEl=document.getElementById('main');
 mainEl.addEventListener('touchstart',e=>{if(e.target.closest('.month'))sx=e.touches[0].clientX},{passive:true});
 mainEl.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>60){[cy,cm]=add(cy,cm,dx<0?1:-1);render()}});
@@ -238,6 +250,9 @@ $('install').onclick=async()=>{
   $('guide').hidden=false;$('guide').scrollIntoView({behavior:'smooth',block:'start'});
 };
 $('gclose').onclick=()=>{$('guide').hidden=true};
+$('subbtn').onclick=()=>{$('sub').hidden=false;$('sub').scrollIntoView({behavior:'smooth',block:'start'})};
+$('sclose').onclick=()=>{$('sub').hidden=true};
+$('copy3').onclick=()=>{const b=$('copy3'),u=$('icstxt').textContent;try{navigator.clipboard.writeText(u).then(()=>{b.textContent='복사됨 ✓';b.classList.add('ok')},()=>{b.textContent='주소를 길게 눌러 복사'})}catch(e){b.textContent='주소를 길게 눌러 복사'}};
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
 </script>
 </body>
