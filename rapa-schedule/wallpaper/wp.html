@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts_local.css">
+<style>
+:root{--cp:#ff5a5f;--cn:#4c9bff;--cd:#ffa43a;--ch:#3ccf74;--cg:#b07cff;--bg:#000;--panel:#121317;--line:#24262c;--muted:#8a93a6;--sun:#ff6b6b;--sat:#6ea8ff}
+*{box-sizing:border-box;margin:0}
+body{background:#000;color:#fff;font-family:'Noto Sans KR',sans-serif;}
+.panel{background:var(--panel);border:1px solid #23252b;border-radius:28px}
+.mt{font-weight:900;font-size:56px;letter-spacing:-1px}.mt small{font-size:30px;font-weight:400;color:var(--muted);margin-left:14px}
+.s,.dw.s{color:var(--sun)!important}.a,.dw.a{color:var(--sat)!important}
+.leg{display:flex;flex-wrap:wrap;gap:10px 26px;color:#c9cfdb}.leg i{display:inline-block;width:20px;height:20px;border-radius:50%;margin-right:8px;vertical-align:-2px}
+.mh{color:var(--muted);font-weight:700}
+.row{display:flex;align-items:baseline;border-bottom:1px solid var(--line);position:relative}
+.row .bar{position:absolute;left:0;top:18%;bottom:18%;width:6px;border-radius:3px}
+.row .d{font-weight:700;white-space:nowrap}.row .d small{font-weight:400;color:var(--muted);margin-left:4px}
+.row.sun .d b{color:var(--sun)}.row.sat .d b{color:var(--sat)}
+.row .e{flex:1}
+/* PC */
+#pc{width:2560px;height:1440px;display:flex;gap:30px;padding:44px 44px 44px 110px}
+#pc .cal{width:800px;padding:34px 22px 20px}
+#pc .cal .mt{padding-left:0}
+#pc .g{display:grid;grid-template-columns:repeat(7,1fr);margin-top:26px}
+#pc .dw{text-align:center;font-size:22px;padding-bottom:14px;border-bottom:1px solid var(--line);color:#c9cfdb}
+#pc .c{height:232px;border-bottom:1px solid var(--line);padding:8px 3px;overflow:hidden}
+#pc .c .n{font-size:22px;font-weight:700;padding-left:4px}
+#pc .c.o .n{color:#3d4250}
+#pc .chip{display:block;margin-top:6px;border-radius:6px;padding:2px 7px;font-size:20px;line-height:1.25;color:#111;font-weight:500;word-break:keep-all;overflow-wrap:anywhere}
+#pc .chip.band{height:10px;padding:0;margin-top:14px;opacity:.45}
+#pc .ag{flex:1;padding:36px 26px}
+#pc .ag .mt{font-size:58px;line-height:1.1}
+#pc .leg{font-size:24px;margin:14px 0 6px}
+#pc .mh{font-size:26px;margin:10px 0 0}
+#pc .row{padding:5px 0 5px 18px;font-size:24px;line-height:1.3}
+#pc .row .d{width:160px;font-size:26px}
+/* phone */
+#ph{width:1170px;height:2532px;padding:640px 44px 0}
+#ph .mt{font-size:76px}
+#ph .leg{font-size:32px;margin:16px 0 26px}
+#ph .leg i{width:26px;height:26px}
+#ph .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#ph .cal{padding:34px 32px 24px}
+#ph .cal .mt{font-size:50px}#ph .cal .mt small{font-size:28px}
+#ph .g{display:grid;grid-template-columns:repeat(7,1fr);margin-top:20px}
+#ph .dw{text-align:center;font-size:31px;padding-bottom:14px;border-bottom:1px solid var(--line);color:#c9cfdb}
+#ph .c{height:70px;text-align:center;border-bottom:1px solid var(--line);padding-top:10px}
+#ph .c .n{font-size:31px;font-weight:700}#ph .c.o .n{color:#3d4250}
+#ph .dots{display:flex;justify-content:center;gap:4px;margin-top:2px}#ph .dots i{width:10px;height:10px;border-radius:50%}
+#ph .mh{font-size:32px;margin:22px 0 4px}
+#ph .row{padding:10px 0 10px 22px;font-size:30px;line-height:1.3}
+#ph .row .d{width:150px;font-size:30px}
+#ph .row .d small{font-size:24px}
+</style></head><body>
+<div id="pc"></div><div id="ph"></div>
+<script>
+const EVJ=__EV__;
+const C={p:'var(--cp)',n:'var(--cn)',d:'var(--cd)',h:'var(--ch)',g:'var(--cg)'};
+const CAT={p:'개인일정',n:'남부시찰·노회',d:'동기연',h:'화기총',g:'경조사'};
+const DOW='일월화수목금토';
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const ft=t=>{const [h,mi]=t.split(':').map(Number);return (h<12?'오전 ':h<18?'오후 ':'밤 ')+(h%12||12)+':'+String(mi).padStart(2,'0')};
+const EV=EVJ.events.map(e=>{const s=pd(e.date),u=e.until?pd(e.until):s;return{s,u,m:s.getMonth()+1,d:s.getDate(),t:e.title+(e.time?` (${ft(e.time)})`:''),sh:e.short||(e.title+(e.time?` (${ft(e.time)})`:"")),k:e.cat,lab:e.label||'',multi:u>s}}).sort((a,b)=>a.s-b.s);
+const MONTHS=__MONTHS__;
+function grid(y,m,mode){const first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),prev=new Date(y,m-1,0).getDate();
+ let h='<div class="g">';for(let i=0;i<7;i++)h+=`<div class="dw ${i==0?'s':i==6?'a':''}">${DOW[i]}</div>`;
+ const total=Math.ceil((first+days)/7)*7;
+ for(let i=0;i<total;i++){const d=i-first+1,inM=d>=1&&d<=days,w=i%7,num=inM?d:(d<1?prev+d:d-days),dt=new Date(y,m-1,d);
+  const evs=inM?EV.filter(e=>e.s<=dt&&dt<=e.u):[];let x='';
+  if(mode=='pc')evs.forEach(e=>{x+=e.multi&&+e.s!=+dt?`<span class="chip band" style="background:${C[e.k]}"></span>`:`<span class="chip" style="background:${C[e.k]}">${e.sh}</span>`});
+  else x='<div class="dots">'+evs.map(e=>`<i style="background:${C[e.k]}"></i>`).join('')+'</div>';
+  h+=`<div class="c ${w==0?'s':w==6?'a':''} ${inM?'':'o'}"><span class="n">${num}</span>${x}</div>`}
+ return h+'</div>'}
+const leg='<div class="leg">'+Object.keys(CAT).map(k=>`<span><i style="background:${C[k]}"></i>${CAT[k]}</span>`).join('')+'</div>';
+function rows(list){return list.map(e=>{const w=e.s.getDay();const dl=e.multi?`<b>${e.lab}</b><small>${e.m}/${e.d}~</small>`:`<b>${e.m}/${e.d}</b><small>(${DOW[w]})</small>`;
+ return `<div class="row ${!e.multi&&w==0?'sun':!e.multi&&w==6?'sat':''}"><span class="bar" style="background:${C[e.k]}"></span><span class="d">${dl}</span><span class="e">${e.t}</span></div>`}).join('')}
+function agenda(){return MONTHS.map(([y,m])=>`<div class="mh">${m}월</div>`+rows(EV.filter(e=>e.s.getFullYear()==y&&e.m==m))).join('')}
+document.getElementById('pc').innerHTML=MONTHS.map(([y,m])=>`<div class="panel cal"><div class="mt">${m}월<small>${y}</small></div>${grid(y,m,'pc')}</div>`).join('')+`<div class="panel ag"><div class="mt">주요일정</div>${leg}${agenda()}</div>`;
+document.getElementById('ph').innerHTML=`<div class="mt">주요일정</div>${leg}<div class="two">`+MONTHS.map(([y,m])=>`<div class="panel cal"><div class="mt">${m}월<small>${y}</small></div>${grid(y,m,'ph')}</div>`).join('')+`</div><div class="two" id="phag"></div>`;
+// split phone agenda into two columns
+const all=[];MONTHS.forEach(([y,m])=>{all.push(`<div class="mh">${m}월</div>`);EV.filter(e=>e.s.getFullYear()==y&&e.m==m).forEach(e=>all.push(rows([e])))});
+const half=Math.ceil(all.length/2);document.getElementById('phag').innerHTML=`<div>${all.slice(0,half).join('')}</div><div>${all.slice(half).join('')}</div>`;
+</script></body></html>
