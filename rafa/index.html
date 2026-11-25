@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>라파멀티엔터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14213d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="라파멀티엔터">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 렌탈이 화면의 절반 이상을 차지하는 원페이지. 판매·사업분야·사례·문의는 뒤에서 점점 작게. */
+:root{
+  --bg:#f6f8fc; --surface:#ffffff; --ink:#14213d; --muted:#5b6782; --line:#dde3ef;
+  --red:#e63946; --blue:#1d6fdc; --yellow:#ffc233; --sky:#e6f0ff; --chip:#eef2f9;
+  --tbd-bg:#fff4d6; --tbd-fg:#8a5a00;
+  --display:"Black Han Sans","Noto Sans KR",system-ui,sans-serif;
+  --body:"Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1424; --surface:#172036; --ink:#eef2fb; --muted:#9aa6c2; --line:#26314d;
+  --red:#ff5c69; --blue:#5aa0ff; --yellow:#ffcf5a; --sky:#16264a; --chip:#1f2a45;
+  --tbd-bg:#3a2e10; --tbd-fg:#ffd27a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1424; --surface:#172036; --ink:#eef2fb; --muted:#9aa6c2; --line:#26314d;
+  --red:#ff5c69; --blue:#5aa0ff; --yellow:#ffcf5a; --sky:#16264a; --chip:#1f2a45;
+  --tbd-bg:#3a2e10; --tbd-fg:#ffd27a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:-.01em;text-wrap:balance;margin:0}
+a{color:inherit}
+img{max-width:100%;display:block}
+.tbd{background:var(--tbd-bg);color:var(--tbd-fg);border-radius:4px;padding:0 6px;font-size:.85em;font-weight:700;white-space:nowrap}
+
+/* 상단 */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.draft{background:var(--ink);color:var(--bg);font-size:13px;text-align:center;padding-block:6px}
+header.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:20px;padding-block:12px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:22px;display:flex;align-items:center;gap:8px}
+.logo-img{width:28px;height:28px;border-radius:6px;object-fit:contain}
+.logo i{width:26px;height:26px;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 35% 30%,#fff8 0 18%,transparent 19%),var(--red);display:inline-block}
+.nav nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav nav a{text-decoration:none;padding:6px 10px;border-radius:999px;font-weight:500;font-size:14px}
+.nav nav a:hover,.nav nav a:focus-visible{background:var(--chip);outline:none}
+.nav nav a.primary{background:var(--red);color:#fff}
+
+/* 히어로 */
+.hero{position:relative;color:#fff;overflow:hidden}
+.hero img{width:100%;height:clamp(340px,52vw,560px);object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0b1430e6 0%,#0b143099 45%,#0b143000 75%)}
+.hero .copy{position:absolute;inset:0;z-index:1;display:flex;align-items:center}
+.hero .copy>div{max-width:560px}
+.eyebrow{display:inline-block;background:var(--yellow);color:#14213d;font-weight:900;font-size:13px;padding:3px 10px;border-radius:4px;letter-spacing:.04em}
+.hero h1{font-size:clamp(34px,5.4vw,62px);line-height:1.12;margin-top:14px}
+.hero h1 em{font-style:normal;color:var(--yellow)}
+.hero p{font-size:clamp(15px,1.6vw,18px);margin:14px 0 22px;color:#e4ebff}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px;border:0;cursor:pointer;font-family:inherit;font-size:15px}
+.btn.red{background:var(--red);color:#fff}
+.btn.ghost{background:#ffffff22;color:#fff;border:1px solid #ffffff66}
+
+/* 요약 스트립 */
+.strip{background:var(--surface);border-bottom:1px solid var(--line)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;padding-block:0}
+.strip div.s{padding:18px 8px}
+.strip b{display:block;font-family:var(--display);font-size:28px;color:var(--blue);font-variant-numeric:tabular-nums;line-height:1.1}
+.strip span{color:var(--muted);font-size:13px}
+
+section{padding-block:56px}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.sec-head h2{font-size:clamp(28px,3.6vw,40px)}
+.sec-head p{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.tag{font-family:var(--body);font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--red);display:block;margin-bottom:4px}
+
+/* 렌탈 */
+#rental{background:var(--sky)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filters button{font-family:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.filters button small{opacity:.6;font-weight:500;margin-left:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:var(--surface);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line)}
+.card .ph{aspect-ratio:16/10;background:#cfe0ff;position:relative;max-width:100%}
+.card .ph img{width:100%;height:100%;object-fit:cover}
+.card .cat{position:absolute;left:10px;top:10px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.card.big{grid-column:span 2}
+.card .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.card h3{font-family:var(--body);font-weight:900;font-size:17px}
+.specs{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.specs li{background:var(--chip);font-size:12.5px;padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums}
+.card .price{margin-top:auto;display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--line);padding-top:10px;font-size:13px;color:var(--muted)}
+
+.pack{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-top:40px;background:var(--surface);border-radius:16px;padding:24px;border:1px solid var(--line)}
+.pack>*{min-width:0}
+.pack img{border-radius:10px;border:1px solid var(--line)}
+.pack h3{font-size:26px;margin-bottom:6px}
+.pack ul{padding-left:18px;margin:10px 0}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:28px;list-style:none;padding:0;counter-reset:st}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;counter-increment:st;font-size:14px}
+.steps li::before{content:counter(st);display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-weight:900;font-size:13px;margin-bottom:6px}
+.steps b{display:block}
+
+/* 판매 */
+.sale{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.sale article{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.sale article h3{font-size:22px}
+.sale article p{margin:0;color:var(--muted);font-size:14px}
+.sale .ico{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--chip)}
+
+/* 사업분야 */
+.biz{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.biz article{border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.biz img{aspect-ratio:4/3;object-fit:cover;width:100%}
+.biz .bd{padding:14px 16px}
+.biz h3{font-family:var(--body);font-weight:900;font-size:16px}
+.biz p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+
+/* 사례 */
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:180px;gap:10px}
+.gallery figure{margin:0;position:relative;border-radius:10px;overflow:hidden}
+.gallery figure.w{grid-column:span 2;grid-row:span 2}
+.gallery img{width:100%;height:100%;object-fit:cover}
+.gallery figcaption{position:absolute;left:8px;bottom:8px;background:#0b1430cc;color:#fff;font-size:12px;padding:2px 8px;border-radius:4px}
+.clients{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.btn.yt{background:#e00;color:#fff}
+.yt-chip{background:var(--ink);color:var(--bg);padding:6px 12px;border-radius:999px;font-size:13.5px;text-decoration:none;font-weight:700}
+.install{position:fixed;right:max(16px,calc(env(safe-area-inset-right,0px) + 16px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:20;box-shadow:0 6px 20px #0004}
+.install-tip{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:20;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px 16px;max-width:420px;margin-left:auto;box-shadow:0 6px 20px #0003;font-size:14px}
+.clients span{background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-size:13.5px}
+
+/* 문의 */
+#contact{background:var(--ink);color:var(--bg)}
+#contact .box{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center}
+#contact h2{font-size:clamp(28px,3.6vw,40px)}
+#contact dl{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0}
+#contact dt{opacity:.7;font-size:14px}
+#contact dd{margin:0;font-weight:700}
+footer{padding-block:20px;font-size:12.5px;color:var(--muted)}
+
+@media (max-width:860px){
+  .strip .wrap{grid-template-columns:repeat(2,1fr)}
+  .pack,#contact .box{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .sale{grid-template-columns:1fr}
+  .biz{grid-template-columns:1fr 1fr}
+  .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:140px}
+  .card.big{grid-column:auto}
+  .hero::after{background:linear-gradient(0deg,#0b1430f0 0%,#0b143099 60%,#0b143033 100%)}
+  .hero .copy{align-items:flex-end;padding-bottom:28px}
+}
+@media (max-width:480px){.biz{grid-template-columns:1fr}.nav nav a:not(.primary){display:none}}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
+</style>
+</head><body>
+
+<div class="draft">초안입니다 · <span class="tbd">노란 표시</span> 항목은 확인 후 채워 넣어야 합니다</div>
+
+<header class="nav"><div class="wrap">
+  <!-- 로고 자리: CI 완성 후 icons/logo.png 를 교체하면 됩니다 -->
+  <div class="logo"><img class="logo-img" src="icons/logo.png" alt="" width="28" height="28">라파멀티엔터</div>
+  <nav aria-label="바로가기">
+    <a href="#rental">렌탈</a><a href="#sale">판매</a><a href="#biz">사업분야</a><a href="#cases">행사이력</a><a class="primary" href="#contact">견적 문의</a>
+  </nav>
+</div></header>
+
+<div class="hero">
+  <img src="img/hero.jpg" alt="주차장에 에어바운스와 슬라이드가 설치된 행사장 항공 사진">
+  <div class="copy"><div class="wrap"><div>
+    <span class="eyebrow">RENTAL 1순위</span>
+    <h1>행사장이<br><em>놀이공원</em>이 되는<br>장비 렌탈</h1>
+    <p>에어바운스·에어슬라이드부터 회전그네, 바이킹, 레일기차, 범퍼카, 게임기, 먹거리 기계까지. 교회·학교·축제·기업 행사에 필요한 장비를 한 번에 빌려 드립니다.</p>
+    <div class="btns"><a class="btn red" href="#rental">렌탈 장비 보기</a><a class="btn ghost" href="#contact">견적 문의</a></div>
+  </div></div></div>
+</div>
+
+<div class="strip"><div class="wrap">
+  <div class="s"><b id="cnt-all">–</b><span>렌탈 장비 품목</span></div>
+  <div class="s"><b id="cnt-cat">–</b><span>장비 분류</span></div>
+  <div class="s"><b>14m</b><span>최대 에어바운스 (꿀벌 14×7×8m)</span></div>
+  <div class="s"><b>23m</b><span>초대형 슬라이드 총 길이</span></div>
+</div></div>
+
+<section id="rental"><div class="wrap">
+  <div class="sec-head">
+    <div><span class="tag">RENTAL · 주력 사업</span><h2>렌탈 장비</h2>
+    <p>보유 장비를 분류별로 모았습니다. 크기는 가로×세로×높이 기준이며, 요금은 행사 규모·기간·지역에 따라 견적으로 안내합니다.</p></div>
+  </div>
+  <div class="filters" id="filters" role="group" aria-label="장비 분류"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="pack">
+    <div><img src="img/layout.jpg" alt="사파이어볼룸 키즈존 배치도 예시"></div>
+    <div>
+      <span class="tag">PACKAGE</span>
+      <h3>키즈존 통째로 꾸미기</h3>
+      <p>공간 크기에 맞춰 장비 배치도를 먼저 그려 드립니다. 아래는 실내 홀 키즈존 배치 예시입니다.</p>
+      <ul>
+        <li>놀이바운스 · 에어슬라이드 · 볼풀장</li>
+        <li>농구·두더지 등 오락기, 인형뽑기</li>
+        <li>인생네컷 포토존, 다트·축구 게임</li>
+      </ul>
+      <p>패키지 요금 <span class="tbd">[요금 입력]</span></p>
+    </div>
+  </div>
+
+  <ol class="steps" aria-label="렌탈 진행 순서">
+    <li><b>문의</b>날짜·장소·인원 알려주기</li>
+    <li><b>견적·배치 상담</b>공간에 맞는 장비 구성</li>
+    <li><b>설치</b>행사 전 현장 설치·안전 점검</li>
+    <li><b>행사 진행</b><span class="tbd">[운영 인력 포함 여부]</span></li>
+    <li><b>철수</b>행사 후 회수·정리</li>
+  </ol>
+</div></section>
+
+<section id="sale"><div class="wrap">
+  <div class="sec-head"><div><span class="tag">SALES</span><h2>판매</h2>
+  <p>렌탈로 써 본 장비를 직접 보유하고 싶은 고객을 위한 판매 안내입니다.</p></div></div>
+  <div class="sale">
+    <article><div class="ico" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 20V10l4-4 3 3 4-5 4 4 3-2v14z" fill="var(--red)"/></svg></div>
+      <h3>에어바운스·슬라이드</h3><p>놀이바운스, 에어슬라이드, 스포츠바운스 등</p><p><span class="tbd">[판매 품목 · 신품/중고 · 가격 확인]</span></p></article>
+    <article><div class="ico" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" fill="var(--blue)"/><rect x="8" y="6" width="8" height="6" fill="var(--surface)"/></svg></div>
+      <h3>게임기·코인기기</h3><p>두더지, 펀치, 발축구, 오락실 게임기 등</p><p><span class="tbd">[판매 품목 · 가격 확인]</span></p></article>
+    <article><div class="ico" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6" fill="var(--yellow)"/><rect x="11" y="14" width="2" height="7" fill="var(--muted)"/></svg></div>
+      <h3>먹거리 기계·소모품</h3><p>솜사탕, 슬러시, 팝콘 기계와 재료</p><p><span class="tbd">[판매 품목 · 가격 확인]</span></p></article>
+  </div>
+</div></section>
+
+<section id="biz"><div class="wrap">
+  <div class="sec-head"><div><span class="tag">BUSINESS</span><h2>사업분야</h2>
+  <p>장비만 빌려주는 데서 끝나지 않고, 행사 전체를 함께 준비합니다.</p></div></div>
+  <div class="biz">
+    <article><img src="img/site-aerial.jpg" alt="대형 놀이바운스 행사장"><div class="bd"><h3>행사 기획·대행</h3><p>교회 행사, 대학 축제, 지역 축제, 기업 가족행사</p></div></article>
+    <article><img src="img/site-pool.jpg" alt="에어풀장과 슬라이드 항공 사진"><div class="bd"><h3>키즈존·물놀이장 운영</h3><p>여름 에어풀장, 실내 키즈존, 팝업 놀이터</p></div></article>
+    <article><img src="img/site-costume.jpg" alt="토끼 탈인형"><div class="bd"><h3>캐릭터·포토존</h3><p>탈인형, 인생네컷 포토부스로 행사 분위기 연출</p></div></article>
+    <article><img src="img/tent.jpg" alt="행사용 천막과 테이블, 의자"><div class="bd"><h3>행사용품 대여</h3><p>천막(6×3m), 테이블, 의자 등 부대 용품</p></div></article>
+  </div>
+</div></section>
+
+<section id="cases"><div class="wrap">
+  <div class="sec-head"><div><span class="tag">HISTORY</span><h2>행사 이력</h2>
+  <p>실제 행사에 설치한 모습입니다. 행사별 영상은 유튜브 채널에서 계속 업데이트됩니다.</p></div>
+  <a class="btn yt" href="https://www.youtube.com/channel/UCDbH82r2lVH8mCzIXarzyqw" target="_blank" rel="noopener"><svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="4" fill="#fff"/><path d="M8 4l5 3-5 3z" fill="#e00"/></svg>유튜브에서 행사 이력 전체 보기</a></div>
+  <div class="gallery">
+    <figure class="w"><img src="img/site-xl.jpg" alt="초대형 무지개 슬라이드 설치 현장"><figcaption>초대형 무지개 슬라이드</figcaption></figure>
+    <figure><img src="img/site-train.jpg" alt="미니 레일기차 운행"><figcaption>미니 레일기차</figcaption></figure>
+    <figure><img src="img/site-bumper.jpg" alt="범퍼카 운행"><figcaption>범퍼카</figcaption></figure>
+    <figure><img src="img/site-dart.jpg" alt="축구 다트 체험"><figcaption>축구 다트</figcaption></figure>
+    <figure><img src="img/site-mole.jpg" alt="두더지 게임 체험"><figcaption>두더지 게임</figcaption></figure>
+    <figure class="w"><img src="img/site-rainbow.jpg" alt="무지개 슬라이드와 물놀이장"><figcaption>슬라이드 + 물놀이장</figcaption></figure>
+    <figure><img src="img/bee.jpg" alt="실내 체육관 꿀벌 에어바운스"><figcaption>실내 체육관 꿀벌 바운스</figcaption></figure>
+    <figure><img src="img/site-slide.jpg" alt="야외 슬라이드 설치"><figcaption>야외 슬라이드</figcaption></figure>
+  </div>
+  <div class="clients" aria-label="주요 행사">
+    <span>경산중앙교회 진군식 (2019)</span>
+    <span>순천향대학교 동아리연합회 대학축제</span>
+    <span>광주새순교회 행복한 놀이터 (2024.5)</span>
+    <a class="yt-chip" href="https://www.youtube.com/channel/UCDbH82r2lVH8mCzIXarzyqw" target="_blank" rel="noopener">더 많은 행사 영상 →</a>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap box">
+  <div><span class="tag" style="color:var(--yellow)">CONTACT</span><h2>날짜와 장소만 알려 주세요</h2>
+  <p style="opacity:.8">행사 규모에 맞는 장비 구성과 견적을 안내해 드립니다.</p></div>
+  <dl>
+    <dt>전화</dt><dd><span class="tbd">[대표 번호]</span></dd>
+    <dt>카카오톡</dt><dd><span class="tbd">[카카오 채널/ID]</span></dd>
+    <dt>주소</dt><dd><span class="tbd">[사업장 주소]</span></dd>
+    <dt>서비스 지역</dt><dd><span class="tbd">[전국/지역 범위]</span></dd>
+  </dl>
+</div></section>
+
+<button class="btn red install" id="installBtn" type="button">홈 화면에 설치</button>
+<div class="install-tip" id="installTip" hidden role="status"></div>
+
+<footer><div class="wrap">라파멀티엔터 (RAFA MULTI ENTERTAINMENT) · 사업자등록번호 <span class="tbd">[입력]</span> · 사진의 장비 디자인은 입고 시기에 따라 달라질 수 있습니다.</div></footer>
+
+<script>
+const CATS=["에어바운스","슬라이드·물놀이","놀이기구","게임·스포츠","포토·캐릭터","먹거리"];
+const ITEMS=[
+ {c:"에어바운스",n:"꿀벌 에어바운스 (초대형)",img:"bee",s:["14×7×8m","3kW"],big:1},
+ {c:"에어바운스",n:"뽀로로 에어바운스 (대형)",img:"pororo",s:["6×10×4.5m","2kW"]},
+ {c:"에어바운스",n:"과자 에어바운스 (중형)",img:"snack",s:["8×5×2.5m","1kW"]},
+ {c:"에어바운스",n:"사파리 에어바운스 (소형)",img:"safari",s:["6×4×2.5m","1kW"]},
+ {c:"에어바운스",n:"우주 비행선 놀이바운스",img:"space",s:["5×8m"]},
+ {c:"슬라이드·물놀이",n:"초대형 에어슬라이드 미끄럼 연장",img:"slide-xl",s:["7×5×7m","+10m 연장","+5m 풀장","총 23m"],big:1},
+ {c:"슬라이드·물놀이",n:"무지개 에어슬라이드 (대)",img:"slide-l",s:["6×5×6m","3kW"]},
+ {c:"슬라이드·물놀이",n:"무지개 에어슬라이드 (소)",img:"slide-s",s:["3×4×3m","실내 가능"]},
+ {c:"슬라이드·물놀이",n:"에어 풀장 + 슬라이드",img:"pool",s:["풀장 5·8·10m","슬라이드 소·중·대"]},
+ {c:"놀이기구",n:"회전그네 (대형)",img:"swing-l",s:["지름 10m","최대 20명"],big:1},
+ {c:"놀이기구",n:"회전그네 (중형)",img:"swing-m",s:["지름 4m","최대 7명"]},
+ {c:"놀이기구",n:"미니 바이킹",img:"viking",s:["10인승","2×3×4m","1톤"]},
+ {c:"놀이기구",n:"미니 레일기차",img:"train",s:["5×3m 원형","2kW"]},
+ {c:"놀이기구",n:"충전식 범퍼카 (4대)",img:"bumper",s:["사각 풀장 8m"]},
+ {c:"놀이기구",n:"회전 비행기",img:"plane",s:["6인승","4m 원형"]},
+ {c:"놀이기구",n:"다람쥐 회전 통돌이",img:"squirrel",s:["6인용","유치~성인","1톤 차량"]},
+ {c:"놀이기구",n:"키즈 라이더 (3대)",img:"rider",s:["1×1.5m"]},
+ {c:"게임·스포츠",n:"스포츠 에어바운스 축구",img:"soccer",s:["3×3×3m","실내 가능"]},
+ {c:"게임·스포츠",n:"스포츠 에어바운스 농구",img:"basket",s:["3×3×3m"]},
+ {c:"게임·스포츠",n:"스포츠 에어바운스 야구",img:"baseball",s:["3×3×3m"]},
+ {c:"게임·스포츠",n:"에어 바나나 시소",img:"banana",s:[]},
+ {c:"게임·스포츠",n:"코인 게임 두더지",img:"mole",s:["1×1m","버튼식"]},
+ {c:"게임·스포츠",n:"코인 손펀치",img:"punch",s:["1×1m"]},
+ {c:"게임·스포츠",n:"오락실 만능 게임기",img:"arcade",s:["15,000가지 게임"]},
+ {c:"게임·스포츠",n:"인형뽑기",img:"claw",s:["2×2m"]},
+ {c:"포토·캐릭터",n:"인생네컷 포토존",img:"photo4cut",s:["1회 렌탈","기본 100명분 200장"]},
+ {c:"포토·캐릭터",n:"시원한 바람 탈인형",img:"site-costume",s:["토끼 2마리","성인용","송풍기 내장"]},
+ {c:"먹거리",n:"솜사탕 기계",img:"cotton",s:["재료 포함"]},
+ {c:"먹거리",n:"슬러시 기계",img:"slushy",s:["재료 포함","종이컵·빨대 별도"]},
+ {c:"먹거리",n:"팝콘 기계",img:"popcorn",s:["재료 포함"]},
+];
+const grid=document.getElementById('grid'),fl=document.getElementById('filters');
+let cur="전체";
+function esc(t){return t.replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function render(){
+  const list=cur==="전체"?ITEMS:ITEMS.filter(i=>i.c===cur);
+  grid.innerHTML=list.map(i=>`<article class="card${i.big&&cur==="전체"?" big":""}">
+    <div class="ph"><img loading="lazy" src="img/${i.img}.jpg" alt="${esc(i.n)}"><span class="cat">${i.c}</span></div>
+    <div class="bd"><h3>${esc(i.n)}</h3>
+    ${i.s.length?`<ul class="specs">${i.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    <div class="price"><span>1일 렌탈</span><span class="tbd">[요금 입력]</span></div></div></article>`).join("");
+  fl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cur));
+}
+["전체",...CATS].forEach(c=>{const b=document.createElement('button');b.type='button';b.dataset.c=c;
+  b.innerHTML=`${c}<small>${c==="전체"?ITEMS.length:ITEMS.filter(i=>i.c===c).length}</small>`;
+  b.onclick=()=>{cur=c;render()};fl.appendChild(b)});
+document.getElementById('cnt-all').textContent=ITEMS.length+"종";
+document.getElementById('cnt-cat').textContent=CATS.length+"개";
+render();
+
+/* 홈 화면 설치 (PWA) */
+let deferred=null;
+const ib=document.getElementById('installBtn'),tip=document.getElementById('installTip');
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+if(standalone) ib.hidden=true;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;});
+ib.onclick=async()=>{
+  if(deferred){deferred.prompt();try{await deferred.userChoice}catch(e){}deferred=null;tip.hidden=true;return;}
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  tip.textContent=ios?"아이폰: Safari 아래쪽 공유 버튼(□↑)을 누르고 '홈 화면에 추가'를 선택하세요."
+                    :"안드로이드: 크롬 오른쪽 위 ⋮ 메뉴에서 '홈 화면에 추가' 또는 '앱 설치'를 선택하세요.";
+  tip.hidden=!tip.hidden;
+};
+if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+</script>
+
+</body></html>

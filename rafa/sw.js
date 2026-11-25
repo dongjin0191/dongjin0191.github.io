@@ -1,0 +1,51 @@
+// 라파멀티엔터 서비스워커: 한 번 열어 두면 오프라인에서도 열립니다.
+const CACHE='rafa-v1';
+const ASSETS=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/logo.png',
+'img/arcade.jpg',
+'img/banana.jpg',
+'img/baseball.jpg',
+'img/basket.jpg',
+'img/bee.jpg',
+'img/bumper.jpg',
+'img/claw.jpg',
+'img/cotton.jpg',
+'img/hero.jpg',
+'img/layout.jpg',
+'img/mole.jpg',
+'img/photo4cut.jpg',
+'img/plane.jpg',
+'img/pool.jpg',
+'img/popcorn.jpg',
+'img/pororo.jpg',
+'img/punch.jpg',
+'img/rider.jpg',
+'img/safari.jpg',
+'img/site-aerial.jpg',
+'img/site-bumper.jpg',
+'img/site-costume.jpg',
+'img/site-dart.jpg',
+'img/site-mole.jpg',
+'img/site-pool.jpg',
+'img/site-rainbow.jpg',
+'img/site-slide.jpg',
+'img/site-train.jpg',
+'img/site-xl.jpg',
+'img/slide-l.jpg',
+'img/slide-s.jpg',
+'img/slide-xl.jpg',
+'img/slushy.jpg',
+'img/snack.jpg',
+'img/soccer.jpg',
+'img/space.jpg',
+'img/squirrel.jpg',
+'img/swing-l.jpg',
+'img/swing-m.jpg',
+'img/tent.jpg',
+'img/train.jpg',
+'img/viking.jpg'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cp)).catch(()=>{});return r}).catch(()=>caches.match(e.request)));
+});
