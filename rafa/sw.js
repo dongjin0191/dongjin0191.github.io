@@ -1,5 +1,5 @@
 // 라파멀티엔터 서비스워커: 한 번 열어 두면 오프라인에서도 열립니다.
-const CACHE='rafa-v1';
+const CACHE='rafa-v2';
 const ASSETS=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/logo.png',
 'img/arcade.jpg',
 'img/banana.jpg',
